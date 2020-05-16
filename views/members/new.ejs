@@ -1,0 +1,20 @@
+<%- include("../partials/header") %>
+
+<a href="/members">Back</a>
+<p>Add Member</p>
+<form class="" action="/members" method="post">
+  <label for="name">Name</label>
+  <input type="text" name="member[name]" value="" required/>
+  <label for="id">Student ID</label>
+  <input type="text" name="member[id]" value="" required/>
+  <label for="grade">Grade</label>
+  <input type="number" name="member[grade]" value="9" min="9" max="12" required/>
+  <label for="termCount">Terms in CSF</label>
+  <input type="number" name="member[termCount]" value="0" min="0" max="7" required/>
+  <label for="accessLevel">Access Level*</label>
+  <input type="number" name="member[accessLevel]" value="0" min="0" max="3" required/>
+  <input type="submit" value="Add"/>
+</form>
+<h6>* 0: member  1: officer  2: tutoring coordinator  3: developer / advisor</h6>
+
+<%- include("../partials/footer") %>

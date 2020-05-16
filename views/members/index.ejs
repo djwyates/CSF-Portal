@@ -1,0 +1,27 @@
+<%- include("../partials/header") %>
+
+<a href="/members/new">Add Member</a>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Student ID</th>
+      <th>Grade</th>
+      <th>Terms</th>
+      <th>Attendance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% members.forEach(function(member) { %>
+      <tr>
+        <td><%- member.name %></td>
+        <td><%- member._id %></td>
+        <td><%- member.grade %></td>
+        <td><%- member.termCount %></td>
+        <td><%- member.meetingsAttended %><a href="/members/<%- member._id %>">More Info</a></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<%- include("../partials/footer") %>

@@ -1,0 +1,10 @@
+<%- include("../partials/header") %>
+
+<a href="/meetings/<%- meeting._id %>">Back</a>
+<p>Record Attendance for Meeting <%- meeting._id %></p>
+<form class="" action="/meetings/<%- meeting._id %>/checkin?_method=put" method="post">
+  <input type="text" name="member[id]" value="" required/>
+  <input type="submit" value="Check-in"/>
+</form>
+
+<%- include("../partials/footer") %>

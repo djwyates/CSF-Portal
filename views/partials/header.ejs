@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<title>MVHS CSF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css"/>
+  </head>
+  <body>
+    <header>
+      <nav>
+    		<img class="logo" src="/images/logo.png" alt="logo" width="67" height="67"/>
+    		<div class="nav-links">
+    		  <a href="/">Check Attendance</a>
+    		  <a href="/meetings">Meetings Overview</a>
+          <% if(currentUser && currentUser.accessLevel >= 1) { %>
+          <a href="/members">Members Overview</a>
+          <% } %>
+    		  <a href="">Tutoring<i class="angle down icon"></i></a>
+    		</div>
+        <% if(!currentUser) { %>
+    		<a href="/login/google" class="login-button">Google Login</a>
+        <% } else { %>
+        <a href="/logout" class="login-button">Logout</a>
+        <% } %>
+    		<!-- for mobile devices -->
+    		<div class="burger-container" onclick="toggleBurger(this)">
+    			<div class="burger1"></div>
+    			<div class="burger2"></div>
+    			<div class="burger3"></div>
+    		</div>
+    	</nav>
+    </header>
+    <p><%- success %></p>
+    <p><%- info %></p>
+    <p><%- error %></p>

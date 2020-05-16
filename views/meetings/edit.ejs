@@ -1,0 +1,15 @@
+<%- include("../partials/header") %>
+
+<p>Meeting <%- meeting._id %></p>
+<form class="" action="/meetings/<%- meeting._id %>?_method=put" method="post">
+  <label for="date">Date</label>
+  <input type="date" name="meeting[date]" value="<%- meeting.date %>" required/>
+  <label for="description">Description</label>
+  <input type="text" name="meeting[description]" value="<%- meeting.description %>"/>
+  <input type="submit" value="Save"/>
+</form>
+<form class="" action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
+  <input type="submit" value="Delete"/>
+</form>
+
+<%- include("../partials/footer") %>
