@@ -6,9 +6,11 @@
 <p>Grade: <%- member.grade %></p>
 <p>Terms in CSF: <%- member.termCount %></p>
 <p>Attendance: <%- member.meetingsAttended %></p>
-<a href="/members/<%- member._id %>/edit">Edit</a>
-<form class="" action="/members/<%- member._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
-  <input type="submit" value="Remove"/>
-</form>
+<% if(currentUser.accessLevel >= 3) { %>
+  <a href="/members/<%- member._id %>/edit">Edit</a>
+  <form class="" action="/members/<%- member._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
+    <input type="submit" value="Remove"/>
+  </form>
+<% } %>
 
 <%- include("../partials/footer") %>

@@ -9,6 +9,7 @@ router.get("/", function(req, res) {
     if (err) {
       console.log(err);
     } else {
+      meetings.sort(function(a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime(); }); // should this be removed?
       res.render("meetings/index", {meetings: meetings});
     }
   });
@@ -19,20 +20,13 @@ router.get("/new", middleware.hasAccessLevel(1), function(req, res) {
 });
 
 router.post("/", middleware.hasAccessLevel(1), function(req, res) {
-  Meeting.countDocuments({}, function(err, count) {
-    if (err) {
-      res.redirect("/meetings");
-    } else {
-      Meeting.create({_id: count+1, date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description), membersAttended: []}, {useFindAndModify: true}, function(err, newMeeting) {
-        if (err) {
-          console.log(err);
-          res.render("meetings/new");
-        } else {
-          res.redirect("/meetings");
-        }
-      });
-    }
-  });
+    Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description), membersAttended: []}], {useFindAndModify: true}, function(err, newMeeting) {
+      if (err) {
+        res.redirect("meetings/new");
+      } else {
+        res.redirect("/meetings");
+      }
+    });
 });
 
 router.get("/:id", function(req, res) {
@@ -67,11 +61,16 @@ router.put("/:id", middleware.hasAccessLevel(1), function(req, res) {
 });
 
 router.delete("/:id", middleware.hasAccessLevel(1), function(req, res) {
-  Meeting.findByIdAndDelete(req.params.id, function(err) {
+  Meeting.findByIdAndDelete(req.params.id, function(err, deletedMeeting) {
     if (err) {
-      console.log(err);
       res.redirect("/meetings");
     } else {
+      Member.find({}, function(err, members) {
+        members.forEach(function(member) {
+          if (member.meetingsAttended.includes(deletedMeeting._id))
+            Member.findByIdAndUpdate(member._id, {$pull: {"meetingsAttended": deletedMeeting._id.toString()}}, function(err, foundMember){});
+        });
+      });
       res.redirect("/meetings");
     }
   });

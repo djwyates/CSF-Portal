@@ -19,7 +19,7 @@ router.get("/login/google/callback", passport.authenticate("google"), function(r
 
 router.get("/logout", function(req, res) {
   req.logout();
-  req.flash("success", "You have logged out.");
+  req.flash("success", "You have been logged out.");
   res.redirect("/");
 });
 

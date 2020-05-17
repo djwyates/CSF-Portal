@@ -1,14 +1,22 @@
 <%- include("../partials/header") %>
 
+<% reformatDate = function(date) {
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  date = new Date(date);
+  return(months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear());
+} %>
+
 <a href="/meetings">Back</a>
 <p>Meeting <%- meeting._id %></p>
-<p>Date: <%- meeting.date %></p>
+<p>Date: <%- reformatDate(meeting.date) %></p>
 <p>Description: <%- meeting.description %></p>
-<a href="/meetings/<%- meeting._id %>/checkin">Record Attendance</a>
-<a href="/meetings/<%- meeting._id %>/edit">Edit</a>
-<form class="" action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
-  <input type="submit" value="Delete"/>
-</form>
-<p>Attendance: <%- meeting.membersAttended %></p>
+<% if(currentUser && currentUser.accessLevel >= 1) { %>
+  <a href="/meetings/<%- meeting._id %>/checkin">Record Attendance</a>
+  <a href="/meetings/<%- meeting._id %>/edit">Edit</a>
+  <form class="" action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
+    <input type="submit" value="Delete"/>
+  </form>
+  <p>Attendance: <%- meeting.membersAttended %></p>
+<% } %>
 
 <%- include("../partials/footer") %>

@@ -1,6 +1,7 @@
 const express = require("express"),
       router = express.Router(),
       Member = require("../models/member"),
+      Meeting = require("../models/meeting"),
       middleware = require("../middleware/index")
 
 router.get("/", middleware.hasAccessLevel(1), function(req, res) {
@@ -26,10 +27,9 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
     meetingsAttended: [],
     accessLevel: req.body.member.accessLevel
   };
-  Member.create(newMember, {useFindAndModify: true}, function(err, newMember) {
+  Member.create([newMember], {useFindAndModify: true}, function(err, newMember) {
     if (err) {
-      console.log(err);
-      res.render("members/new");
+      res.redirect("members/new");
     } else {
       res.redirect("/members");
     }
@@ -68,11 +68,16 @@ router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
 });
 
 router.delete("/:id", middleware.hasAccessLevel(3), function(req, res) {
-  Member.findByIdAndDelete(req.params.id, function(err) {
+  Member.findByIdAndDelete(req.params.id, function(err, deletedMember) {
     if (err) {
-      console.log(err);
       res.redirect("/members");
     } else {
+      Meeting.find({}, function(err, meetings) {
+        meetings.forEach(function(meeting) {
+          if (meeting.membersAttended.includes(deletedMember._id))
+            Meeting.findByIdAndUpdate(meeting._id, {$pull: {"membersAttended": deletedMember._id.toString()}}, function(err, foundMeeting){});
+        });
+      });
       res.redirect("/members");
     }
   });

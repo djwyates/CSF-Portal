@@ -1,7 +1,13 @@
 <%- include("../partials/header") %>
 
+<% reformatDate = function(date) {
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  date = new Date(date);
+  return(months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear());
+} %>
+
 <a href="/meetings/<%- meeting._id %>">Back</a>
-<p>Record Attendance for Meeting <%- meeting._id %></p>
+<p>Record Attendance for Meeting <%- meeting._id %> on <%- reformatDate(meeting.date) %></p>
 <form class="" action="/meetings/<%- meeting._id %>/checkin?_method=put" method="post">
   <input type="text" name="member[id]" value="" required/>
   <input type="submit" value="Check-in"/>

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 var meetingSchema = new mongoose.Schema({
-  _id: Number,
+  number: Number,
   date: String,
   description: String,
   membersAttended: Array

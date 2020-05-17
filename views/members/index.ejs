@@ -1,6 +1,8 @@
 <%- include("../partials/header") %>
 
-<a href="/members/new">Add Member</a>
+<% if(currentUser.accessLevel >= 3) { %>
+  <a href="/members/new">Add Member</a>
+<% } %>
 <table class="table">
   <thead>
     <tr>
