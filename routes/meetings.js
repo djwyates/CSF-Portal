@@ -9,7 +9,8 @@ router.get("/", function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      meetings.sort(function(a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime(); }); // should this be removed?
+      // the line of code below sorts the meetings by date
+      // meetings.sort(function(a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime(); });
       res.render("meetings/index", {meetings: meetings});
     }
   });

@@ -8,27 +8,30 @@
   <body>
     <header>
       <nav>
-    		<img class="logo" src="/images/logo.png" alt="logo" width="67" height="67"/>
+        <a href="/" class="logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
     		<div class="nav-links">
-    		  <a href="/">Check Attendance</a>
-    		  <a href="/meetings">Meetings Overview</a>
-          <% if(currentUser && currentUser.accessLevel >= 1) { %>
+    	  <a href="/members/attendance">Check Attendance</a>
+    	  <a href="/meetings">Meetings Overview</a>
+        <% if(currentUser && currentUser.accessLevel >= 1) { %>
           <a href="/members">Members Overview</a>
-          <% } %>
-    		  <a href="">Tutoring<i class="angle down icon"></i></a>
-    		</div>
+        <% } %>
+    	  <a href="">Tutoring</a>
+        <% if(currentUser && currentUser.accessLevel >= 3) { %>
+          <a href="/settings">Settings</a>
+        <% } %>
+    	  </div>
         <% if(!currentUser) { %>
-    		  <a href="/login/google" class="login-button">Google Login</a>
+          <a href="/login/google" class="login-button">Google Login</a>
         <% } else { %>
           <a href="/logout" class="login-button">Logout</a>
         <% } %>
-    		<!-- for mobile devices -->
-    		<div class="burger-container" onclick="toggleBurger(this)">
-    			<div class="burger1"></div>
-    			<div class="burger2"></div>
-    			<div class="burger3"></div>
-    		</div>
-    	</nav>
+    	  <!-- for mobile devices -->
+    	  <div class="burger-container" onclick="toggleBurger(this)">
+    		  <div class="burger1"></div>
+    		  <div class="burger2"></div>
+    		  <div class="burger3"></div>
+        </div>
+      </nav>
     </header>
     <p><%- success %></p>
     <p><%- info %></p>

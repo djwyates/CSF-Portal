@@ -10,11 +10,7 @@ router.get("/login/google", passport.authenticate("google", {scope: ["email"]}))
 
 router.get("/login/google/callback", passport.authenticate("google"), function(req, res) {
   req.flash("success", "You have successfully logged in.");
-  if (req.user.accessLevel == 0) {
-    res.redirect("/members/" + req.user._id + "/attendance");
-  } else {
-    res.redirect("/meetings");
-  }
+  res.redirect("/members/attendance");
 });
 
 router.get("/logout", function(req, res) {

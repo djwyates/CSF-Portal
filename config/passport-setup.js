@@ -24,7 +24,7 @@ passport.use(new GoogleStrategy({
     passReqToCallback: true
   },
   function(req, accessToken, refreshToken, profile, done) {
-    var email = String(profile.emails[0].value);
+    var email = profile.emails[0].value;
     for (var i=0;i<keys.accounts.admins.length;i++) {
       if (email == keys.accounts.admins[i])
         return done(null, {_id: email, accessLevel: 3});

@@ -1,8 +1,8 @@
 function toggleBurger(burgerContainer) {
   burgerContainer.classList.toggle("activate");
-	let topnav = document.getElementById("nav-links");
-  if (topnav.className === "nav-links")
-    topnav.className += " responsive";
+	var navLinks = document.getElementById("nav-links");
+  if (navLinks.className === "nav-links")
+    navLinks.className += " responsive";
   else
-    topnav.className = "nav-links";
+    navLinks.className = "nav-links";
 }

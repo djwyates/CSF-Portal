@@ -5,7 +5,7 @@ var memberSchema = new mongoose.Schema({
   name: String,
   grade: {type: Number, min: 9, max: 12},
   termCount: {type: Number, min: 0, max: 7},
-  meetingsAttended: Array,
+  meetingsAttended: {type: [String]},
   accessLevel: {type: Number, min: 0, max: 3}
 });
 

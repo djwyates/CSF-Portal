@@ -1,16 +1,12 @@
 <%- include("../partials/header") %>
 
-<% if(currentUser.accessLevel >= 3) { %>
-  <a href="/members/new">Add Member</a>
-<% } %>
+<a href="/settings">Back</a>
 <table class="table">
   <thead>
     <tr>
       <th>Name</th>
       <th>Student ID</th>
-      <th>Grade</th>
-      <th>Terms</th>
-      <th>Attendance</th>
+      <th>Access Level</th>
     </tr>
   </thead>
   <tbody>
@@ -18,9 +14,7 @@
       <tr>
         <td><%- member.name %></td>
         <td><%- member._id %></td>
-        <td><%- member.grade %></td>
-        <td><%- member.termCount %></td>
-        <td><%- member.meetingsAttended %><a href="/members/<%- member._id %>">Details</a></td>
+        <td><%- member.accessLevel %><a href="/members/<%- member._id %>">Details</a></td>
       </tr>
     <% }); %>
   </tbody>

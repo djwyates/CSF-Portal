@@ -4,6 +4,19 @@ const express = require("express"),
       Meeting = require("../models/meeting"),
       middleware = require("../middleware/index")
 
+router.get("/attendance", function(req, res) {
+  if (!req.query.id)
+    return res.render("members/attendance", {member: null});
+  Member.findById(req.query.id, function(err, foundMember) {
+    if (err || !foundMember) {
+      req.flash("error", "That member does not exist or another error occurred. ID entered: " + req.query.id);
+      res.redirect("back");
+    } else {
+      res.render("members/attendance", {member: foundMember});
+    }
+  });
+});
+
 router.get("/", middleware.hasAccessLevel(1), function(req, res) {
   Member.find({}, function(err, members) {
     if (err) {
@@ -79,16 +92,6 @@ router.delete("/:id", middleware.hasAccessLevel(3), function(req, res) {
         });
       });
       res.redirect("/members");
-    }
-  });
-});
-
-router.get("/:id/attendance", function(req, res) {
-  Member.findById(req.params.id, function(err, foundMember) {
-    if (err || foundMember == null) {
-      res.redirect("/");
-    } else {
-      res.render("members/attendance", + {member: foundMember});
     }
   });
 });
