@@ -37,8 +37,7 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
     name: req.sanitize(req.body.member.name),
     grade: req.body.member.grade,
     termCount: req.body.member.termCount,
-    meetingsAttended: [],
-    accessLevel: req.body.member.accessLevel
+    accessLevel: parseInt(req.body.member.accessLevel)
   };
   Member.create([newMember], {useFindAndModify: true}, function(err, newMember) {
     if (err) {
@@ -71,6 +70,7 @@ router.get("/:id/edit", middleware.hasAccessLevel(3), function(req, res) {
 
 router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
   req.body.member.name = req.sanitize(req.body.member.name);
+  req.body.member.accessLevel = parseInt(req.body.member.accessLevel);
   Member.findByIdAndUpdate(req.params.id, req.body.member, function(err, foundMember) {
     if (err || foundMember == null) {
       res.redirect("/members/" + req.params.id + "/edit");

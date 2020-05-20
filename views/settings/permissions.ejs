@@ -6,15 +6,15 @@
     <tr>
       <th>Name</th>
       <th>Student ID</th>
-      <th>Access Level</th>
+      <th>Position</th>
     </tr>
   </thead>
   <tbody>
     <% members.forEach(function(member) { %>
-      <tr>
+      <tr data-href="/members/<%- member._id %>">
         <td><%- member.name %></td>
         <td><%- member._id %></td>
-        <td><%- member.accessLevel %><a href="/members/<%- member._id %>">Details</a></td>
+        <td><% if(member.accessLevel == 0) { %> Member <% } else if(member.accessLevel == 1) { %> Officer <% } else if(member.accessLevel == 2) { %> Tutoring Coordinator <% } else if(member.accessLevel == 3) { %> Developer <% } %></td>
       </tr>
     <% }); %>
   </tbody>

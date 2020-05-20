@@ -98,6 +98,9 @@ nav .logo {
   .burger-container {
     display: inline-block;
   }
+	.table tbody tr:nth-of-type(even) {
+		background-color: rgb(243,243,243);
+	}
 }
 
 /* footer styles */
@@ -127,9 +130,12 @@ footer {
 .table th, .table td {
 	padding: 12px 15px;
 }
-.table tbody a {
-	float: right;
+.table tbody tr {
+	border-bottom: 1px solid rgb(221,221,221);
 }
-.table tbody tr:nth-of-type(even) {
+.table tbody tr[data-href] {
+	cursor: pointer;
+}
+.table tbody tr:hover {
 	background-color: rgb(243,243,243);
 }

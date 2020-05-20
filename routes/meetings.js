@@ -9,8 +9,6 @@ router.get("/", function(req, res) {
     if (err) {
       console.log(err);
     } else {
-      // the line of code below sorts the meetings by date
-      // meetings.sort(function(a, b) { return new Date(a.date).getTime() - new Date(b.date).getTime(); });
       res.render("meetings/index", {meetings: meetings});
     }
   });
@@ -21,7 +19,7 @@ router.get("/new", middleware.hasAccessLevel(1), function(req, res) {
 });
 
 router.post("/", middleware.hasAccessLevel(1), function(req, res) {
-    Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description), membersAttended: []}], {useFindAndModify: true}, function(err, newMeeting) {
+    Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}], {useFindAndModify: true}, function(err, newMeeting) {
       if (err) {
         res.redirect("meetings/new");
       } else {

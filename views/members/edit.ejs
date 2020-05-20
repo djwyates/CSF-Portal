@@ -1,18 +1,23 @@
 <%- include("../partials/header") %>
 
 <p><b>Student ID</b> <%- member._id %></p>
-<form class="" action="/members/<%- member._id %>?_method=put" method="post">
+<form action="/members/<%- member._id %>?_method=put" method="post">
   <label for="name">Name</label>
   <input type="text" name="member[name]" value="<%- member.name %>" required/>
   <label for="grade">Grade</label>
   <input type="number" name="member[grade]" value="<%- member.grade %>" min="9" max="12" required/>
   <label for="termCount">Terms in CSF</label>
   <input type="number" name="member[termCount]" value="<%- member.termCount %>" min="0" max="7" required/>
-  <label for="accessLevel">Access Level</label>
-  <input type="number" name="member[accessLevel]" value="<%- member.accessLevel %>" min="0" max="3" required/>
+  <label for="accessLevel">Position</label>
+  <select name="member[accessLevel]" required>
+    <option value="0" <% if(member.accessLevel == 0) { %> selected <% } %>>Member</option>
+    <option value="1" <% if(member.accessLevel == 1) { %> selected <% } %>>Officer</option>
+    <option value="2" <% if(member.accessLevel == 2) { %> selected <% } %>>Tutoring Coordinator</option>
+    <option value="3" <% if(member.accessLevel == 3) { %> selected <% } %>>Developer</option>
+  </select>
   <input type="submit" value="Save"/>
 </form>
-<form class="" action="/members/<%- member._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
+<form action="/members/<%- member._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
   <input type="submit" value="Remove"/>
 </form>
 

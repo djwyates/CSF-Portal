@@ -22,4 +22,10 @@ router.get("/termmigration", middleware.hasAccessLevel(3), function(req, res) {
   res.render("settings/termmigration");
 });
 
+router.put("/termmigration", middleware.hasAccessLevel(3), function(req, res) {
+  Meeting.deleteMany({}, function(err, deletedMeetings){ console.log("Deleted all meetings from the database: " + JSON.stringify(deletedMeetings)); });
+  Member.deleteMany({}, function(err, deletedMembers){ console.log("Deleted all members from the database: " + JSON.stringify(deletedMembers)); });
+  res.redirect("/");
+});
+
 module.exports = router;

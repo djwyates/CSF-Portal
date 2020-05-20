@@ -2,7 +2,7 @@
 
 <a href="/meetings">Back</a>
 <p>New Meeting</p>
-<form class="" action="/meetings" method="post">
+<form action="/meetings" method="post">
   <label for="date">Date</label>
   <input type="date" name="meeting[date]" value="<%- new Date().toJSON().slice(0,10).replace(/-/g,'-') %>" required/>
   <label for="description">Description</label>

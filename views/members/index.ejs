@@ -15,12 +15,12 @@
   </thead>
   <tbody>
     <% members.forEach(function(member) { %>
-      <tr>
+      <tr data-href="http://localhost:3000/members/<%- member._id %>">
         <td><%- member.name %></td>
         <td><%- member._id %></td>
         <td><%- member.grade %></td>
         <td><%- member.termCount %></td>
-        <td><%- member.meetingsAttended %><a href="/members/<%- member._id %>">Details</a></td>
+        <td><%- member.meetingsAttended %></td>
       </tr>
     <% }); %>
   </tbody>

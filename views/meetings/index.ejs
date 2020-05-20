@@ -3,7 +3,7 @@
 <% reformatDate = function(date) {
   var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   date = new Date(date);
-  return(months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear());
+  return(months[date.getMonth()] + ' ' + (date.getDate()+1) + ', ' + date.getFullYear());
 } %>
 
 <% if(currentUser && currentUser.accessLevel >= 1) { %>
@@ -19,10 +19,10 @@
   </thead>
   <tbody>
     <% i=1; meetings.forEach(function(meeting) { %>
-      <tr>
+      <tr data-href="http://localhost:3000/meetings/<%- meeting._id %>">
         <td><%- i %></td>
         <td><%- reformatDate(meeting.date) %></td>
-        <td><%- meeting.description %><a href="/meetings/<%- meeting._id %>">Details</a></td>
+        <td><%- meeting.description %></td>
       </tr>
     <% i++; }); %>
   </tbody>

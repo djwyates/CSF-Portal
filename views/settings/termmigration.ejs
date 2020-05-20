@@ -1,5 +1,11 @@
 <%- include("../partials/header") %>
 
 <a href="/settings">Back</a>
+<form action="/settings/termmigration?_method=put" method="post" onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
+  <label for="members">New members in CSV format: </label>
+  <input type="file" name="members" required/>
+  <br>
+  <input type="submit" value="MIGRATE TERMS"/>
+</form>
 
 <%- include("../partials/footer") %>
