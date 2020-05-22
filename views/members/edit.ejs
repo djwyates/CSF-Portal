@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
-<p><b>Student ID</b> <%- member._id %></p>
-<form action="/members/<%- member._id %>?_method=put" method="post">
+<p><b>Student ID</b> <%- member.id %></p>
+<form action="/members/<%- member._id %>?_method=put<% if(query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <label for="name">Name</label>
   <input type="text" name="member[name]" value="<%- member.name %>" required/>
   <label for="grade">Grade</label>
@@ -17,7 +17,7 @@
   </select>
   <input type="submit" value="Save"/>
 </form>
-<form action="/members/<%- member._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
+<form action="/members/<%- member._id %>?_method=delete<% if(query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
   <input type="submit" value="Remove"/>
 </form>
 

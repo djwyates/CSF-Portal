@@ -1,5 +1,6 @@
 const express = require("express"),
       router = express.Router(),
+      fs = require("fs"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
       middleware = require("../middleware/index")
@@ -64,10 +65,14 @@ router.delete("/:id", middleware.hasAccessLevel(1), function(req, res) {
     if (err) {
       res.redirect("/meetings");
     } else {
+      var currentDate = new Date().toJSON().slice(0,10).replace(/-/g,'-');
+      if (!fs.existsSync("./backups/" + currentDate + "/meetings"))
+        fs.mkdirSync("./backups/" + currentDate + "/meetings", {recursive: true}, function(err){});
+      fs.writeFile("./backups/" + currentDate + "/meetings/" + deletedMeeting.date + ".txt", deletedMeeting, function(err){});
       Member.find({}, function(err, members) {
         members.forEach(function(member) {
-          if (member.meetingsAttended.includes(deletedMeeting._id))
-            Member.findByIdAndUpdate(member._id, {$pull: {"meetingsAttended": deletedMeeting._id.toString()}}, function(err, foundMember){});
+          if (member.meetingsAttended.includes(deletedMeeting.date))
+            Member.findByIdAndUpdate(member._id, {$pull: {"meetingsAttended": deletedMeeting.date}}, function(err, foundMember){});
         });
       });
       res.redirect("/meetings");
@@ -86,19 +91,23 @@ router.get("/:id/checkin", middleware.hasAccessLevel(1), function(req, res) {
 });
 
 router.put("/:id/checkin", middleware.hasAccessLevel(1), function(req, res) {
-  Member.findById(req.body.member.id, function(err, foundMember) {
-    if (err || foundMember == null) {
-      req.flash("error", "That member does not exist or another error occurred. ID entered: " + req.body.member.id);
-      res.redirect("/meetings/" + req.params.id + "/checkin");
-    } else if (foundMember.meetingsAttended.includes(req.params.id)) {
-      req.flash("info", foundMember._id + " already attended the meeting.");
-      res.redirect("/meetings/" + req.params.id + "/checkin");
-    } else {
-      Meeting.findByIdAndUpdate(req.params.id, {$push: {"membersAttended": foundMember._id}}, function(err, foundMeeting){});
-      Member.findByIdAndUpdate(foundMember._id, {$push: {"meetingsAttended": req.params.id}}, function(err, foundMember){});
-      req.flash("success", foundMember._id + " attended the meeting.");
-      res.redirect("/meetings/" + req.params.id + "/checkin");
-    }
+  req.body.id = req.sanitize(req.body.id.trim());
+  Member.findOne({id: req.body.id}, function(err, foundMember) {
+    Meeting.findById(req.params.id, function(err, foundMeeting) {
+      if (err || foundMember == null) {
+        req.flash("error", "That member does not exist or another error occurred. ID entered: " + req.body.id);
+        res.redirect("/meetings/" + req.params.id + "/checkin");
+      } else if (foundMember.meetingsAttended.includes(foundMeeting.date)) {
+        req.flash("info", foundMember.id + " already attended the meeting.");
+        res.redirect("/meetings/" + req.params.id + "/checkin");
+      } else {
+        Meeting.findByIdAndUpdate(req.params.id, {$push: {"membersAttended": foundMember.id}}, function(err, foundMeeting) {
+          Member.findByIdAndUpdate(foundMember._id, {$push: {"meetingsAttended": foundMeeting.date}}, function(err, foundMember){});
+        });
+        req.flash("success", foundMember.id + " attended the meeting.");
+        res.redirect("/meetings/" + req.params.id + "/checkin");
+      }
+    });
   });
 });
 

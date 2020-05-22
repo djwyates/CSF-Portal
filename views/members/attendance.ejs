@@ -7,11 +7,11 @@
 </form>
 <br>
 <% if(member) { %>
-  <p>Student ID: <%- member._id %></p>
+  <p>Student ID: <%- member.id %></p>
   <p>Attendance: <%- member.meetingsAttended %></p>
 <% } else if (currentUser && currentUser.meetingsAttended) { %>
-  <p>Student ID: <%- currentUser._id %></p>
-  <p>Attendance: <%- currentUser.meetingsAttended %></p>
+  <p>Student ID: <%- currentUser.id %></p>
+  <p>Attendance: <% currentUser.meetingsAttended.forEach(function(meeting) { %><%- reformatDate(meeting) %><% }); %></p>
 <% } %>
 
 <%- include("../partials/footer") %>

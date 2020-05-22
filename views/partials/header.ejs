@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
   <head>
   	<title>MVHS CSF</title>
@@ -6,18 +7,23 @@
     <link rel="stylesheet" href="/css/main.css"/>
   </head>
   <body>
+    <% reformatDate = function(date) {
+      var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      date = new Date(date);
+      return(months[date.getMonth()] + ' ' + (date.getDate()+1) + ', ' + date.getFullYear());
+    } %>
     <header>
       <nav>
         <a href="/" class="logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
     		<div class="nav-links">
-    	  <a href="/members/attendance">Check Attendance</a>
-    	  <a href="/meetings">Meetings Overview</a>
+    	  <a href="/members/attendance" <% if(url.substring(0, 19) == "/members/attendance") { %> class="active" <% } else { %> class="" <% } %>>Check Attendance</a>
+    	  <a href="/meetings" <% if(url.substring(0, 9) == "/meetings") { %> class="active" <% } else { %> class="" <% } %>>Meetings Overview</a>
         <% if(currentUser && currentUser.accessLevel >= 1) { %>
-          <a href="/members">Members Overview</a>
+          <a href="/members" <% if(url.substring(0, 8) == "/members" && url.substring(8, 19) != "/attendance" && !query.from) { %> class="active" <% } else { %> class="" <% } %>>Members Overview</a>
         <% } %>
     	  <a href="">Tutoring</a>
         <% if(currentUser && currentUser.accessLevel >= 3) { %>
-          <a href="/settings">Settings</a>
+          <a href="/settings" <% if(url.substring(0, 9) == "/settings" || query.from && query.from.substring(0, 9) == "/settings") { %> class="active" <% } else { %> class="" <% } %>>Settings</a>
         <% } %>
     	  </div>
         <% if(!currentUser) { %>
@@ -33,6 +39,6 @@
         </div>
       </nav>
     </header>
-    <p><%- success %></p>
-    <p><%- info %></p>
-    <p><%- error %></p>
+    <p><%- flash.success %></p>
+    <p><%- flash.info %></p>
+    <p><%- flash.error %></p>

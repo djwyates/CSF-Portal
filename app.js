@@ -28,9 +28,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(function(req, res, next) {
   res.locals.currentUser = req.user;
-  res.locals.success = req.flash("success");
-  res.locals.info = req.flash("info");
-  res.locals.error = req.flash("error");
+  res.locals.query = req.query;
+  res.locals.url = req.url;
+  res.locals.flash = {success: req.flash("success"), info: req.flash("info"), error: req.flash("error")};
   next();
 });
 

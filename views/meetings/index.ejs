@@ -1,11 +1,5 @@
 <%- include("../partials/header") %>
 
-<% reformatDate = function(date) {
-  var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  date = new Date(date);
-  return(months[date.getMonth()] + ' ' + (date.getDate()+1) + ', ' + date.getFullYear());
-} %>
-
 <% if(currentUser && currentUser.accessLevel >= 1) { %>
   <a href="/meetings/new">Create Meeting</a>
 <% } %>

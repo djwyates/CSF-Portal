@@ -1,0 +1,14 @@
+<%- include("../partials/header") %>
+
+<a href="/settings">Back</a>
+<p>Fill out this form to seed the database for next term and customize the reports you will receive on the previous term. Officers' permissions are conserved if you seed the database.</p>
+<form action="/settings/term-migration?_method=put" method="post" onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
+  <label for="members">New members in CSV format</label>
+  <input type="file" name="members"/>
+  <label for="minMeetingCount">Minimum Meetings to Qualify as a Member</label>
+  <input type="number" name="minMeetings" value="6" min="0" max="8"/>
+  <br>
+  <input type="submit" value="MIGRATE TERMS"/>
+</form>
+
+<%- include("../partials/footer") %>

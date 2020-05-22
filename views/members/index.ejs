@@ -17,10 +17,10 @@
     <% members.forEach(function(member) { %>
       <tr data-href="http://localhost:3000/members/<%- member._id %>">
         <td><%- member.name %></td>
-        <td><%- member._id %></td>
+        <td><%- member.id %></td>
         <td><%- member.grade %></td>
         <td><%- member.termCount %></td>
-        <td><%- member.meetingsAttended %></td>
+        <td><% member.meetingsAttended.forEach(function(meeting) { %><%- reformatDate(meeting) %> | <% }); %></td>
       </tr>
     <% }); %>
   </tbody>

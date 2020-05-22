@@ -11,9 +11,9 @@
   </thead>
   <tbody>
     <% members.forEach(function(member) { %>
-      <tr data-href="/members/<%- member._id %>">
+      <tr data-href="/members/<%- member._id %>?from=%2Fsettings%2Fpermissions">
         <td><%- member.name %></td>
-        <td><%- member._id %></td>
+        <td><%- member.id %></td>
         <td><% if(member.accessLevel == 0) { %> Member <% } else if(member.accessLevel == 1) { %> Officer <% } else if(member.accessLevel == 2) { %> Tutoring Coordinator <% } else if(member.accessLevel == 3) { %> Developer <% } %></td>
       </tr>
     <% }); %>

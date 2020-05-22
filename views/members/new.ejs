@@ -4,9 +4,9 @@
 <p>Add Member</p>
 <form action="/members" method="post">
   <label for="name">Name</label>
-  <input type="text" name="member[name]" value="" required/>
+  <input type="text" name="member[name]" maxlength="50" required/>
   <label for="id">Student ID</label>
-  <input type="text" name="member[id]" value="" required/>
+  <input type="text" name="member[id]" minlength="9" maxlength="9" required/>
   <label for="grade">Grade</label>
   <input type="number" name="member[grade]" value="9" min="9" max="12" required/>
   <label for="termCount">Terms in CSF</label>

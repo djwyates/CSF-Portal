@@ -30,7 +30,7 @@ passport.use(new GoogleStrategy({
         return done(null, {_id: email, accessLevel: 3});
     }
     // add check for parents/students associated with a tutor request form
-    Member.findById(email.substring(0, 9), function (err, foundMember) {
+    Member.findOne({id: email.substring(0, 9)}, function (err, foundMember) {
       if (foundMember == null || email.substring(email.length-keys.accounts.domain.length) != keys.accounts.domain) {
         done("You must be in CSF and use your school email to login. If you are not in CSF and wish to view the status of your tutoring request, you must use the email associated with that request.");
       } else {
