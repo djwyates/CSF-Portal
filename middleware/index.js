@@ -1,6 +1,3 @@
-const Member = require("../models/member.js"),
-      keys = require("../config/keys.js")
-
 var middleware = {};
 
 middleware.isLoggedIn = function(req, res, next) {

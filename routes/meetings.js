@@ -1,15 +1,16 @@
 const express = require("express"),
       router = express.Router(),
-      fs = require("fs"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
-      middleware = require("../middleware/index")
+      middleware = require("../middleware/index"),
+      backup = require("../services/backup.js")
 
 router.get("/", function(req, res) {
   Meeting.find({}, function(err, meetings) {
     if (err) {
-      console.log(err);
+      console.error(err);
     } else {
+      meetings.sort(function(a, b){ return new Date(a.date) - new Date(b.date); });
       res.render("meetings/index", {meetings: meetings});
     }
   });
@@ -22,6 +23,8 @@ router.get("/new", middleware.hasAccessLevel(1), function(req, res) {
 router.post("/", middleware.hasAccessLevel(1), function(req, res) {
     Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}], {useFindAndModify: true}, function(err, newMeeting) {
       if (err) {
+        if (err.code == 11000)
+          req.flash("error", "More than one meeting cannot have the same date.");
         res.redirect("meetings/new");
       } else {
         res.redirect("/meetings");
@@ -53,6 +56,8 @@ router.put("/:id", middleware.hasAccessLevel(1), function(req, res) {
   req.body.meeting.description = req.sanitize(req.body.meeting.description);
   Meeting.findByIdAndUpdate(req.params.id, req.body.meeting, function(err, foundMeeting) {
     if (err) {
+      if (err.code == 11000)
+        req.flash("error", "More than one meeting cannot have the same date.");
       res.redirect("/meetings/" + req.params.id + "/edit");
     } else {
       res.redirect("/meetings/" + req.params.id);
@@ -65,10 +70,7 @@ router.delete("/:id", middleware.hasAccessLevel(1), function(req, res) {
     if (err) {
       res.redirect("/meetings");
     } else {
-      var currentDate = new Date().toJSON().slice(0,10).replace(/-/g,'-');
-      if (!fs.existsSync("./backups/" + currentDate + "/meetings"))
-        fs.mkdirSync("./backups/" + currentDate + "/meetings", {recursive: true}, function(err){});
-      fs.writeFile("./backups/" + currentDate + "/meetings/" + deletedMeeting.date + ".txt", deletedMeeting, function(err){});
+      backup.object("./backups/deleted/meetings/" + deletedMeeting.date + ".txt", deletedMeeting);
       Member.find({}, function(err, members) {
         members.forEach(function(member) {
           if (member.meetingsAttended.includes(deletedMeeting.date))

@@ -4,6 +4,8 @@
 <form action="/members/<%- member._id %>?_method=put<% if(query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <label for="name">Name</label>
   <input type="text" name="member[name]" value="<%- member.name %>" required/>
+  <label for="name">Student ID</label>
+  <input type="text" name="member[id]" value="<%- member.id %>" minlength="9" maxlength="9" required/>
   <label for="grade">Grade</label>
   <input type="number" name="member[grade]" value="<%- member.grade %>" min="9" max="12" required/>
   <label for="termCount">Terms in CSF</label>

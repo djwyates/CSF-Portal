@@ -3,8 +3,8 @@ const mongoose = require("mongoose"),
 
 var meetingSchema = new mongoose.Schema({
   _id: {type: String, default: shortid.generate},
-  date: {type: String, required: true},
-  description: {type: String, required: false},
+  date: {type: String, unique: true, required: true},
+  description: {type: String, trim: true, required: false},
   membersAttended: {type: [String], required: true, default: []}
 });
 

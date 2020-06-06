@@ -1,9 +1,9 @@
 const express = require("express"),
       router = express.Router(),
-      fs = require("fs"),
       Member = require("../models/member"),
       Meeting = require("../models/meeting"),
-      middleware = require("../middleware/index")
+      middleware = require("../middleware/index"),
+      backup = require("../services/backup.js")
 
 router.get("/attendance", function(req, res) {
   if (!req.query.id)
@@ -22,7 +22,7 @@ router.get("/attendance", function(req, res) {
 router.get("/", middleware.hasAccessLevel(1), function(req, res) {
   Member.find({}, function(err, members) {
     if (err) {
-      console.log(err);
+      console.error(err);
     } else {
       res.render("members/index", {members: members});
     }
@@ -43,6 +43,8 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
   };
   Member.create([newMember], {useFindAndModify: true}, function(err, newMember) {
     if (err) {
+      if (err.code == 11000)
+        req.flash("error", "More than one member cannot have the same ID.");
       res.redirect("members/new");
     } else {
       res.redirect("/members");
@@ -71,16 +73,26 @@ router.get("/:id/edit", middleware.hasAccessLevel(3), function(req, res) {
 });
 
 router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
+  req.body.member.id = req.sanitize(req.body.member.id);
   req.body.member.name = req.sanitize(req.body.member.name);
   req.body.member.accessLevel = parseInt(req.body.member.accessLevel);
   Member.findByIdAndUpdate(req.params.id, req.body.member, function(err, foundMember) {
-    if (err || foundMember == null) {
+    if (err) {
+      if (err.code == 11000)
+        req.flash("error", "More than one member cannot have the same ID.");
       res.redirect("/members/" + req.params.id + "/edit");
     } else {
-      if (!req.query.from)
-        res.redirect("/members/" + req.params.id);
-      else
-        res.redirect("/members/" + req.params.id + "?from=" + req.query.from);
+      if (req.body.member.id != foundMember.id) {
+        Meeting.find({}, function(err, meetings) {
+          meetings.forEach(function(meeting) {
+            if (meeting.membersAttended.includes(foundMember.id)) {
+              Meeting.findByIdAndUpdate(meeting._id, {$pull: {"membersAttended": foundMember.id}}, function(err, foundMeeting){});
+              Meeting.findByIdAndUpdate(meeting._id, {$push: {"membersAttended": req.body.member.id}}, function(err, foundMeeting){});
+            }
+          });
+        });
+      }
+      res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
     }
   });
 });
@@ -90,20 +102,14 @@ router.delete("/:id", middleware.hasAccessLevel(3), function(req, res) {
     if (err) {
       res.redirect("/members");
     } else {
-      var currentDate = new Date().toJSON().slice(0,10).replace(/-/g,'-');
-      if (!fs.existsSync("./backups/" + currentDate + "/members"))
-        fs.mkdirSync("./backups/" + currentDate + "/members", {recursive: true}, function(err){});
-      fs.writeFile("./backups/" + currentDate + "/members/" + deletedMember.id + ".txt", deletedMember, function(err){});
+      backup.object("./backups/deleted/members/" + deletedMember.id + ".txt", deletedMember);
       Meeting.find({}, function(err, meetings) {
         meetings.forEach(function(meeting) {
           if (meeting.membersAttended.includes(deletedMember.id))
             Meeting.findByIdAndUpdate(meeting._id, {$pull: {"membersAttended": deletedMember.id}}, function(err, foundMeeting){});
         });
       });
-      if (!req.query.from)
-        res.redirect("/members");
-      else
-        res.redirect(req.query.from);
+      res.redirect(req.query.from ? req.query.from : "/members");
     }
   });
 });

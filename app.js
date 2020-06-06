@@ -6,13 +6,12 @@ const express = require("express"),
       methodOverride = require("method-override"),
       mongoose = require("mongoose"),
       passport = require("passport"),
-      passportSetup = require("./config/passport-setup"),
       expressSession = require("express-session"),
       keys = require("./config/keys")
 
 // requiring routes
 const indexRoutes = require("./routes/index"),
-      settingsRoutes = require("./routes/settings");
+      settingsRoutes = require("./routes/settings"),
       meetingsRoutes = require("./routes/meetings"),
       membersRoutes = require("./routes/members")
 
@@ -26,6 +25,7 @@ mongoose.connect("mongodb://localhost:27017/csf", {useNewUrlParser: true, useUni
 app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitialized: false, cookie: {maxAge: 7*24*60*60*1000}}));
 app.use(passport.initialize());
 app.use(passport.session());
+require("./config/passport-setup");
 app.use(function(req, res, next) {
   res.locals.currentUser = req.user;
   res.locals.query = req.query;

@@ -1,6 +1,6 @@
 <%- include("../partials/header") %>
 
-<p>Meeting <%- meeting._id %></p>
+<p>Meeting on <%- reformatDate(meeting.date) %></p>
 <form action="/meetings/<%- meeting._id %>?_method=put" method="post">
   <label for="date">Date</label>
   <input type="date" name="meeting[date]" value="<%- meeting.date %>" required/>
