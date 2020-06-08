@@ -3,7 +3,7 @@
 <a href="/meetings">Back</a>
 <p>Meeting on <%- reformatDate(meeting.date) %></p>
 <p>Description: <%- meeting.description %></p>
-<% if(currentUser && currentUser.accessLevel >= 1) { %>
+<% if (currentUser && currentUser.accessLevel >= 1) { %>
   <a href="/meetings/<%- meeting._id %>/checkin">Record Attendance</a>
   <a href="/meetings/<%- meeting._id %>/edit">Edit</a>
   <form action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">

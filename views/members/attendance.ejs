@@ -6,7 +6,7 @@
   <input type="submit" value="Check"/>
 </form>
 <br>
-<% if(member) { %>
+<% if (member) { %>
   <p>Student ID: <%- member.id %></p>
   <p>Attendance: <%- member.meetingsAttended %></p>
 <% } else if (currentUser && currentUser.meetingsAttended) { %>

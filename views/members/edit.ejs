@@ -12,10 +12,10 @@
   <input type="number" name="member[termCount]" value="<%- member.termCount %>" min="0" max="7" required/>
   <label for="accessLevel">Position</label>
   <select name="member[accessLevel]" required>
-    <option value="0" <% if(member.accessLevel == 0) { %> selected <% } %>>Member</option>
-    <option value="1" <% if(member.accessLevel == 1) { %> selected <% } %>>Officer</option>
-    <option value="2" <% if(member.accessLevel == 2) { %> selected <% } %>>Tutoring Coordinator</option>
-    <option value="3" <% if(member.accessLevel == 3) { %> selected <% } %>>Developer</option>
+    <option value="0" <% if (member.accessLevel == 0) { %> selected <% } %>>Member</option>
+    <option value="1" <% if (member.accessLevel == 1) { %> selected <% } %>>Officer</option>
+    <option value="2" <% if (member.accessLevel == 2) { %> selected <% } %>>Tutoring Coordinator</option>
+    <option value="3" <% if (member.accessLevel == 3) { %> selected <% } %>>Developer</option>
   </select>
   <input type="submit" value="Save"/>
 </form>

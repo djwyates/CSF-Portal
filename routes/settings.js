@@ -38,19 +38,12 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
     return qualifyingMembers;
   });
   Meeting.deleteMany({}, function(err, deletedMeetings){ console.log("Deleted all meetings from the database: " + JSON.stringify(deletedMeetings)); });
-  Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
-    Member.deleteMany({}, function(err, deletedMembers){ console.log("Deleted all members from the database: " + JSON.stringify(deletedMembers)); });
-    if (req.files) {
+  Member.deleteMany({accessLevel: {$lte: 0}}, function(err, deletedMembers) {
+    console.log("Deleted all members who are not officers from the database: " + JSON.stringify(deletedMembers));
+    Member.updateMany({}, {$inc: {"termCount": 1}, meetingsAttended: []}, function(err, updatedMembers){});
+    if (req.files.newMembers) {
       req.files.newMembers.mv(req.files.newMembers.name, function() {
-        Member.create(xlsx.parseMembers(req.files.newMembers.name), {useFindAndModify: true}, function(err, newMembers) {
-          fs.unlink(req.files.newMembers.name, function(err){});
-          previousOfficers.forEach(function(previousOfficer) {
-            newMembers.forEach(function(newMember) {
-              if (previousOfficer.id == newMember.id)
-                Member.updateOne({id: newMember.id}, {accessLevel: previousOfficer.accessLevel}, function(err, updatedMember){});
-            });
-          });
-        });
+        Member.create(xlsx.parseMembers(req.files.newMembers.name), {useFindAndModify: true}, function(err, newMembers){ fs.unlink(req.files.newMembers.name, function(err){}); });
       });
     }
   });

@@ -11,26 +11,26 @@ xlsx.parseMembers = function(file) {
       switch(header.trim()) {
         case "id":
         case "student_id":
-          if (!fileData[row][header].toString())
-            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid ID.");
+          if (!fileData[row][header].toString() || fileData[row][header].toString().length != 9)
+            console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
           else
             students[students.length-1].id = fileData[row][header].toString();
           break;
         case "name":
           if (!fileData[row][header].toString())
-            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid name.");
+            console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid name.");
           else
             students[students.length-1].name = fileData[row][header].toString();
           break;
         case "grade":
           if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 9 || parseInt(fileData[row][header]) > 12)
-            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid grade.");
+            console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid grade.");
           else
             students[students.length-1].grade = parseInt(fileData[row][header]);
           break;
         case "terms":
           if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 0 || parseInt(fileData[row][header]) > 7)
-            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid term count.");
+            console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid term count.");
           else
             students[students.length-1].termCount = parseInt(fileData[row][header]);
           break;

@@ -135,6 +135,7 @@ footer {
 }
 .table tbody tr {
 	border-bottom: 1px solid rgb(221,221,221);
+	transition: 0.2s;
 }
 .table tbody tr[data-href] {
 	cursor: pointer;
