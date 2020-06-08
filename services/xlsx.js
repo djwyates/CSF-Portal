@@ -1,5 +1,4 @@
-const fs = require("fs"),
-      xlsxJS = require("xlsx")
+const xlsxJS = require("xlsx");
 
 var xlsx = {};
 
@@ -12,16 +11,28 @@ xlsx.parseMembers = function(file) {
       switch(header.trim()) {
         case "id":
         case "student_id":
-          students[students.length-1].id = fileData[row][header].toString();
+          if (!fileData[row][header].toString())
+            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid ID.");
+          else
+            students[students.length-1].id = fileData[row][header].toString();
           break;
         case "name":
-          students[students.length-1].name = fileData[row][header].toString();
+          if (!fileData[row][header].toString())
+            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid name.");
+          else
+            students[students.length-1].name = fileData[row][header].toString();
           break;
         case "grade":
-          students[students.length-1].grade = parseInt(fileData[row][header]);
+          if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 9 || parseInt(fileData[row][header]) > 12)
+            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid grade.");
+          else
+            students[students.length-1].grade = parseInt(fileData[row][header]);
           break;
         case "terms":
-          students[students.length-1].termCount = parseInt(fileData[row][header]);
+          if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 0 || parseInt(fileData[row][header]) > 7)
+            console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet has an invalid term count.");
+          else
+            students[students.length-1].termCount = parseInt(fileData[row][header]);
           break;
         default:
           if (row == 0)
@@ -29,10 +40,8 @@ xlsx.parseMembers = function(file) {
           break;
       }
     }
-    if (!students[students.length-1].id || !students[students.length-1].name || !students[students.length-1].grade || !students[students.length-1].termCount) {
-      console.error("ERROR: The member in row " + row+1 + " of the uploaded Excel sheet is missing component(s) of members or has the component(s) in an incorrect format.");
-      delete students[students.length-1];
-    }
+    if (!students[students.length-1].id || !students[students.length-1].name || !students[students.length-1].grade || !students[students.length-1].termCount)
+      students.splice(-1, 1);
   }
   return students;
 }

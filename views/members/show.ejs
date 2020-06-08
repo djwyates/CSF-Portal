@@ -1,6 +1,5 @@
 <%- include("../partials/header") %>
 
-<% console.log(query.from); %>
 <a <% if(!query.from) { %> href="/members" <% } else { %> href="<%- query.from %>" <% } %>>Back</a>
 <p><%- member.name %></p>
 <p>Student ID: <%- member.id %></p>

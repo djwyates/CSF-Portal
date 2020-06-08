@@ -3,6 +3,7 @@ const express = require("express"),
       bodyParser = require("body-parser"),
       flash = require("connect-flash"),
       expressSanitizer = require("express-sanitizer"),
+      expressFileUpload = require("express-fileupload"),
       methodOverride = require("method-override"),
       mongoose = require("mongoose"),
       passport = require("passport"),
@@ -20,6 +21,7 @@ app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(flash());
 app.use(expressSanitizer());
+app.use(expressFileUpload());
 app.use(methodOverride("_method"));
 mongoose.connect("mongodb://localhost:27017/csf", {useNewUrlParser: true, useUnifiedTopology: true});
 app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitialized: false, cookie: {maxAge: 7*24*60*60*1000}}));

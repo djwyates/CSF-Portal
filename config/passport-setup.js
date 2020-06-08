@@ -10,7 +10,7 @@ passport.serializeUser(function(user, done) {
 passport.deserializeUser(function(id, done) {
   for (var i=0;i<keys.accounts.admins.length;i++) {
     if (id == keys.accounts.admins[i])
-      return done(null, {_id: keys.accounts.admins[i], accessLevel: 3});
+      return done(null, {id: keys.accounts.admins[i], accessLevel: 3});
   }
   Member.findById(id, function(err, foundMember) {
     done(null, foundMember);

@@ -1,5 +1,6 @@
 const express = require("express"),
       router = express.Router(),
+      fs = require("fs"),
       Member = require("../models/member"),
       Meeting = require("../models/meeting"),
       middleware = require("../middleware/index"),
@@ -36,11 +37,28 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
     });
     return qualifyingMembers;
   });
-  //Meeting.deleteMany({}, function(err, deletedMeetings){ console.log("Deleted all meetings from the database: " + JSON.stringify(deletedMeetings)); });
-  //Member.deleteMany({accessLevel: {$lte: 0}}, function(err, deletedMembers){ console.log("Deleted all members from the database: " + JSON.stringify(deletedMembers)); });
-  if (req.body.membersFile)
-    Member.create(xlsx.parseMembers(req.body.membersFile), {useFindAndModify: true}, function(err, newMembers){});
+  Meeting.deleteMany({}, function(err, deletedMeetings){ console.log("Deleted all meetings from the database: " + JSON.stringify(deletedMeetings)); });
+  Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
+    Member.deleteMany({}, function(err, deletedMembers){ console.log("Deleted all members from the database: " + JSON.stringify(deletedMembers)); });
+    if (req.files) {
+      req.files.newMembers.mv(req.files.newMembers.name, function() {
+        Member.create(xlsx.parseMembers(req.files.newMembers.name), {useFindAndModify: true}, function(err, newMembers) {
+          fs.unlink(req.files.newMembers.name, function(err){});
+          previousOfficers.forEach(function(previousOfficer) {
+            newMembers.forEach(function(newMember) {
+              if (previousOfficer.id == newMember.id)
+                Member.updateOne({id: newMember.id}, {accessLevel: previousOfficer.accessLevel}, function(err, updatedMember){});
+            });
+          });
+        });
+      });
+    }
+  });
   res.redirect("/");
+});
+
+router.get("/restore-from-backup", middleware.hasAccessLevel(3), function(req, res) {
+  res.render("settings/restore-from-backup");
 });
 
 module.exports = router;

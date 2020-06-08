@@ -3,9 +3,20 @@ const fs = require("fs"),
 
 function writeFileSync(path, data) {
   var parsedPath = parsePath(path);
-  if (!fs.existsSync(parsedPath.dir))
-    fs.mkdirSync(parsedPath.dir, {recursive: true}, function(err) { if (err) console.error(err); });
-  fs.writeFileSync(parsedPath.path, data, function(err) { if (err) console.error(err); });
+  if (!fs.existsSync(parsedPath.path)) {
+    if (!fs.existsSync(parsedPath.dir))
+      fs.mkdirSync(parsedPath.dir, {recursive: true}, function(err) { if (err) console.error(err); });
+    fs.writeFileSync(parsedPath.path, data, function(err) { if (err) console.error(err); });
+  } else {
+    var i = 1;
+    while (true) {
+      if (!fs.existsSync(parsedPath.dir + "/" + parsedPath.name + " (" + i + ")" + parsedPath.ext)) {
+        fs.writeFileSync(parsedPath.dir + "/" + parsedPath.name + " (" + i + ")" + parsedPath.ext, data, function(err) { if (err) console.error(err); });
+        break;
+      }
+      i++;
+    }
+  }
 }
 
 var backup = {};
