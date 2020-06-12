@@ -1,5 +1,5 @@
 const mongoose = require("mongoose"),
-      shortid = require("shortid")
+      shortid = require("shortid");
 
 var tutorSchema = new mongoose.Schema({
   _id: {type: String, default: shortid.generate},

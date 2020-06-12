@@ -5,7 +5,7 @@ const express = require("express"),
       Meeting = require("../models/meeting"),
       middleware = require("../middleware/index"),
       backup = require("../services/backup.js"),
-      xlsx = require("../services/xlsx.js")
+      xlsx = require("../services/xlsx.js");
 
 router.get("/", middleware.hasAccessLevel(3), function(req, res) {
   res.render("settings/index");
@@ -41,13 +41,16 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
   Member.deleteMany({accessLevel: {$lte: 0}}, function(err, deletedMembers) {
     console.log("Deleted all members who are not officers from the database: " + JSON.stringify(deletedMembers));
     Member.updateMany({}, {$inc: {"termCount": 1}, meetingsAttended: []}, function(err, updatedMembers){});
-    if (req.files.newMembers) {
+    if (req.files) {
       req.files.newMembers.mv(req.files.newMembers.name, function() {
         Member.create(xlsx.parseMembers(req.files.newMembers.name), {useFindAndModify: true}, function(err, newMembers){ fs.unlink(req.files.newMembers.name, function(err){}); });
       });
     }
   });
-  res.redirect("/");
+  Member.find({}, function(err, foundMembers) {
+    req.flash("success", "Successfully loaded in " + foundMembers.length + " members into the database.");
+    res.redirect("/");
+  });
 });
 
 router.get("/restore-from-backup", middleware.hasAccessLevel(3), function(req, res) {

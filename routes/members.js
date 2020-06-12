@@ -3,7 +3,7 @@ const express = require("express"),
       Member = require("../models/member"),
       Meeting = require("../models/meeting"),
       middleware = require("../middleware/index"),
-      backup = require("../services/backup.js")
+      backup = require("../services/backup.js");
 
 router.get("/attendance", function(req, res) {
   if (!req.query.id)
@@ -24,6 +24,10 @@ router.get("/", middleware.hasAccessLevel(1), function(req, res) {
     if (err) {
       console.error(err);
     } else {
+      members.sort(function(a, b) {
+        var aLastName = a.name.split(" ")[a.name.split(" ").length-1], bLastName = b.name.split(" ")[b.name.split(" ").length-1];
+        return (aLastName < bLastName) ? -1 : (aLastName > bLastName) ? 1 : 0;
+      });
       res.render("members/index", {members: members});
     }
   });
@@ -43,6 +47,7 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
   };
   Member.create([newMember], {useFindAndModify: true}, function(err, newMember) {
     if (err) {
+      console.error(err);
       if (err.code == 11000)
         req.flash("error", "More than one member cannot have the same ID.");
       res.redirect("members/new");
@@ -75,21 +80,17 @@ router.get("/:id/edit", middleware.hasAccessLevel(3), function(req, res) {
 router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
   req.body.member.id = req.sanitize(req.body.member.id);
   req.body.member.name = req.sanitize(req.body.member.name);
-  req.body.member.accessLevel = parseInt(req.body.member.accessLevel);
   Member.findByIdAndUpdate(req.params.id, req.body.member, function(err, foundMember) {
     if (err) {
+      console.error(err);
       if (err.code == 11000)
         req.flash("error", "More than one member cannot have the same ID.");
       res.redirect("/members/" + req.params.id + "/edit");
     } else {
       if (req.body.member.id != foundMember.id) {
-        Meeting.find({}, function(err, meetings) {
-          meetings.forEach(function(meeting) {
-            if (meeting.membersAttended.includes(foundMember.id)) {
-              Meeting.findByIdAndUpdate(meeting._id, {$pull: {"membersAttended": foundMember.id}}, function(err, foundMeeting){});
-              Meeting.findByIdAndUpdate(meeting._id, {$push: {"membersAttended": req.body.member.id}}, function(err, foundMeeting){});
-            }
-          });
+        foundMember.meetingsAttended.forEach(function(meetingDate) {
+          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}, {useFindAndModify: true}, function(err, foundMeeting){});
+          Meeting.findOneAndUpdate({date: meetingDate}, {$push: {"membersAttended": req.body.member.id}}, {useFindAndModify: true}, function(err, foundMeeting){})
         });
       }
       res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
@@ -100,14 +101,12 @@ router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
 router.delete("/:id", middleware.hasAccessLevel(3), function(req, res) {
   Member.findByIdAndDelete(req.params.id, function(err, deletedMember) {
     if (err) {
+      console.error(err);
       res.redirect("/members");
     } else {
       backup.object("./backups/deleted/members/" + deletedMember.id + ".txt", deletedMember);
-      Meeting.find({}, function(err, meetings) {
-        meetings.forEach(function(meeting) {
-          if (meeting.membersAttended.includes(deletedMember.id))
-            Meeting.findByIdAndUpdate(meeting._id, {$pull: {"membersAttended": deletedMember.id}}, function(err, foundMeeting){});
-        });
+      deletedMember.meetingsAttended.forEach(function(meetingDate) {
+        Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": deletedMember.id}}, {useFindAndModify: true}, function(err, foundMeeting){});
       });
       res.redirect(req.query.from ? req.query.from : "/members");
     }

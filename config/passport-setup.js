@@ -1,7 +1,7 @@
 const passport = require("passport"),
       GoogleStrategy = require("passport-google-oauth20"),
       keys = require("./keys"),
-      Member = require("../models/member")
+      Member = require("../models/member");
 
 passport.serializeUser(function(user, done) {
   done(null, user._id);

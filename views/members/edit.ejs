@@ -1,6 +1,5 @@
 <%- include("../partials/header") %>
 
-<p><b>Student ID</b> <%- member.id %></p>
 <form action="/members/<%- member._id %>?_method=put<% if(query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <label for="name">Name</label>
   <input type="text" name="member[name]" value="<%- member.name %>" required/>

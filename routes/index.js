@@ -1,6 +1,6 @@
 const express = require("express"),
       router = express.Router(),
-      passport = require("passport")
+      passport = require("passport");
 
 router.get("/", function(req, res) {
   res.render("landing");

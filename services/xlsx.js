@@ -9,9 +9,8 @@ xlsx.parseMembers = function(file) {
     students.push({});
     for (var header in fileData[row]) {
       switch(header.trim()) {
-        case "id":
         case "student_id":
-          if (!fileData[row][header].toString() || fileData[row][header].toString().length != 9)
+          if (!fileData[row][header].toString() || isNaN(fileData[row][header]) || fileData[row][header].toString().length != 9)
             console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
           else
             students[students.length-1].id = fileData[row][header].toString();
@@ -23,13 +22,13 @@ xlsx.parseMembers = function(file) {
             students[students.length-1].name = fileData[row][header].toString();
           break;
         case "grade":
-          if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 9 || parseInt(fileData[row][header]) > 12)
+          if (isNaN(fileData[row][header]) || parseInt(fileData[row][header]) < 9 || parseInt(fileData[row][header]) > 12)
             console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid grade.");
           else
             students[students.length-1].grade = parseInt(fileData[row][header]);
           break;
         case "terms":
-          if (!parseInt(fileData[row][header]) || parseInt(fileData[row][header]) < 0 || parseInt(fileData[row][header]) > 7)
+          if (isNaN(fileData[row][header]) || parseInt(fileData[row][header]) < 0 || parseInt(fileData[row][header]) > 7)
             console.error("ERROR: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid term count.");
           else
             students[students.length-1].termCount = parseInt(fileData[row][header]);
@@ -40,7 +39,7 @@ xlsx.parseMembers = function(file) {
           break;
       }
     }
-    if (!students[students.length-1].id || !students[students.length-1].name || !students[students.length-1].grade || !students[students.length-1].termCount)
+    if (!students[students.length-1].id || !students[students.length-1].name || isNaN(students[students.length-1].grade) || isNaN(students[students.length-1].termCount))
       students.splice(-1, 1);
   }
   return students;

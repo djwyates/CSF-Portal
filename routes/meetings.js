@@ -3,14 +3,14 @@ const express = require("express"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
       middleware = require("../middleware/index"),
-      backup = require("../services/backup.js")
+      backup = require("../services/backup.js");
 
 router.get("/", function(req, res) {
   Meeting.find({}, function(err, meetings) {
     if (err) {
       console.error(err);
     } else {
-      meetings.sort(function(a, b){ return new Date(a.date) - new Date(b.date); });
+      meetings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
       res.render("meetings/index", {meetings: meetings});
     }
   });
@@ -23,6 +23,7 @@ router.get("/new", middleware.hasAccessLevel(1), function(req, res) {
 router.post("/", middleware.hasAccessLevel(1), function(req, res) {
     Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}], {useFindAndModify: true}, function(err, newMeeting) {
       if (err) {
+        console.error(err);
         if (err.code == 11000)
           req.flash("error", "More than one meeting cannot have the same date.");
         res.redirect("meetings/new");
@@ -68,14 +69,12 @@ router.put("/:id", middleware.hasAccessLevel(1), function(req, res) {
 router.delete("/:id", middleware.hasAccessLevel(1), function(req, res) {
   Meeting.findByIdAndDelete(req.params.id, function(err, deletedMeeting) {
     if (err) {
+      console.error(err);
       res.redirect("/meetings");
     } else {
       backup.object("./backups/deleted/meetings/" + deletedMeeting.date + ".txt", deletedMeeting);
-      Member.find({}, function(err, members) {
-        members.forEach(function(member) {
-          if (member.meetingsAttended.includes(deletedMeeting.date))
-            Member.findByIdAndUpdate(member._id, {$pull: {"meetingsAttended": deletedMeeting.date}}, function(err, foundMember){});
-        });
+      deletedMeeting.membersAttended.forEach(function(memberId) {
+        Member.findOneAndUpdate({id: memberId}, {$pull: {"meetingsAttended": deletedMeeting.date}}, {useFindAndModify: true}, function(err, foundMember) { if (err) console.error(err); });
       });
       res.redirect("/meetings");
     }
@@ -94,18 +93,25 @@ router.get("/:id/checkin", middleware.hasAccessLevel(1), function(req, res) {
 
 router.put("/:id/checkin", middleware.hasAccessLevel(1), function(req, res) {
   req.body.id = req.sanitize(req.body.id.trim());
-  Member.findOne({id: req.body.id}, function(err, foundMember) {
-    Meeting.findById(req.params.id, function(err, foundMeeting) {
-      if (err || foundMember == null) {
-        req.flash("error", "That member does not exist or another error occurred. ID entered: " + req.body.id);
+  Meeting.findById(req.params.id, function(err1, foundMeeting) {
+    Member.findOne({id: req.body.id}, function(err2, foundMember) {
+      if (err1 || err2) {
+        if (err1) console.error(err1);
+        if (err2) console.error(err2);
+        req.flash("error", "An unexpected error occurred.");
+        res.redirect("/meetings/" + req.params.id + "/checkin");
+      } else if (!foundMeeting) {
+        req.flash("error", "That meeting does not exist.");
+        res.redirect("/meetings");
+      } else if (!foundMember) {
+        req.flash("error", "That member does not exist. ID entered: " + req.body.id);
         res.redirect("/meetings/" + req.params.id + "/checkin");
       } else if (foundMember.meetingsAttended.includes(foundMeeting.date)) {
         req.flash("info", foundMember.id + " already attended the meeting.");
         res.redirect("/meetings/" + req.params.id + "/checkin");
       } else {
-        Meeting.findByIdAndUpdate(req.params.id, {$push: {"membersAttended": foundMember.id}}, function(err, foundMeeting) {
-          Member.findByIdAndUpdate(foundMember._id, {$push: {"meetingsAttended": foundMeeting.date}}, function(err, foundMember){});
-        });
+        Meeting.findByIdAndUpdate(req.params.id, {$push: {"membersAttended": foundMember.id}}, function(err, foundMeeting) { if (err) console.error(err); });
+        Member.findOneAndUpdate({id: foundMember.id}, {$push: {"meetingsAttended": foundMeeting.date}}, {useFindAndModify: true}, function(err, foundMember) { if (err) console.error(err); });
         req.flash("success", foundMember.id + " attended the meeting.");
         res.redirect("/meetings/" + req.params.id + "/checkin");
       }

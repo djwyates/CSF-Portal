@@ -8,13 +8,13 @@ const express = require("express"),
       mongoose = require("mongoose"),
       passport = require("passport"),
       expressSession = require("express-session"),
-      keys = require("./config/keys")
+      keys = require("./config/keys");
 
 // requiring routes
 const indexRoutes = require("./routes/index"),
       settingsRoutes = require("./routes/settings"),
       meetingsRoutes = require("./routes/meetings"),
-      membersRoutes = require("./routes/members")
+      membersRoutes = require("./routes/members");
 
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
