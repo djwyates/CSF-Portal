@@ -1,0 +1,45 @@
+.footer {
+	display: flex;
+	position: relative;
+	background: rgba(0,0,0,0.01);
+	color: rgb(0,0,0);
+}
+
+.footer__section {
+	flex: 1;
+	text-align: center;
+	padding: 10px;
+}
+
+.footer__link {
+	text-decoration: none;
+	color: rgb(0,128,154);
+}
+
+.footer__link:hover {
+	text-decoration: underline;
+}
+
+.footer__h2 {
+	color: white;
+}
+
+.footer__p {
+	display: block;
+	margin-top: 20px;
+	color: rgb(0,0,0);
+}
+
+.footer__hr {
+	height: 1px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	border: none;
+	background: rgba(0,0,0,0.2);
+}
+
+.footer__icon {
+	position: absolute;
+	margin-top: -4px;
+	margin-left: 57px;
+}

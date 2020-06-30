@@ -1,0 +1,71 @@
+.table {
+	border-collapse: collapse;
+	margin: 10px 0;
+	font-size: 0.9em;
+	width: 100%;
+	border-radius: 5px 5px 0 0;
+	overflow: hidden;
+	box-shadow: 0 0 10px rgba(0,0,0,0.15);
+	table-layout: fixed;
+}
+
+.table__head-row {
+	background-color: rgb(40,40,40);
+	color: rgb(255,255,255);
+	text-align: left;
+	font-weight: bold;
+}
+
+.table__body-row {
+	border-bottom: 1px solid rgb(221,221,221);
+	transition: 0.2s;
+}
+
+.table__body-row:nth-of-type(even) {
+	background-color: rgb(243,243,243);
+}
+
+.table__body-row[data-href] {
+	cursor: pointer;
+}
+
+.table__body-row:hover {
+	background-color: rgb(243,243,243);
+}
+
+.table__cell {
+	padding: 12px 15px;
+}
+
+.table__body-row:last-of-type {
+  border-bottom: 2px solid rgb(40,40,40);
+}
+
+.above-table {
+	display: flex;
+}
+
+.above-table__icon {
+	position: relative;
+  top: 6px;
+	margin-right: 5px;
+}
+
+.above-table__button {
+	font-weight: 300;
+  font-size: 1.1em;
+	text-decoration: none;
+  padding: 8px 11px;
+	margin-left: 3px;
+  color: rgb(255,255,255);
+  background: rgb(0,136,154);
+	border: none;
+  border-radius: 5px;
+	white-space: nowrap;
+	outline: none;
+  transition: all 0.3s ease 0s;
+}
+
+.above-table__button:hover {
+	background: rgb(0,128,145);
+}

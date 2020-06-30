@@ -1,0 +1,39 @@
+<%- include("../partials/header") %>
+
+<div class="above-table">
+  <div class="search search__input-container" id="filterTable">
+    <input class="search__input" type="text" spellcheck="false" placeholder="Filter tutees"/>
+    <span class="material-icons search__icon">search</span>
+  </div>
+  <div class="above-table__section">
+    <a class="above-table__button" href="/tutees/new?from=%2Ftutees"><span class="material-icons above-table__icon">post_add</span>New Request</a>
+  </div>
+</div>
+<table class="table">
+  <thead>
+    <tr class="table__head-row">
+      <th class="table__cell">Name</th>
+      <th class="table__cell">Student ID</th>
+      <th class="table__cell table__cell--grade">Grade</th>
+      <th class="table__cell table__cell--email">Email</th>
+      <th class="table__cell table__cell--phoneNum">Phone Number</th>
+      <th class="table__cell table__cell--paymentForm">Payment</th>
+      <th class="table__cell">Date Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% tutees.forEach(function(tutee) { %>
+      <tr class="table__body-row" data-href="http://localhost:3000/tutees/<%- tutee._id %>?from=%2Ftutees">
+        <td class="table__cell"><%- tutee.name %></td>
+        <td class="table__cell"><%- tutee.id %></td>
+        <td class="table__cell table__cell--grade"><%- tutee.grade %></td>
+        <td class="table__cell table__cell--email"><%- tutee.email %></td>
+        <td class="table__cell table__cell--phoneNum"><%- tutee.phoneNum %></td>
+        <td class="table__cell table__cell--paymentForm"><%- tutee.paymentForm %></td>
+        <td class="table__cell"><%- ejs.reformatDate(tutee.createdOn) %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<%- include("../partials/footer") %>

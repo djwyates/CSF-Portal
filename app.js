@@ -13,8 +13,10 @@ const express = require("express"),
 // requiring routes
 const indexRoutes = require("./routes/index"),
       settingsRoutes = require("./routes/settings"),
-      meetingsRoutes = require("./routes/meetings"),
-      membersRoutes = require("./routes/members");
+      meetingRoutes = require("./routes/meetings"),
+      memberRoutes = require("./routes/members"),
+      tutorRoutes = require("./routes/tutors"),
+      tuteeRoutes = require("./routes/tutees");
 
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
@@ -23,8 +25,8 @@ app.use(flash());
 app.use(expressSanitizer());
 app.use(expressFileUpload());
 app.use(methodOverride("_method"));
-mongoose.connect("mongodb://localhost:27017/csf", {useNewUrlParser: true, useUnifiedTopology: true});
-app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitialized: false, cookie: {maxAge: 7*24*60*60*1000}}));
+mongoose.connect("mongodb://localhost:27017/csf", {useCreateIndex: true, useFindAndModify: false, useNewUrlParser: true, useUnifiedTopology: true});
+app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitialized: false, cookie: {maxAge: 3*24*60*60*1000}}));
 app.use(passport.initialize());
 app.use(passport.session());
 require("./config/passport-setup");
@@ -33,11 +35,14 @@ app.use(function(req, res, next) {
   res.locals.query = req.query;
   res.locals.url = req.url;
   res.locals.flash = {success: req.flash("success"), info: req.flash("info"), error: req.flash("error")};
+  res.locals.ejs = require("./services/ejs");
   next();
 });
 
-app.use("/members", membersRoutes);
-app.use("/meetings", meetingsRoutes);
+app.use("/tutees", tuteeRoutes);
+app.use("/tutors", tutorRoutes);
+app.use("/members", memberRoutes);
+app.use("/meetings", meetingRoutes);
 app.use("/settings", settingsRoutes);
 app.use("/", indexRoutes);
 

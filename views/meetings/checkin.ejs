@@ -1,10 +1,12 @@
 <%- include("../partials/header") %>
 
-<a href="/meetings/<%- meeting._id %>">Back</a>
-<p>Record Attendance for Meeting on <%- reformatDate(meeting.date) %></p>
-<form class="" action="/meetings/<%- meeting._id %>/checkin?_method=put" method="post">
-  <input type="text" name="id" required/>
-  <input type="submit" value="Check-in"/>
+<a class="link" href="/meetings/<%- meeting._id %>">Back</a>
+<form class="form" action="/meetings/<%- meeting._id %>/checkin?_method=put" method="post">
+  <div class="form__title">Record Attendance for Meeting on <%- ejs.reformatDate(meeting.date) %></div>
+  <div class="form__item--row">
+    <input class="form__input" type="text" name="id" placeholder="9-digit student ID" required/>
+    <button class="form__button form__button--tall" type="submit">Check-In</button>
+  </div>
 </form>
 
 <%- include("../partials/footer") %>

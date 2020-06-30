@@ -1,17 +1,51 @@
 <%- include("../partials/header") %>
 
-<a <% if(!query.from) { %> href="/members" <% } else { %> href="<%- query.from %>" <% } %>>Back</a>
-<p><%- member.name %></p>
-<p>Student ID: <%- member.id %></p>
-<p>Grade: <%- member.grade %></p>
-<p>Terms in CSF: <%- member.termCount %></p>
-<p>Attendance: <% member.meetingsAttended.forEach(function(meeting) { %><%- reformatDate(meeting) %> | <% }); %></p>
-<% if(currentUser.accessLevel >= 3) { %>
-  <p>Position: <% if (member.accessLevel == 0) { %> Member <% } else if (member.accessLevel == 1) { %> Officer <% } else if (member.accessLevel == 2) { %> Tutoring Coordinator <% } else if (member.accessLevel == 3) { %> Developer <% } %></p>
-  <a href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
-  <form action="/members/<%- member._id %>?_method=delete<% if(query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to remove this member?')">
-    <input type="submit" value="Remove"/>
-  </form>
-<% } %>
+<div class="form">
+  <a class="form__link" href="<% if (query.from) { %><%- query.from %><% } else { %>/members<% } %>">Back</a>
+  <div class="form__title">View Member</div>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" value="<%- member.id %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" value="<%- member.name %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input" value="<%- member.grade %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="termCount">Terms in CSF</label>
+    <input class="form__input" value="<%- member.termCount %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="meetingsAttended">Attendance</label>
+    <% meetings.forEach(function(meeting) {
+      if (member.meetingsAttended.includes(meeting.date)) { %>
+        <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
+      <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
+        <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
+      <% } else { %>
+        <input class="form__input red" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
+      <% }
+    }); %>
+  </div>
+  <% if (currentUser.accessLevel >= 3) { %>
+    <div class="form__item">
+      <label class="form__label" for="accessLevel">Position</label>
+      <input class="form__input" value="<% if (member.accessLevel == 0) { %>Member
+      <% } else if (member.accessLevel == 1) { %>Officer
+      <% } else if (member.accessLevel == 2) { %>Tutoring Coordinator
+      <% } else if (member.accessLevel == 3) { %>Developer<% } %>" readonly/>
+    </div>
+    <div class="form__item form__item--row">
+      <a class="form__button" href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
+      <form action="/members/<%- member._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this member?')">
+        <button class="form__button form__button--red" type="submit">Delete</button>
+      </form>
+    </div>
+  <% } %>
+</div>
 
 <%- include("../partials/footer") %>

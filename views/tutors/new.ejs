@@ -1,0 +1,66 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutors" method="post">
+  <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
+  <div class="form__title">Sign Up as a Tutor</div>
+  <p class="form__description">
+    In order to be paired with tutees, you must be a member of CSF, attend one of the training sessions, turn in the tutoring permission form, and click the verification link sent to your phone number.
+  </p>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" id="id" type="text" name="tutor[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <label class="form__label--radio" for="male">
+      <input class="form__input--radio" id="male" type="radio" name="tutor[gender]" value="Male" required/>
+      <div class="form__input--radiocircle"></div>
+      Male
+    </label>
+    <label class="form__label--radio" for="female">
+      <input class="form__input--radio" id="female" type="radio" name="tutor[gender]" value="Female" required/>
+      <div class="form__input--radiocircle"></div>
+      Female
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" id="email" type="email" name="tutor[email]" placeholder="Only used to contact you as a last resort" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" id="phoneNum" type="text" name="tutor[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12" placeholder="In xxx-xxx-xxxx format" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="maxTutees">How many students can you realisticly tutor at the same time?</label>
+    <input class="form__input form__input--small" id="maxTutees" type="number" name="tutor[maxTutees]" min="1" max="3" placeholder="Up to 3" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <label class="form__label--radio" for="cash">
+      <input class="form__input--radio" id="cash" type="radio" name="tutor[paymentForm]" value="Cash" required/>
+      <div class="form__input--radiocircle"></div>
+      Cash only
+    </label>
+    <label class="form__label--radio" for="both">
+      <input class="form__input--radio" id="both" type="radio" name="tutor[paymentForm]" value="Both" required/>
+      <div class="form__input--radiocircle"></div>
+      Either community service or cash
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses">Which courses will you tutor for?</label>
+    <% for (courseID in courses) { %>
+      <label class="form__label--checkbox" for="<%- courseID %>">
+        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutor[courses]" value="<%- courseID %>"/>
+        <div class="form__input--checkboxsquare"></div>
+        <%- courses[courseID] %>
+      </label>
+    <% } %>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Sign Up</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

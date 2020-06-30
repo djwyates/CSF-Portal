@@ -1,17 +1,31 @@
 <%- include("../partials/header") %>
 
-<p>Check Attendance</p>
-<form class="" action="/members/attendance" method="get">
-  <input type="text" name="id" value="" placeholder="School ID" required/>
-  <input type="submit" value="Check"/>
+<form class="form" action="/members/attendance" method="get">
+  <div class="form__title">Check Attendance</div>
+  <div class="form__item--row">
+    <input class="form__input" type="text" name="id" value="" placeholder="School ID" required/>
+    <button class="form__button form__button--tall" type="submit">Check</button>
+  </div>
 </form>
-<br>
-<% if (member) { %>
-  <p>Student ID: <%- member.id %></p>
-  <p>Attendance: <%- member.meetingsAttended %></p>
-<% } else if (currentUser && currentUser.meetingsAttended) { %>
-  <p>Student ID: <%- currentUser.id %></p>
-  <p>Attendance: <% currentUser.meetingsAttended.forEach(function(meeting) { %><%- reformatDate(meeting) %><% }); %></p>
+<% if (member || currentUser && currentUser.meetingsAttended) { %>
+  <div class="form">
+    <div class="form__item">
+      <label class="form__label" for="id">Student ID</label>
+      <input class="form__input" value="<% if (member) { %><%- member.id %><% } else { %><%- currentUser.id %><% } %>" readonly/>
+    </div>
+    <div class="form__item">
+      <label class="form__label" for="meetingsAttended">Attendance</label>
+      <% meetings.forEach(function(meeting) {
+        if (member ? member.meetingsAttended.includes(meeting.date) : currentUser.meetingsAttended.includes(meeting.date)) { %>
+          <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
+        <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
+          <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
+        <% } else { %>
+          <input class="form__input red" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
+        <% }
+      }); %>
+    </div>
+  </div>
 <% } %>
 
 <%- include("../partials/footer") %>

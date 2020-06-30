@@ -1,9 +1,23 @@
-  <footer>
-    <div class="contact">
-      <p>For inquiries about the CSF attendance and tutoring applications, please contact <a href="mailto:mvhscsfclub@gmail.com">mvhscsfclub@gmail.com</a>.</p>
-      <p>For more information on the club, visit <a href="http://mvhscsf.weebly.com/">the website</a>.</p>
     </div>
-  </footer>
-  <script src="/javascript/main.js"></script>
-  </body>
-</html>
+    <footer class="footer">
+      <div class="footer__section">
+        <p class="footer__p">For inquiries about the CSF attendance and tutoring applications, please contact <a class="footer__link" href="mailto:mvhscsfclub@gmail.com">mvhscsfclub@gmail.com</a>.</p>
+        <p class="footer__p">For more information about the club, visit <a class="footer__link" href="http://mvhscsf.weebly.com/">the website</a>.</p>
+      </div>
+      <div class="footer__section">
+        <span class="material-icons footer__icon">event_note</span>
+        Feb. 27 <p>Next meeting in 7 days</p>
+        <hr class="footer__hr">
+        <div class="search" id="searchEverything">
+          <div class="search__input-container">
+            <input class="search__input" type="text" spellcheck="false"
+            placeholder="Search <% if (!currentUser || currentUser.accessLevel <= 0) { %>meetings & attendance<% } else if (currentUser.accessLevel >= 2) { %>everything<% } else { %>meetings & members<% } %>"/>
+            <span class="material-icons search__icon">search</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <script src="/javascript/main.js"></script>
+    <script src="/javascript/search.js" type="module"></script>
+    </body>
+  </html>

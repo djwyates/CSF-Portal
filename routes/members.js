@@ -1,22 +1,38 @@
 const express = require("express"),
       router = express.Router(),
+      middleware = require("../middleware/index"),
+      backup = require("../services/backup"),
       Member = require("../models/member"),
       Meeting = require("../models/meeting"),
-      middleware = require("../middleware/index"),
-      backup = require("../services/backup.js");
+      Tutor = require("../models/tutor");
 
 router.get("/attendance", function(req, res) {
-  if (!req.query.id)
-    return res.render("members/attendance", {member: null});
-  req.query.id = req.sanitize(req.query.id.trim());
-  Member.findOne({id: req.query.id}, function(err, foundMember) {
-    if (err || !foundMember) {
-      req.flash("error", "That member does not exist or another error occurred. ID entered: " + req.query.id);
-      res.redirect("back");
+  Meeting.find({}, function(err, meetings) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/members/attendance");
     } else {
-      res.render("members/attendance", {member: foundMember});
+      meetings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+      if (!req.query.id)
+        return res.render("members/attendance", {member: null, meetings: meetings});
+      req.query.id = req.sanitize(req.query.id.trim());
+      Member.findOne({id: req.query.id}, function(err, foundMember) {
+        if (err) {
+          console.error(err);
+          req.flash("error", "An unexpected error occurred.");
+          res.redirect("/members/attendance");
+        } else if (!foundMember) {
+          req.flash("error", "That member does not exist. ID entered: " + req.query.id);
+          res.redirect("/members/attendance");
+        } else {
+          res.render("members/attendance", {member: foundMember, meetings: meetings});
+        }
+      });
     }
   });
+
+
 });
 
 router.get("/", middleware.hasAccessLevel(1), function(req, res) {
@@ -28,7 +44,13 @@ router.get("/", middleware.hasAccessLevel(1), function(req, res) {
         var aLastName = a.name.split(" ")[a.name.split(" ").length-1], bLastName = b.name.split(" ")[b.name.split(" ").length-1];
         return (aLastName < bLastName) ? -1 : (aLastName > bLastName) ? 1 : 0;
       });
-      res.render("members/index", {members: members});
+      Meeting.countDocuments({}, function(err, meetingsCount) {
+        if (err) {
+          console.error(err);
+        } else {
+          res.render("members/index", {members: members, meetingsCount: meetingsCount});
+        }
+      });
     }
   });
 });
@@ -38,14 +60,9 @@ router.get("/new", middleware.hasAccessLevel(3), function(req, res) {
 });
 
 router.post("/", middleware.hasAccessLevel(3), function(req, res) {
-  var newMember = {
-    id: req.sanitize(req.body.member.id),
-    name: req.sanitize(req.body.member.name),
-    grade: req.body.member.grade,
-    termCount: req.body.member.termCount,
-    accessLevel: parseInt(req.body.member.accessLevel)
-  };
-  Member.create([newMember], {useFindAndModify: true}, function(err, newMember) {
+  req.body.member.id = req.sanitize(req.body.member.id);
+  req.body.member.name = req.sanitize(req.body.member.name);
+  Member.create([req.body.member], function(err, newMember) {
     if (err) {
       console.error(err);
       if (err.code == 11000)
@@ -59,17 +76,20 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
 
 router.get("/:id", middleware.hasAccessLevel(1), function(req, res) {
   Member.findById(req.params.id, function(err, foundMember) {
-    if (err || foundMember == null) {
+    if (err || !foundMember) {
       res.redirect("/members");
     } else {
-      res.render("members/show", {member: foundMember});
+      Meeting.find({}, function(err, meetings) {
+        meetings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        res.render("members/show", {member: foundMember, meetings: meetings});
+      });
     }
   });
 });
 
 router.get("/:id/edit", middleware.hasAccessLevel(3), function(req, res) {
   Member.findById(req.params.id, function(err, foundMember) {
-    if (err || foundMember == null) {
+    if (err || !foundMember) {
       res.redirect("/members");
     } else {
       res.render("members/edit", {member: foundMember});
@@ -89,10 +109,11 @@ router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
     } else {
       if (req.body.member.id != foundMember.id) {
         foundMember.meetingsAttended.forEach(function(meetingDate) {
-          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}, {useFindAndModify: true}, function(err, foundMeeting){});
-          Meeting.findOneAndUpdate({date: meetingDate}, {$push: {"membersAttended": req.body.member.id}}, {useFindAndModify: true}, function(err, foundMeeting){})
+          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}, function(err, foundMeeting){});
+          Meeting.findOneAndUpdate({date: meetingDate}, {$push: {"membersAttended": req.body.member.id}}, function(err, foundMeeting){})
         });
       }
+      Tutor.findOneAndUpdate({id: foundMember.id}, {id: req.body.member.id, name: req.body.member.name, grade: req.body.member.grade}, function(err, foundTutor){});
       res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
     }
   });
@@ -106,7 +127,7 @@ router.delete("/:id", middleware.hasAccessLevel(3), function(req, res) {
     } else {
       backup.object("./backups/deleted/members/" + deletedMember.id + ".txt", deletedMember);
       deletedMember.meetingsAttended.forEach(function(meetingDate) {
-        Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": deletedMember.id}}, {useFindAndModify: true}, function(err, foundMeeting){});
+        Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": deletedMember.id}}, function(err, foundMeeting){});
       });
       res.redirect(req.query.from ? req.query.from : "/members");
     }

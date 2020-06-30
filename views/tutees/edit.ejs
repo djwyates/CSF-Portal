@@ -1,0 +1,88 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutees/<%- tutee._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
+  <a class="form__link" href="/tutees/<%- tutee._id %><% if (query.from) { %>?from=<%- query.from %><% } %>">Back</a>
+  <div class="form__title">Edit <% if (currentUser.id == tutee.id) { %>Your <% } %>Tutoring Request</div>
+  <% if (currentUser.accessLevel <= 1) { %>
+    <p class="form__description">If you wish to delete your tutoring request, contact the tutoring coordinator.</p>
+  <% } %>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" id="id" type="text" name="tutee[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" value="<%- tutee.id %>" placeholder="9-digit student ID" readonly required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" id="name" type="text" name="tutee[name]" value="<%- tutee.name %>" placeholder="Full name" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <label class="form__label--radio" for="male">
+      <input class="form__input--radio" id="male" type="radio" name="tutee[gender]" <% if (tutee.gender == "Male") { %>checked<% } %> value="Male" required/>
+      <div class="form__input--radiocircle"></div>
+      Male
+    </label>
+    <label class="form__label--radio" for="female">
+      <input class="form__input--radio" id="female" type="radio" name="tutee[gender]" <% if (tutee.gender == "Female") { %>checked<% } %> value="Female" required/>
+      <div class="form__input--radiocircle"></div>
+      Female
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input form__input--small" id="grade" type="number" name="tutee[grade]" min="9" max="12" value="<%- tutee.grade %>" placeholder="Grade level (9 - 12)" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" id="email" type="email" name="tutee[email]" value="<%- tutee.email %>" placeholder="Only used to contact you as a last resort" required/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" id="phoneNum" type="text" name="tutee[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
+    value="<%- tutee.phoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
+    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentName">Parent's Name</label>
+    <input class="form__input" id="parentName" type="text" name="tutee[parentName]" value="<%- tutee.parentName %>" placeholder="Full name" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentEmail">Parent's Email</label>
+    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" value="<%- tutee.parentEmail %>" placeholder="Only used to contact you as a last resort" required/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
+    <input class="form__input" id="parentPhoneNum" type="text" name="tutee[parentPhoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
+    value="<%- tutee.parentPhoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
+    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <label class="form__label--radio" for="service">
+      <input class="form__input--radio" id="service" type="radio" name="tutee[paymentForm]" <% if (tutee.paymentForm == "Service") { %>checked<% } %> value="Service" required/>
+      <div class="form__input--radiocircle"></div>
+      Community service only
+    </label>
+    <label class="form__label--radio" for="both">
+      <input class="form__input--radio" id="both" type="radio" name="tutee[paymentForm]" <% if (tutee.paymentForm == "Both") { %>checked<% } %> value="Both" required/>
+      <div class="form__input--radiocircle"></div>
+      Either community service or cash
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses"><% if (currentUser.id == tutee.id) { %>Your courses<% } else { %>Courses<% } %></label>
+    <% for (courseID in courses) { %>
+      <label class="form__label--checkbox" for="<%- courseID %>">
+        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutee[courses]" <% if (tutee.courses.includes(courseID)) { %>checked<% } %> value="<%- courseID %>"/>
+        <div class="form__input--checkboxsquare"></div>
+        <%- courses[courseID] %>
+      </label>
+    <% } %>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Save</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

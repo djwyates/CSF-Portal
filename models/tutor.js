@@ -6,8 +6,7 @@ var tutorSchema = new mongoose.Schema({
   id: {type: String, minlength: 9, maxlength: 9, trim: true, unique: true, required: true},
   name: {type: String, trim: true, required: true},
   grade: {type: Number, min: 9, max: 12, required: true},
-  pfp: {type: String, required: true},
-  /* tutor-specific data */
+  /* tutor-specific info */
   gender: {type: String, enum: ["Male", "Female"], required: true},
   email: {type: String, required: true},
   phoneNum: {type: String, required: true},
@@ -16,7 +15,7 @@ var tutorSchema = new mongoose.Schema({
   paymentForm: {type: String, enum: ["Cash", "Both"], required: true},
   courses: {type: [String], required: true},
   maxTutees: {type: Number, min: 1, max: 3, required: true},
-  currentTutees: {type: [{tutee: String, course: String}], required: true, default: []}
+  currentTutees: {type: Map, of: String, required: true, default: new Map()} /* tuteeID => course */
 });
 
 module.exports = mongoose.model("Tutor", tutorSchema);

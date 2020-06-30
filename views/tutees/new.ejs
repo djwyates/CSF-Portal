@@ -1,0 +1,82 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutees" method="post">
+  <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
+  <div class="form__title">Request a Tutor</div>
+  <p class="form__description">
+    To view the status of your tutoring request after you submit it, login with the student or parent email associated with your request (you can only login with a Google or school email).
+  </p>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" id="id" type="text" name="tutee[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" value="148003818" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" id="name" type="text" name="tutee[name]" placeholder="Full name" value="David Yates" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <label class="form__label--radio" for="male">
+      <input class="form__input--radio" id="male" type="radio" name="tutee[gender]" value="Male" checked required/>
+      <div class="form__input--radiocircle"></div>
+      Male
+    </label>
+    <label class="form__label--radio" for="female">
+      <input class="form__input--radio" id="female" type="radio" name="tutee[gender]" value="Female" required/>
+      <div class="form__input--radiocircle"></div>
+      Female
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input form__input--small" id="grade" type="number" name="tutee[grade]" min="9" max="12" placeholder="Grade level (9 - 12)" value="12" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" id="email" type="email" name="tutee[email]" placeholder="Only used to contact you as a last resort" value="djfallbrookca@gmail.com" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" id="phoneNum" type="text" name="tutee[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12" placeholder="In xxx-xxx-xxxx format" value="760-750-0060" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentName">Parent's Name</label>
+    <input class="form__input" id="parentName" type="text" name="tutee[parentName]" placeholder="Full name" value="Jeff Yates" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentEmail">Parent's Email</label>
+    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" placeholder="Only used to contact you as a last resort" value="j.yates@mac.com" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
+    <input class="form__input" id="parentPhoneNum" type="text" name="tutee[parentPhoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12" placeholder="In xxx-xxx-xxxx format" value="760-734-1005" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <label class="form__label--radio" for="service">
+      <input class="form__input--radio" id="service" type="radio" name="tutee[paymentForm]" value="Service" checked required/>
+      <div class="form__input--radiocircle"></div>
+      Community service only
+    </label>
+    <label class="form__label--radio" for="both">
+      <input class="form__input--radio" id="both" type="radio" name="tutee[paymentForm]" value="Both" required/>
+      <div class="form__input--radiocircle"></div>
+      Either community service or cash
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses">Which courses do you need help with?</label>
+    <% for (courseID in courses) { %>
+      <label class="form__label--checkbox" for="<%- courseID %>">
+        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutee[courses]" value="<%- courseID %>"/>
+        <div class="form__input--checkboxsquare"></div>
+        <%- courses[courseID] %>
+      </label>
+    <% } %>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Submit Request</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

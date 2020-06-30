@@ -1,0 +1,87 @@
+<%- include("../partials/header") %>
+
+<div class="form">
+  <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
+  <div class="form__title">View <% if (currentUser.id == tutor.id) { %>Your <% } %>Tutor Profile</div>
+  <% if (currentUser.accessLevel <= 1) { %>
+    <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
+  <% } if (currentUser.id == tutor.id) { %>
+    <p class="form__description">
+      <% if (tutor.verified && tutor.verifiedPhone) { %>
+        <span class="material-icons form__icon green">done</span>
+        <span class="green">You are verified and will be paired with tutees if found a match.</span>
+      <% } else { %>
+        <span class="material-icons form__icon orange">warning</span>
+        <span class="orange">You will not be paired with tutees until you are verified. To be verified, you must
+          <% if (!tutor.verified && !tutor.verifiedPhone) { %>
+            attend one of the training sessions, turn in the tutoring permission form, and click the verification link sent to your phone.
+          <% } else if (!tutor.verified) { %>
+            attend one of the training sessions and turn in the tutoring permission form. If you have done this, allow some time for CSF to verify you.
+          <% } else if (!tutor.verifiedPhone) { %>
+            click the verification link sent to your phone. Contact the tutoring coordinator if you need another one.
+          <% } %>
+        </span>
+      <% } %>
+    </p>
+  <% } %>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" value="<%- tutor.id %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" value="<%- tutor.name %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input" value="<%- tutor.grade %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <input class="form__input" value="<%- tutor.gender %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" value="<%- tutor.email %>" readonly/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" value="<%- tutor.phoneNum %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="maxTutees">Maximum Tutees</label>
+    <input class="form__input" value="<%- tutor.maxTutees %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <input class="form__input" value="<%- tutor.paymentForm %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="currentTutees">Current Tutees</label>
+    <input class="form__input" value="<%- JSON.stringify(tutor.currentTutees) %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses">Courses to Tutor</label>
+    <input class="form__input" value="<%- tutor.courses[0] %><% for (var i=1; i<tutor.courses.length; i++) { %><%- ", " + tutor.courses[i] %><% } %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="verified">Verification Status</label>
+    <input class="form__input" value="<% if (tutor.verified && tutor.verifiedPhone) { %>Verified<% } else { %>Unverified<% } %>" readonly/>
+    <pre class="form__input-footnote">CSF Verified: <% if (tutor.verified) { %>True<% } else { %>False<% } %>,   Phone Verified: <% if (tutor.verifiedPhone) { %>True<% } else { %>False<% } %></pre>
+  </div>
+  <div class="form__item form__item--row">
+    <a class="form__button" href="/tutors/<%- tutor._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
+    <% if (currentUser.accessLevel >= 2 && tutor.verified) { %>
+      <form action="/tutors/<%- tutor._id %>/unverify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to unverify this tutor?')">
+        <input class="form__button" type="submit" value="Unverify"/>
+      </form>
+    <% } else if (currentUser.accessLevel >= 2 && !tutor.verified) { %>
+      <form action="/tutors/<%- tutor._id %>/verify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to verify this tutor?')">
+        <input class="form__button" type="submit" value="Verify"/>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<%- include("../partials/footer") %>

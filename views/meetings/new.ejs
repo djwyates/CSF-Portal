@@ -1,13 +1,19 @@
 <%- include("../partials/header") %>
 
-<a href="/meetings">Back</a>
-<p>New Meeting</p>
-<form action="/meetings" method="post">
-  <label for="date">Date</label>
-  <input type="date" name="meeting[date]" value="<%- new Date().toJSON().slice(0,10).replace(/-/g,'-') %>" required/>
-  <label for="description">Description</label>
-  <input type="text" name="meeting[description]"/>
-  <input type="submit" value="Create"/>
+<form class="form" action="/meetings" method="post">
+  <a class="form__link" href="/meetings">Back</a>
+  <div class="form__title">New Meeting</div>
+  <div class="form__item">
+    <label class="form__label" for="date">Date</label>
+    <input class="form__input form__input--small" id="date" type="date" name="meeting[date]" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="description">Description</label>
+    <textarea class="form__input form__input--textarea" name="meeting[description]" maxlength="500" placeholder="Optional description for the meeting"></textarea>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Create</button>
+  </div>
 </form>
 
 <%- include("../partials/footer") %>

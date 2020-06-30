@@ -1,0 +1,41 @@
+<%- include("../partials/header") %>
+
+<div class="above-table">
+  <div class="search search__input-container" id="filterTable">
+    <input class="search__input" type="text" spellcheck="false" placeholder="Filter tutors"/>
+    <span class="material-icons search__icon">search</span>
+  </div>
+  <div class="above-table__section">
+    <a class="above-table__button" href="/tutors/new?from=%2Ftutors"><span class="material-icons above-table__icon">person_add</span>New Tutor</a>
+  </div>
+</div>
+<table class="table">
+  <thead>
+    <tr class="table__head-row">
+      <th class="table__cell">Name</th>
+      <th class="table__cell">Student ID</th>
+      <th class="table__cell table__cell--grade">Grade</th>
+      <th class="table__cell table__cell--email">Email</th>
+      <th class="table__cell table__cell--phoneNum">Phone Number</th>
+      <th class="table__cell">Verified</th>
+      <th class="table__cell table__cell--maxTutees">Max Tutees</th>
+      <th class="table__cell table__cell--paymentForm">Payment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% tutors.forEach(function(tutor) { %>
+      <tr class="table__body-row" data-href="http://localhost:3000/tutors/<%- tutor._id %>?from=%2Ftutors">
+        <td class="table__cell"><%- tutor.name %></td>
+        <td class="table__cell"><%- tutor.id %></td>
+        <td class="table__cell table__cell--grade"><%- tutor.grade %></td>
+        <td class="table__cell table__cell--email"><%- tutor.email %></td>
+        <td class="table__cell table__cell--phoneNum"><%- tutor.phoneNum %></td>
+        <td class="table__cell"><% if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %></td>
+        <td class="table__cell table__cell--maxTutees"><%- tutor.maxTutees %></td>
+        <td class="table__cell table__cell--paymentForm"><%- tutor.paymentForm %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<%- include("../partials/footer") %>

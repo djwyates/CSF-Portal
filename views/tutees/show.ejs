@@ -1,0 +1,73 @@
+<%- include("../partials/header") %>
+
+<div class="form">
+  <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
+  <div class="form__title">View <% if (currentUser.id == tutee.id) { %>Your <% } %>Tutoring Request</div>
+  <% if (currentUser.accessLevel <= 1) { %>
+    <p class="form__description">If you wish to delete your tutoring request, contact the tutoring coordinator.</p>
+  <% } %>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" value="<%- tutee.id %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" value="<%- tutee.name %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <input class="form__input" value="<%- tutee.gender %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input" value="<%- tutee.grade %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" value="<%- tutee.email %>" readonly/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" value="<%- tutee.phoneNum %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentName">Parent's Name</label>
+    <input class="form__input" value="<%- tutee.parentName %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentEmail">Parent's Email</label>
+    <input class="form__input" value="<%- tutee.parentEmail %>" readonly/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
+    <input class="form__input" value="<%- tutee.parentPhoneNum %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <input class="form__input" value="<%- tutee.paymentForm %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="currentTutors">Current Tutors</label>
+    <input class="form__input" value="<%- JSON.stringify(tutee.currentTutors) %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses">Requested Courses</label>
+    <input class="form__input" value="<%- tutee.courses[0] %><% for (var i=1; i<tutee.courses.length; i++) { %><%- ", " + tutee.courses[i] %><% } %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="createdOn">Date Created</label>
+    <input class="form__input" value="<%- ejs.reformatDate(tutee.createdOn) + " at " + tutee.createdOn.substring(11) %>" readonly/>
+  </div>
+  <div class="form__item form__item--row">
+    <a class="form__button" href="/tutees/<%- tutee._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
+    <% if (currentUser.accessLevel >= 2) { %>
+      <form action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)?')">
+        <input class="form__button" type="submit" value="Pair"/>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<%- include("../partials/footer") %>

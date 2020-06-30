@@ -1,0 +1,77 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutors/<%- tutor._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
+  <a class="form__link" href="/tutors/<%- tutor._id %><% if (query.from) { %>?from=<%- query.from %><% } %>">Back</a>
+  <div class="form__title">Edit <% if (currentUser.id == tutor.id) { %>Your <% } %>Tutor Profile</div>
+  <% if (currentUser.accessLevel <= 1) { %>
+    <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
+  <% } %>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" id="id" type="text" name="tutor[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" value="<%- tutor.id %>" placeholder="9-digit student ID" readonly required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" id="name" type="text" name="tutor[name]" placeholder="Full name" value="<%- tutor.name %>" readonly required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input form__input--small" id="grade" type="number" name="tutor[grade]" min="9" max="12" placeholder="Grade level (9 - 12)" value="<%- tutor.grade %>" readonly required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="gender">Gender</label>
+    <label class="form__label--radio" for="male">
+      <input class="form__input--radio" id="male" type="radio" name="tutor[gender]" <% if (tutor.gender == "Male") { %>checked<% } %> value="Male" required/>
+      <div class="form__input--radiocircle"></div>
+      Male
+    </label>
+    <label class="form__label--radio" for="female">
+      <input class="form__input--radio" id="female" type="radio" name="tutor[gender]" <% if (tutor.gender == "Female") { %>checked<% } %> value="Female" required/>
+      <div class="form__input--radiocircle"></div>
+      Female
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="email">Email</label>
+    <input class="form__input" id="email" type="email" name="tutor[email]" value="<%- tutor.email %>" placeholder="Only used to contact you as a last resort" required/>
+    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Phone Number</label>
+    <input class="form__input" id="phoneNum" type="text" name="tutor[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
+    value="<%- tutor.phoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
+    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator</span>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="maxTutees">How many students can you realisticly tutor at the same time?</label>
+    <input class="form__input form__input--small" id="maxTutees" type="number" name="tutor[maxTutees]" min="1" max="3" value="<%- tutor.maxTutees %>" placeholder="Up to 3" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Form of Payment</label>
+    <label class="form__label--radio" for="cash">
+      <input class="form__input--radio" id="cash" type="radio" name="tutor[paymentForm]" <% if (tutor.paymentForm == "Cash") { %>checked<% } %> value="Cash" required/>
+      <div class="form__input--radiocircle"></div>
+      Cash only
+    </label>
+    <label class="form__label--radio" for="both">
+      <input class="form__input--radio" id="both" type="radio" name="tutor[paymentForm]" <% if (tutor.paymentForm == "Both") { %>checked<% } %> value="Both" required/>
+      <div class="form__input--radiocircle"></div>
+      Either community service or cash
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="courses"><% if (currentUser.id == tutor.id) { %>Your courses<% } else { %>Courses<% } %></label>
+    <% for (courseID in courses) { %>
+      <label class="form__label--checkbox" for="<%- courseID %>">
+        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutor[courses]" <% if (tutor.courses.includes(courseID)) { %>checked<% } %> value="<%- courseID %>"/>
+        <div class="form__input--checkboxsquare"></div>
+        <%- courses[courseID] %>
+      </label>
+    <% } %>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Save</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

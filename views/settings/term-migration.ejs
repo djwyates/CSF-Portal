@@ -1,20 +1,42 @@
 <%- include("../partials/header") %>
 
-<a href="/settings">Back</a>
-<p>Fill out this form to seed the database for next term and customize the reports you will receive on the previous term. Officers' permissions are conserved if you seed the database.</p>
-<form action="/settings/term-migration?_method=put" method="post" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
-  <label for="ext">Save current database files as:</label>
-  <input type="radio" name="ext" value="xlsx" checked="checked"/>
-  <label for="xlsx">Microsoft Excel</label>
-  <input type="radio" name="ext" value="pdf"/>
-  <label for="pdf">PDF</label>
-  <br>
-  <label for="newMembers">New members in excel format</label>
-  <input type="file" name="newMembers" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv"/>
-  <label for="minMeetingCount">Minimum Meetings to Qualify as a Member</label>
-  <input type="number" name="minMeetings" value="6" min="0" max="8"/>
-  <br>
-  <input type="submit" value="MIGRATE TERMS"/>
+<form class="form" action="/settings/term-migration?_method=put" method="post" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
+  <a class="form__link" href="/settings">Back</a>
+  <div class="form__title">Term Migration</div>
+  <p class="form__description">
+    Term Migration backs up and deletes all meetings, members, tutors, and tutees.
+    Upload an Excel file with the correct headers ("student_id" "name" "grade" "terms") to seed the database for the next term.
+    If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
+    You might be logged out after the process of term migration.
+  </p>
+  <div class="form__item">
+    <label class="form__label" for="ext">Save current database files as</label>
+    <label class="form__label--radio" for="xlsx">
+      <input class="form__input--radio" id="xlsx" type="radio" name="ext" value="xlsx" checked required/>
+      <div class="form__input--radiocircle"></div>
+      Microsoft Excel
+    </label>
+    <label class="form__label--radio" for="pdf">
+      <input class="form__input--radio" id="pdf" type="radio" name="ext" value="pdf" required/>
+      <div class="form__input--radiocircle"></div>
+      PDF
+    </label>
+  </div>
+  <div class="form__item">
+    <label class="form__label form__label--pointer" for="newMembers">New Members</label>
+    <div>
+      <input class="form__input--file" id="newMembers" type="file" name="newMembers" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>
+      <button class="form__input--filebutton" id="newMembersButton" type="button" name="button">Choose an Excel file</button>
+      <span class="form__input--filetext" id="newMembersText">No file chosen</span>
+    </div>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="minMeetings">Minimum Meetings to Qualify</label>
+    <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="8" placeholder="Max. 8" required/>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">MIGRATE TERMS</button>
+  </div>
 </form>
 
 <%- include("../partials/footer") %>

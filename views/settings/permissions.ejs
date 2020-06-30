@@ -1,20 +1,29 @@
 <%- include("../partials/header") %>
 
-<a href="/settings">Back</a>
+<a class="link" href="/settings">Back</a>
+<div class="above-table">
+  <div class="search search__input-container" id="filterTable">
+    <input class="search__input" type="text" spellcheck="false" placeholder="Filter members"/>
+    <span class="material-icons search__icon">search</span>
+  </div>
+  <div class="above-table__section">
+    <a class="above-table__button" href=""><span class="material-icons above-table__icon">add</span>Grant Permissions</a>
+  </div>
+</div>
 <table class="table">
   <thead>
-    <tr>
-      <th>Name</th>
-      <th>Student ID</th>
-      <th>Position</th>
+    <tr class="table__head-row">
+      <th class="table__cell">Name</th>
+      <th class="table__cell">Student ID</th>
+      <th class="table__cell">Position</th>
     </tr>
   </thead>
   <tbody>
     <% members.forEach(function(member) { %>
-      <tr data-href="/members/<%- member._id %>?from=%2Fsettings%2Fpermissions">
-        <td><%- member.name %></td>
-        <td><%- member.id %></td>
-        <td><% if (member.accessLevel == 0) { %> Member <% } else if (member.accessLevel == 1) { %> Officer <% } else if (member.accessLevel == 2) { %> Tutoring Coordinator <% } else if (member.accessLevel == 3) { %> Developer <% } %></td>
+      <tr class="table__body-row" data-href="/members/<%- member._id %>?from=%2Fsettings%2Fpermissions">
+        <td class="table__cell"><%- member.name %></td>
+        <td class="table__cell"><%- member.id %></td>
+        <td class="table__cell"><% if (member.accessLevel == 0) { %> Member <% } else if (member.accessLevel == 1) { %> Officer <% } else if (member.accessLevel == 2) { %> Tutoring Coordinator <% } else if (member.accessLevel == 3) { %> Developer <% } %></td>
       </tr>
     <% }); %>
   </tbody>

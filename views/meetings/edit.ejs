@@ -1,15 +1,24 @@
 <%- include("../partials/header") %>
 
-<p>Meeting on <%- reformatDate(meeting.date) %></p>
-<form action="/meetings/<%- meeting._id %>?_method=put" method="post">
-  <label for="date">Date</label>
-  <input type="date" name="meeting[date]" value="<%- meeting.date %>" required/>
-  <label for="description">Description</label>
-  <input type="text" name="meeting[description]" value="<%- meeting.description %>"/>
-  <input type="submit" value="Save"/>
+<form class="form" action="/meetings/<%- meeting._id %>?_method=put" method="post">
+  <a class="form__link" href="/meetings/<%- meeting._id %>">Back</a>
+  <div class="form__title">Edit Meeting on <%- ejs.reformatDate(meeting.date) %></div>
+  <div class="form__item">
+    <label class="form__label" for="date">Date</label>
+    <input class="form__input form__input--small" id="date" type="date" name="meeting[date]" value="<%- meeting.date %>" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="description">Description</label>
+    <textarea class="form__input form__input--textarea" name="meeting[description]" maxlength="500" placeholder="Optional description for the meeting"><%- meeting.description %></textarea>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Save</button>
+  </div>
 </form>
-<form action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
-  <input type="submit" value="Delete"/>
+<form class="form" action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
+  <div class="form__item">
+    <button class="form__button form__button--red" type="submit">Delete</button>
+  </div>
 </form>
 
 <%- include("../partials/footer") %>

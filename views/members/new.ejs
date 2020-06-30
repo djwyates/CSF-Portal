@@ -1,24 +1,36 @@
 <%- include("../partials/header") %>
 
-<a href="/members">Back</a>
-<p>Add Member</p>
-<form action="/members" method="post">
-  <label for="name">Name</label>
-  <input type="text" name="member[name]" maxlength="50" required/>
-  <label for="id">Student ID</label>
-  <input type="text" name="member[id]" minlength="9" maxlength="9" required/>
-  <label for="grade">Grade</label>
-  <input type="number" name="member[grade]" value="9" min="9" max="12" required/>
-  <label for="termCount">Terms in CSF</label>
-  <input type="number" name="member[termCount]" value="0" min="0" max="7" required/>
-  <label for="accessLevel">Position</label>
-  <select name="member[accessLevel]" required>
-    <option value="0">Member</option>
-    <option value="1">Officer</option>
-    <option value="2">Tutoring Coordinator</option>
-    <option value="3">Developer</option>
-  </select>
-  <input type="submit" value="Add"/>
+<form class="form" action="/members" method="post">
+  <a class="form__link" href="/members">Back</a>
+  <div class="form__title">New Member</div>
+  <div class="form__item">
+    <label class="form__label" for="id">Student ID</label>
+    <input class="form__input" id="id" type="text" name="member[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="name">Name</label>
+    <input class="form__input" id="name" type="text" name="member[name]" placeholder="Full name" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="grade">Grade</label>
+    <input class="form__input form__input--small" id="grade" type="number" name="member[grade]" min="9" max="12" placeholder="Grade level (9 - 12)" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="termCount">Terms in CSF</label>
+    <input class="form__input form__input--small" id="termCount" type="number" name="member[termCount]" min="0" max="7" placeholder="Up to 7" required/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="accessLevel">Position</label>
+    <select class="form__input--select" id="accessLevel" name="member[accessLevel]" required>
+      <option value="0" selected>Member</option>
+      <option value="1">Officer</option>
+      <option value="2">Tutoring Coordinator</option>
+      <option value="3">Developer</option>
+    </select>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Create</button>
+  </div>
 </form>
 
 <%- include("../partials/footer") %>
