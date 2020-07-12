@@ -81,7 +81,7 @@ router.put("/:id/pair", middleware.hasAccessLevel(2), function(req, res) {
     if (err || !foundTutee) {
       res.redirect("/tutees");
     } else {
-      var pairedTutors = new Map(), availableTutor = null, paymentQuery = tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"];
+      var pairedTutors = new Map(), availableTutor = null, paymentQuery = foundTutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"];
       Tutor.find({verified: true, verifiedPhone: true, paymentForm: {$in: paymentQuery}}, function(err, tutors) {
         foundTutee.courses.forEach(function(course) {
           if (!foundTutee.currentTutors.get(course)) {

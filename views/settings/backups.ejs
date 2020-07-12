@@ -1,0 +1,22 @@
+<%- include("../partials/header") %>
+
+<a class="link" href="/settings">Back</a>
+<ul class="directory">
+  <%- dirHTML(backupsDirTree) %>
+</ul>
+
+<% function dirHTML(file) {
+  if (file.type === "directory") {
+    html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + file.name + "</a><ul class='directory__folder-contents'>";
+    if (file.children.length > 0) {
+      file.children.forEach(function(childFile) {
+        html += dirHTML(childFile);
+      });
+    }
+    return html + "</ul></li>";
+  } else {
+    return "<li class='directory__file'>" + file.name + "</li>";
+  }
+} %>
+
+<%- include("../partials/footer") %>

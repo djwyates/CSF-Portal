@@ -43,6 +43,7 @@
 
 .above-table {
 	display: flex;
+	margin-top: 7px;
 }
 
 .above-table__icon {

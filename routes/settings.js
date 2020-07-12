@@ -1,8 +1,10 @@
 const express = require("express"),
       router = express.Router(),
       fs = require("fs"),
+      dirTree = require("directory-tree"),
       middleware = require("../middleware/index"),
       backup = require("../services/backup"),
+      utils = require("../services/utils"),
       xlsx = require("../services/xlsx"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
@@ -29,16 +31,11 @@ router.get("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
 
 router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
   /* backs up the current database */
-  var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).slice(0,9).replace(/\//g, "-");
+  var currentDate = new Date().toISOString().slice(0,10);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/meetings.txt", Meeting);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/members.txt", Member);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/membersQualifying.txt", Member, function(members) {
-    var qualifyingMembers = [];
-    members.forEach(function(member) {
-      if (member.meetingsAttended.length >= req.body.minMeetings)
-        qualifyingMembers.push(member);
-    });
-    return qualifyingMembers;
+    return members.filter(function(member) { member.meetingsAttended.length >= req.body.minMeetings; });
   });
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutors.txt", Tutor);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutees.txt", Tutee);
@@ -61,16 +58,8 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
     }
     /* formulates a message if any members of the uploaded file could not be parsed */
     var warningMsg = "";
-    if (parsedMembers.warnings.length == 1) {
-      warningMsg += "<br>The member in row " + parsedMembers.warnings[0] + " of the uploaded Excel sheet is invalid.";
-    } else if (parsedMembers.warnings.length == 2) {
-      warningMsg += "<br>The members in rows " + parsedMembers.warnings[0] + " and " + parsedMembers.warnings[1] + " of the uploaded Excel sheet are invalid.";
-    } else if (parsedMembers.warnings.length >= 3) {
-      warningMsg += "<br>The members in rows ";
-      for (var i=0; i<parsedMembers.warnings.length-1; i++)
-        warningMsg += parsedMembers.warnings[i] + ", ";
-      warningMsg += "and " + parsedMembers.warnings[parsedMembers.warnings.length-1] + " of the uploaded Excel sheet are invalid.";
-    }
+    if (parsedMembers.warnings.length > 0)
+      warningMsg += " WARNING: The member(s) in row(s) " + utils.arrayToSentence(parsedMembers.warnings) + " of the uploaded Excel sheet is invalid and was not added.";
     /* finds previous members who were officers, then deletes all previous members & creates new ones who were successfully parsed from the uploaded file */
     Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
       Member.deleteMany({}, function(err, deleteResult) {
@@ -78,7 +67,7 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
         Member.create(parsedMembers.members, function(err, newMembers) {
           /* conserves permissions of previous officers if found in the collection of new members */
           if (!previousOfficers) {
-            warningMsg += "<br>Since no officers existed in the previous database, no permissions were conserved. Make sure to grant permissions!";
+            warningMsg += "<br>NOTICE: Since no officers existed in the previous database, no permissions were conserved. Make sure to grant permissions!";
           } else {
             var previousOfficersNotPreserved = [];
             previousOfficers.forEach(function(previousOfficer) {
@@ -88,28 +77,17 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
                 console.info(matchingNewMember.name + "\'s (" + matchingNewMember.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
               } else {
                 console.warn(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel + " was NOT conserved.");
-                previousOfficersNotPreserved.push(previousOfficer.name);
+                previousOfficersNotPreserved.push(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel);
               }
             });
             /* formulates a message about the officers who did or did not conserve permissions */
-            if (previousOfficersNotPreserved.length == 0) {
+            if (previousOfficersNotPreserved.length > 0)
+              warningMsg += "<br>WARNING: " + utils.arrayToSentence(previousOfficersNotPreserved) + " was NOT conserved.";
+            else
               warningMsg += "<br>All previous officers\' permissions were conserved.";
-            } else if (previousOfficersNotPreserved.length == previousOfficers.length) {
-              warningMsg += "<br>None of the previous officers\' permissions were conserved. Make sure to grant permissions!";
-            } else if (previousOfficersNotPreserved.length >= 1) {
-              warningMsg += "<br>Only some of the previous officers\' permissions were conserved. Make sure to grant permissions! Not preserved: " + previousOfficersNotPreserved[0];
-              if (previousOfficersNotPreserved.length == 2) {
-                warningMsg += " and " + previousOfficersNotPreserved[1];
-              } else if (previousOfficersNotPreserved.length >= 3) {
-                warningMsg += "<br>WARNING: The members in rows ";
-                for (var i=1; i<previousOfficersNotPreserved.length-1; i++)
-                  warningMsg += ", " + previousOfficersNotPreserved[i];
-                warningMsg += ", and " + previousOfficersNotPreserved[previousOfficersNotPreserved.length-1];
-              }
-            }
           }
           /* term migration is successful; this redirects the user & displays the term migration report via a flash message */
-          req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees. " + newMembers.length + " new members have been loaded into the database." + warningMsg);
+          req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees.<br>" + newMembers.length + " new members have been loaded into the database." + warningMsg);
           res.redirect("/settings/permissions");
         });
       });
@@ -117,9 +95,8 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
   });
 });
 
-router.get("/restore-from-backup", middleware.hasAccessLevel(3), function(req, res) {
-  // TODO: pass in info obtained from the backup folder. if there's no backup folder do what should be done.
-  res.render("settings/restore-from-backup");
+router.get("/backups", middleware.hasAccessLevel(3), function(req, res) {
+  res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/})});
 });
 
 module.exports = router;

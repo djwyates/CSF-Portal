@@ -19,6 +19,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
+    "directory-tree": "^2.2.4",
     "ejs": "^3.1.2",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.7-alpha.3",
@@ -26,7 +27,6 @@
     "express-session": "^1.17.1",
     "method-override": "^3.0.0",
     "mongoose": "^5.9.14",
-    "parse-filepath": "^1.0.2",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
     "shortid": "^2.2.15",

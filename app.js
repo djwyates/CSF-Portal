@@ -32,10 +32,10 @@ app.use(passport.session());
 require("./config/passport-setup");
 app.use(function(req, res, next) {
   res.locals.currentUser = req.user;
+  res.locals.ejs = require("./services/ejs");
+  res.locals.flash = {success: req.flash("success"), info: req.flash("info"), error: req.flash("error")};
   res.locals.query = req.query;
   res.locals.url = req.url;
-  res.locals.flash = {success: req.flash("success"), info: req.flash("info"), error: req.flash("error")};
-  res.locals.ejs = require("./services/ejs");
   next();
 });
 
