@@ -47,7 +47,7 @@
       backupFileFormTitle.innerText = backupFile.name;
       backupFileForm.appendChild(backupFileFormTitle);
       // add backup file form content
-      backupFile.data = eval("(" + backupFile.data + ")");
+      backupFile.data = JSON.parse(backupFile.data);
       for (let [key, value] of Object.entries(backupFile.data)) {
         if (key == "_id" || key == "__v")
           continue;
