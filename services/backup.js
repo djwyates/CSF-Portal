@@ -31,7 +31,7 @@ function writeFileSync(path, data) {
   if (!fs.existsSync(parsedPath.path)) {
     if (!fs.existsSync(parsedPath.dir))
       fs.mkdirSync(parsedPath.dir, {recursive: true}, function(err) { if (err) console.error(err); });
-    fs.writeFileSync(parsedPath.path, data, function(err) { if (err) console.error(err); });
+    fs.writeFileSync(parsedPath.path, JSON.stringify(data), function(err) { if (err) console.error(err); });
   } else {
     var duplicateCount = 1;
     while (fs.existsSync(parsedPath.dir + "/" + parsedPath.name + " (" + duplicateCount + ")" + parsedPath.ext)) duplicateCount++;
