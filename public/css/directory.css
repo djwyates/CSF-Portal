@@ -1,5 +1,6 @@
 .directory {
   margin-top: 10px;
+  margin-right: 15%;
 }
 
 .directory__folder, .directory__file {
@@ -24,14 +25,14 @@
   display: none;
 }
 
-.directory__folder-link {
+.directory__folder-link, .directory__file-link {
   border-bottom: 1px solid transparent;
   color: #888;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
-.directory__folder-link:hover {
+.directory__folder-link:hover, .directory__file-link:hover {
   border-color: #eee;
 }
 

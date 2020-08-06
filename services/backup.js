@@ -18,6 +18,10 @@ backup.mongooseModel = function(path, model, limit) {
   });
 }
 
+backup.getBackupsData = function() {
+  return getFileData("./backups");
+}
+
 module.exports = backup;
 
 /* helper functions */
@@ -33,4 +37,15 @@ function writeFileSync(path, data) {
     while (fs.existsSync(parsedPath.dir + "/" + parsedPath.name + " (" + duplicateCount + ")" + parsedPath.ext)) duplicateCount++;
     fs.writeFileSync(parsedPath.dir + "/" + parsedPath.name + " (" + duplicateCount + ")" + parsedPath.ext, data, function(err) { if (err) console.error(err); });
   }
+}
+
+function getFileData(dirPath, arrayOfFiles) {
+  arrayOfFiles = arrayOfFiles || [];
+  fs.readdirSync(dirPath).forEach(function(file) {
+    if (fs.statSync(dirPath + "/" + file).isDirectory())
+      arrayOfFiles = getFileData(dirPath + "/" + file, arrayOfFiles);
+    else
+      arrayOfFiles.push({name: file, data: fs.readFileSync(dirPath + "/" + file).toString().replace(/\n/g,"")});
+  });
+  return arrayOfFiles;
 }

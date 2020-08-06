@@ -25,15 +25,6 @@ document.addEventListener("DOMContentLoaded", function() {
       customText.innerHTML = realFileButton.value ? realFileButton.value.match(/[\/\\]([\w\d\s\.\-\(\)]+)$/)[1] : "No file chosen";
     });
   }
-  /* directory scripts */
-  var folders = document.querySelectorAll(".directory__folder-link");
-  if (folders) {
-    folders.forEach(function(folder) {
-      folder.addEventListener("click", function() {
-        folder.parentNode.childNodes[1].classList.toggle("directory__folder-contents--active");
-      });
-    });
-  }
 });
 
 /* table filter scripts */

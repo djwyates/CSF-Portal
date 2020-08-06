@@ -96,7 +96,7 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/backups", middleware.hasAccessLevel(3), function(req, res) {
-  res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/})});
+  res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/}), backupsData: backup.getBackupsData()});
 });
 
 module.exports = router;

@@ -1,22 +1,73 @@
 <%- include("../partials/header") %>
 
 <a class="link" href="/settings">Back</a>
-<ul class="directory">
-  <%- dirHTML(backupsDirTree) %>
-</ul>
+<div class="container">
+  <ul class="directory">
+    <%- getDirTreeHTML(backupsDirTree) %>
+  </ul>
+  <div class="form"></div>
+</div>
 
-<% function dirHTML(file) {
-  if (file.type === "directory") {
-    html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + file.name + "</a><ul class='directory__folder-contents'>";
-    if (file.children.length > 0) {
-      file.children.forEach(function(childFile) {
-        html += dirHTML(childFile);
+<% function getDirTreeHTML(dirTree) {
+  if (dirTree.type === "directory") {
+    html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + dirTree.name + "</a><ul class='directory__folder-contents'>";
+    if (dirTree.children.length > 0) {
+      dirTree.children.forEach(function(childFile) {
+        html += getDirTreeHTML(childFile);
       });
     }
     return html + "</ul></li>";
   } else {
-    return "<li class='directory__file'>" + file.name + "</li>";
+    return "<li class='directory__file'><a class='directory__file-link' href='#'>" + dirTree.name + "</a></li>";
   }
 } %>
+
+<script>
+  const folders = document.querySelectorAll(".directory__folder-link");
+  folders.forEach(function(folder) {
+    folder.addEventListener("click", function() {
+      folder.parentNode.childNodes[1].classList.toggle("directory__folder-contents--active");
+    });
+  });
+  const backupFiles = document.querySelectorAll(".directory__file-link");
+  backupFiles.forEach(function(backupFile) {
+    backupFile.addEventListener("click", function() {
+      var backupsData = <%- backupsData %>;
+      backupsData.forEach(function(backupFileData) {
+        if (backupFileData.name == backupFile.innerText) {
+          backupFile = backupFileData;
+          return;
+        }
+      });
+      // add backup file form title
+      var backupFileForm = document.querySelector(".form");
+      backupFileForm.innerHTML = "";
+      var backupFileFormTitle = document.createElement("div");
+      backupFileFormTitle.classList.add("form__title");
+      backupFileFormTitle.innerText = backupFile.name;
+      backupFileForm.appendChild(backupFileFormTitle);
+      // add backup file form content
+      backupFile.data = eval("(" + backupFile.data + ")");
+      for (let [key, value] of Object.entries(backupFile.data)) {
+        if (key == "_id" || key == "__v")
+          continue;
+        var backupFileFormItem = document.createElement("div");
+        backupFileFormItem.classList.add("form__item");
+        var backupFileFormLabel = document.createElement("label");
+        backupFileFormLabel.classList.add("form__label");
+        backupFileFormLabel.htmlFor = key;
+        backupFileFormLabel.innerText = key;
+        var backupFileFormInput = document.createElement("input");
+        backupFileFormInput.classList.add("form__input");
+        backupFileFormInput.name = key;
+        backupFileFormInput.value = Array.isArray(value) ? "length: " + value.length : value;
+        backupFileFormInput.readOnly = true;
+        backupFileFormItem.appendChild(backupFileFormLabel);
+        backupFileFormItem.appendChild(backupFileFormInput);
+        backupFileForm.appendChild(backupFileFormItem);
+      }
+    });
+  });
+</script>
 
 <%- include("../partials/footer") %>
