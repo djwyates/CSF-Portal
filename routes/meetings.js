@@ -72,7 +72,7 @@ router.delete("/:id", middleware.hasAccessLevel(1), function(req, res) {
       console.error(err);
       res.redirect("/meetings");
     } else {
-      backup.object("./backups/deleted/meetings/" + deletedMeeting.date + ".txt", deletedMeeting);
+      backup.object("./backups/deleted/meetings/" + deletedMeeting.date + ".txt", deletedMeeting.toObject());
       deletedMeeting.membersAttended.forEach(function(memberId) {
         Member.findOneAndUpdate({id: memberId}, {$pull: {"meetingsAttended": deletedMeeting.date}}, function(err, foundMember) { if (err) console.error(err); });
       });

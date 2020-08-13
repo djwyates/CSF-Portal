@@ -5,10 +5,12 @@
   <ul class="directory">
     <%- getDirTreeHTML(backupsDirTree) %>
   </ul>
-  <div class="form"></div>
+  <div id="form-container"></div>
 </div>
 
 <% function getDirTreeHTML(dirTree) {
+  if (!dirTree)
+    return "<li class='directory__folder'><a class='directory__folder-link' href='#'>backups</a><ul class='directory__folder-contents'></ul></li>";
   if (dirTree.type === "directory") {
     html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + dirTree.name + "</a><ul class='directory__folder-contents'>";
     if (dirTree.children.length > 0) {
@@ -18,7 +20,7 @@
     }
     return html + "</ul></li>";
   } else {
-    return "<li class='directory__file'><a class='directory__file-link' href='#'>" + dirTree.name + "</a></li>";
+    return "<li class='directory__file'><a class='directory__file-link' id='" + dirTree.path + "' href='#'>" + dirTree.name + "</a></li>";
   }
 } %>
 
@@ -29,43 +31,124 @@
       folder.parentNode.childNodes[1].classList.toggle("directory__folder-contents--active");
     });
   });
-  const backupFiles = document.querySelectorAll(".directory__file-link");
-  backupFiles.forEach(function(backupFile) {
-    backupFile.addEventListener("click", function() {
-      var backupsData = <%- backupsData %>;
-      backupsData.forEach(function(backupFileData) {
-        if (backupFileData.name == backupFile.innerText) {
-          backupFile = backupFileData;
+  const backupsFiles = document.querySelectorAll(".directory__file-link");
+  backupsFiles.forEach(function(backupsFile) {
+    backupsFile.addEventListener("click", function() {
+      /* get backup file data */
+      var backupsData = <%- JSON.stringify(backupsData) %>;
+      backupsData.forEach(function(backupsDataFile) {
+        if (backupsDataFile.name == backupsFile.innerText) {
+          backupsDataFile.data = JSON.parse(backupsDataFile.data);
+          backupsDataFile.path = backupsFile.id;
+          backupsFile = backupsDataFile;
           return;
         }
       });
-      // add backup file form title
-      var backupFileForm = document.querySelector(".form");
-      backupFileForm.innerHTML = "";
-      var backupFileFormTitle = document.createElement("div");
-      backupFileFormTitle.classList.add("form__title");
-      backupFileFormTitle.innerText = backupFile.name;
-      backupFileForm.appendChild(backupFileFormTitle);
-      // add backup file form content
-      backupFile.data = eval("(" + backupFile.data + ")");
-      for (let [key, value] of Object.entries(backupFile.data)) {
-        if (key == "_id" || key == "__v")
-          continue;
-        var backupFileFormItem = document.createElement("div");
-        backupFileFormItem.classList.add("form__item");
-        var backupFileFormLabel = document.createElement("label");
-        backupFileFormLabel.classList.add("form__label");
-        backupFileFormLabel.htmlFor = key;
-        backupFileFormLabel.innerText = key;
-        var backupFileFormInput = document.createElement("input");
-        backupFileFormInput.classList.add("form__input");
-        backupFileFormInput.name = key;
-        backupFileFormInput.value = Array.isArray(value) ? "length: " + value.length : value;
-        backupFileFormInput.readOnly = true;
-        backupFileFormItem.appendChild(backupFileFormLabel);
-        backupFileFormItem.appendChild(backupFileFormInput);
-        backupFileForm.appendChild(backupFileFormItem);
+      /* create backup file form */
+      var formContainer = document.getElementById("form-container");
+      formContainer.innerHTML = "";
+      var form = document.createElement("form");
+      form.action = "/settings/backups?_method=put";
+      form.method = "post";
+      form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It may overwrite current data!')");
+      var formTitle = document.createElement("div");
+      formTitle.classList.add("form__title");
+      formTitle.innerText = backupsFile.name;
+      form.appendChild(formTitle);
+      if (Array.isArray(backupsFile.data)) {
+        var formItem = document.createElement("div");
+        formItem.classList.add("form__item");
+        var formLabel = document.createElement("label");
+        formLabel.classList.add("form__label");
+        formLabel.htmlFor = "length";
+        formLabel.innerText = "Quantity";
+        var formInput = document.createElement("input");
+        formInput.classList.add("form__input");
+        formInput.name = "length";
+        formInput.value = backupsFile.data.length;
+        formInput.readOnly = true;
+        formItem.appendChild(formLabel);
+        formItem.appendChild(formInput);
+        form.appendChild(formItem);
+        var formItem = document.createElement("div");
+        formItem.classList.add("form__item");
+        var formLabel = document.createElement("label");
+        formLabel.classList.add("form__label");
+        formLabel.htmlFor = "data";
+        formLabel.innerText = "Data";
+        var formInput = document.createElement("input");
+        formInput.classList.add("form__input");
+        formInput.name = "data";
+        formInput.value = JSON.stringify(backupsFile.data);
+        formInput.readOnly = true;
+        formItem.appendChild(formLabel);
+        formItem.appendChild(formInput);
+        form.appendChild(formItem);
+      } else {
+        for (let [key, value] of Object.entries(backupsFile.data)) {
+          if (key == "_id" || key == "__v")
+            continue;
+          var formItem = document.createElement("div");
+          formItem.classList.add("form__item");
+          var formLabel = document.createElement("label");
+          formLabel.classList.add("form__label");
+          formLabel.htmlFor = key;
+          if (key == "meetingsAttended" || key == "membersAttended")
+            formLabel.innerText = "Attendance";
+          else if (key == "accessLevel")
+            formLabel.innerText = "Access Level";
+          else if (key == "name")
+            formLabel.innerText = "Name";
+          else if (key == "id")
+            formLabel.innerText = "Student ID";
+          else if (key == "grade")
+            formLabel.innerText = "Grade";
+          else if (key == "termCount")
+            formLabel.innerText = "Terms";
+          else if (key == "description")
+            formLabel.innerText = "Description";
+          else if (key == "date")
+            formLabel.innerText = "Date";
+          else
+            formLabel.innerText = key;
+          var formInput = document.createElement("input");
+          formInput.classList.add("form__input");
+          formInput.name = key;
+          formInput.value = value;
+          formInput.readOnly = true;
+          formItem.appendChild(formLabel);
+          formItem.appendChild(formInput);
+          form.appendChild(formItem);
+        }
       }
+      var formButtonContainer = document.createElement("div");
+      formButtonContainer.classList.add("form__item");
+      var formButton = document.createElement("button");
+      formButton.classList.add("form__button");
+      formButton.type = "submit";
+      formButton.innerText = "Restore";
+      formButtonContainer.appendChild(formButton);
+      form.appendChild(formButtonContainer);
+      formContainer.appendChild(form);
+      var deleteForm = document.createElement("form");
+      deleteForm.action = "/settings/backups?_method=delete";
+      deleteForm.method = "post";
+      deleteForm.setAttribute("onSubmit", "return confirm('Are you sure you want to delete this backup? This action is permanent!')");
+      var deleteFormButtonContainer = document.createElement("div");
+      deleteFormButtonContainer.classList.add("form__item");
+      var deleteFormInput = document.createElement("input");
+      deleteFormInput.classList.add("form__input--invisible");
+      deleteFormInput.name = "path";
+      deleteFormInput.value = backupsFile.path;
+      var deleteFormButton = document.createElement("button");
+      deleteFormButton.classList.add("form__button");
+      deleteFormButton.classList.add("form__button--red");
+      deleteFormButton.type = "submit";
+      deleteFormButton.innerText = "Delete";
+      deleteFormButtonContainer.appendChild(deleteFormInput);
+      deleteFormButtonContainer.appendChild(deleteFormButton);
+      deleteForm.appendChild(deleteFormButtonContainer);
+      formContainer.appendChild(deleteForm);
     });
   });
 </script>

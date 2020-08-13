@@ -43,7 +43,7 @@ router.post("/", function(req, res) {
         if (err) {
           console.error(err);
           if (err.code == 11000)
-            req.flash("error", "You have already signed up as a tutor. To view or change your account, login with your school email.");
+            req.flash("error", "A tutor already exists with that ID. To view or change your account, login with your school email. If you never created an account, contact the tutoring coordinator.");
           else
             req.flash("error", "An unexpected error occurred.");
           res.redirect("/tutors/new");

@@ -99,4 +99,83 @@ router.get("/backups", middleware.hasAccessLevel(3), function(req, res) {
   res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/}), backupsData: backup.getBackupsData()});
 });
 
+router.put("/backups", middleware.hasAccessLevel(3), function(req, res) {
+  if (req.body.id) {
+    Member.findOne({id: req.body.id}, function(err, member) {
+      if (member) {
+        backup.object("./backups/replaced/members/" + member.id + ".txt", member.toObject());
+        Member.findByIdAndUpdate(member._id, req.body, function(err, updatedMember) {
+          req.flash("info", "The selected backup was successfully restored. Since a member with the same ID already existed, it was backed up and replaced. ID: " + req.body.id);
+          res.redirect("/settings/backups");
+        });
+      } else {
+        Member.create([req.body], function(err, newMember) {
+          req.flash("info", "The selected backup was successfully restored. ID: " + req.body.id);
+          res.redirect("/settings/backups");
+        });
+      }
+    });
+  } else if (req.body.date) {
+    Meeting.findOne({date: req.body.date}, function(err, meeting) {
+      if (meeting) {
+        backup.object("./backups/replaced/meetings/" + meeting.date + ".txt", meeting.toObject());
+        Member.findByIdAndUpdate(meeting._id, req.body, function(err, updatedMeeting) {
+          req.flash("info", "The selected backup was successfully restored. Since a meeting with the same date already existed, it was backed up and replaced. Meeting Date: " + req.body.date);
+          res.redirect("/settings/backups");
+        });
+      } else {
+        Meeting.create([req.body], function(err, newMeeting) {
+          req.flash("info", "The selected backup was successfully restored. Meeting Date: " + req.body.date);
+          res.redirect("/settings/backups");
+        });
+      }
+    });
+  } else if (req.body.data) {
+    req.body.data = JSON.parse(req.body.data);
+    if (!req.body.data[0]) {
+      req.flash("error", "You cannot restore from an empty backup.");
+      res.redirect("/settings/backups");
+    } else if (req.body.data[0].date) {
+      backup.mongooseModel("./backups/replaced/meetings/meetings.txt", Meeting);
+      Meeting.create(req.body.data, function(err, newMeetings) {
+        req.flash("info", "The selected backup was successfully restored and all previous meetings were backed up. Number of Restored Meetings: " + req.body.data.length);
+        res.redirect("/settings/backups");
+      });
+    } else if (req.body.data[0].parentEmail) {
+      backup.mongooseModel("./backups/replaced/tutees/tutees.txt", Tutee);
+      Tutee.create(req.body.data, function(err, newTutees) {
+        req.flash("info", "The selected backup was successfully restored and all previous tutees were backed up. Number of Restored Tutees: " + req.body.data.length);
+        res.redirect("/settings/backups");
+      });
+    } else if (req.body.data[0].email) {
+      backup.mongooseModel("./backups/replaced/tutors/tutors.txt", Tutor);
+      Tutor.create(req.body.data, function(err, newTutors) {
+        req.flash("info", "The selected backup was successfully restored and all previous tutors were backed up. Number of Restored Tutors: " + req.body.data.length);
+        res.redirect("/settings/backups");
+      });
+    } else if (req.body.data[0].id) {
+      backup.mongooseModel("./backups/replaced/members/members.txt", Member);
+      Member.create(req.body.data, function(err, newMembers) {
+        req.flash("info", "The selected backup was successfully restored and all previous members were backed up. Number of Restored Members: " + req.body.data.length);
+        res.redirect("/settings/backups");
+      });
+    }
+  } else {
+    req.flash("error", "An unexpected error occurred.");
+    res.redirect("/settings/backups");
+  }
+});
+
+router.delete("/backups", middleware.hasAccessLevel(3), function(req, res) {
+  fs.unlink(req.body.path, function(err) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+    } else {
+      req.flash("success", "The selected backup was successfully deleted.");
+    }
+    res.redirect("/settings/backups");
+  });
+});
+
 module.exports = router;

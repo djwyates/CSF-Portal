@@ -57,6 +57,11 @@
   transition: 0.25s;
 }
 
+.form__input--invisible {
+  display: none;
+  visibility: hidden;
+}
+
 .form__input:focus {
   background: rgb(255,255,255);
 }
