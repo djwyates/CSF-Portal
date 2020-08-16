@@ -71,7 +71,7 @@ router.put("/:id", middleware.hasTuteeAccess, function(req, res) {
       req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutees/" + req.params.id + "/edit");
     } else {
-      res.redirect("/tutees/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
+      res.redirect("/tutees/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });

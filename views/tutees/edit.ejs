@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
 <form class="form" action="/tutees/<%- tutee._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
-  <a class="form__link" href="/tutees/<%- tutee._id %><% if (query.from) { %>?from=<%- query.from %><% } %>">Back</a>
+  <a class="form__link" href="/tutees/<%- tutee._id %><% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Back</a>
   <div class="form__title">Edit <% if (currentUser.id == tutee.id) { %>Your <% } %>Tutoring Request</div>
   <% if (currentUser.accessLevel <= 1) { %>
     <p class="form__description">If you wish to delete your tutoring request, contact the tutoring coordinator.</p>

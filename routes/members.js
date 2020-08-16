@@ -114,7 +114,7 @@ router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
         });
       }
       Tutor.findOneAndUpdate({id: foundMember.id}, {id: req.body.member.id, name: req.body.member.name, grade: req.body.member.grade}, function(err, foundTutor){});
-      res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
+      res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });

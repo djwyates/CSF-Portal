@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
 <form class="form" action="/members/<%- member._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
-  <a class="form__link" href="/members/<%- member._id %><% if (query.from) { %>?from=<%- query.from %><% } %>">Back</a>
+  <a class="form__link" href="/members/<%- member._id %><% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Back</a>
   <div class="form__title">Edit Member</div>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>

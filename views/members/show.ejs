@@ -40,7 +40,7 @@
       <% } else if (member.accessLevel == 3) { %>Developer<% } %>" readonly/>
     </div>
     <div class="form__item form__item--row">
-      <a class="form__button" href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
+      <a class="form__button" href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
       <form action="/members/<%- member._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this member?')">
         <button class="form__button form__button--red" type="submit">Delete</button>
       </form>

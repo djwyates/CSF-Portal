@@ -50,7 +50,7 @@
       var form = document.createElement("form");
       form.action = "/settings/backups?_method=put";
       form.method = "post";
-      form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It may overwrite current data!')");
+      form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It will not overwrite current data.')");
       var formTitle = document.createElement("div");
       formTitle.classList.add("form__title");
       formTitle.innerText = backupsFile.name;

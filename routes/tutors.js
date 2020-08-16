@@ -81,7 +81,7 @@ router.put("/:id", middleware.hasTutorAccess, function(req, res) {
     } else {
       if (req.body.tutor.phoneNum != foundTutor.phoneNum)
         Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false}, function(err, foundTutor){});
-      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });
@@ -94,7 +94,7 @@ router.put("/:id/verify", middleware.hasAccessLevel(2), function(req, res) {
       res.redirect("/tutors");
     } else {
       req.flash("success", "Successfully verified Tutor " + foundTutee.name);
-      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });
@@ -107,7 +107,7 @@ router.put("/:id/unverify", middleware.hasAccessLevel(2), function(req, res) {
       res.redirect("/tutors");
     } else {
       req.flash("success", "Successfully unverified Tutor " + foundTutee.name);
-      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from : ""));
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });

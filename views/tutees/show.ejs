@@ -61,7 +61,7 @@
     <input class="form__input" value="<%- ejs.reformatDate(tutee.createdOn) + " at " + tutee.createdOn.substring(11) %>" readonly/>
   </div>
   <div class="form__item form__item--row">
-    <a class="form__button" href="/tutees/<%- tutee._id %>/edit<% if (query.from) { %>?from=<%- query.from %><% } %>">Edit</a>
+    <a class="form__button" href="/tutees/<%- tutee._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
     <% if (currentUser.accessLevel >= 2) { %>
       <form action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)?')">
         <input class="form__button" type="submit" value="Pair"/>
