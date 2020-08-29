@@ -1,0 +1,18 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/settings/diagnostics/run-test" method="get" onsubmit="return confirm('Are you sure you want to run a diagnostics test? This will not change anything.')">
+  <a class="form__link" href="/settings">Back</a>
+  <div class="form__title">Diagnostics</div>
+  <p class="form__description">
+    Running a diagnostics tests will check the system for discrepancies that can be caused by unexpected errors. What the test does:
+    <ul class="form__list">
+      <li>Ensures all meetings' and members' attendance records match, with no duplicates</li>
+      <li>Ensures all tutors and tutees are correctly linked together</li>
+    </ul>
+  </p>
+  <div class="form__item">
+    <button class="form__button" type="submit">Run Diagnostics Test</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

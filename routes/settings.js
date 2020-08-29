@@ -35,7 +35,7 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/meetings.txt", Meeting);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/members.txt", Member);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/membersQualifying.txt", Member, function(members) {
-    return members.filter(function(member) { member.meetingsAttended.length >= req.body.minMeetings; });
+    return members.filter(member => member.meetingsAttended.length >= req.body.minMeetings);
   });
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutors.txt", Tutor);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutees.txt", Tutee);
@@ -71,7 +71,7 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
           } else {
             var previousOfficersNotPreserved = [];
             previousOfficers.forEach(function(previousOfficer) {
-              var matchingNewMember = newMembers.find(function(newMember) { return newMember.id == previousOfficer.id });
+              var matchingNewMember = newMembers.find(newMember => newMember.id == previousOfficer.id);
               if (matchingNewMember) {
                 Member.findByIdAndUpdate(matchingNewMember._id, {accessLevel: previousOfficer.accessLevel}, function(err, updatedMember){});
                 console.info(matchingNewMember.name + "\'s (" + matchingNewMember.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
@@ -101,25 +101,109 @@ router.get("/backups", middleware.hasAccessLevel(3), function(req, res) {
 
 router.put("/backups", middleware.hasAccessLevel(3), function(req, res) {
   if (req.body.data) req.body.data = JSON.parse(req.body.data);
-  var model = null;
-  if (req.body.data && !req.body.data[0]) {
+  var warningMsg = "";
+  /* if the backup is a single meeting */
+  if (req.body.date) {
+    if (req.body.membersAttended.length == 0) req.body.membersAttended = [];
+    else req.body.membersAttended = req.body.membersAttended.split(",");
+    Meeting.create([req.body], function(err, newMeeting) {
+      if (newMeeting) {
+        newMeeting[0].membersAttended.forEach(function(memberID) {
+          Member.updateOne({id: memberID}, {$addToSet: {"meetingsAttended": newMeeting[0].date}}, function(err, updateResult) {
+            if (updateResult.n == 0) {
+              warningMsg += "<br>WARNING: The attendance records of the restored meeting contains a member with ID " + memberID + " that does not exist.";
+              console.warn("WARNING: The attendance records of the meeting on " + utils.reformatDate(newMeeting[0].date) + " that was restored from backup contains a member with ID " + memberID + " that does not exist.");
+            } if (newMeeting[0].membersAttended.indexOf(memberID) == newMeeting[0].membersAttended.length-1) {
+              req.flash("success", "The selected backup was successfully restored." + warningMsg);
+              res.redirect("/settings/backups");
+            }
+          });
+        });
+      } else {
+        req.flash("error", "The selected backup was not restored because it would overwrite current data. Check for a meeting that exists with the same date.");
+        res.redirect("/settings/backups");
+      }
+    });
+  /* if the backup is a single member */
+  } else if (req.body.id) {
+    if (req.body.meetingsAttended.length == 0) req.body.meetingsAttended = [];
+    else req.body.meetingsAttended = req.body.meetingsAttended.split(",");
+    Member.create([req.body], function(err, newMember) {
+      if (newMember) {
+        newMember[0].meetingsAttended.forEach(function(meetingDate) {
+          Meeting.updateOne({date: meetingDate}, {$addToSet: {"membersAttended": newMember[0].id}}, function(err, updateResult) {
+            if (updateResult.n == 0) {
+              warningMsg += "<br>WARNING: The attendance records of the restored member contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.";
+              console.warn("WARNING: The attendance records of the member with ID " + newMember[0].id + " that was restored from backup contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.");
+            } if (newMember[0].meetingsAttended.indexOf(meetingDate) == newMember[0].meetingsAttended.length-1) {
+              req.flash("success", "The selected backup was successfully restored." + warningMsg);
+              res.redirect("/settings/backups");
+            }
+          });
+        });
+      } else {
+        req.flash("error", "The selected backup was not restored because it would overwrite current data. Check for a member that exists with the same ID.");
+        res.redirect("/settings/backups");
+      }
+    });
+  } else if (req.body.data && req.body.data[0]) {
+    /* if the backup is an array of meetings */
+    if (req.body.data[0].date) {
+      backup.mongooseModel("./backups/replaced/meetings.txt", Meeting);
+      Meeting.deleteMany({}, function(err, deleteResult) {
+        Meeting.create(req.body.data, function(err, newMeetings) {
+          if (err) {
+            console.error(err);
+            req.flash("error", "An unexpected error occurred.");
+          } else
+            req.flash("success", "The selected backup was successfully restored: All previous meetings were backed up and replaced.");
+          res.redirect("/settings/backups");
+        });
+      });
+    /* if the backup is an array of tutees */
+    } else if (req.body.data[0].parentEmail) {
+      backup.mongooseModel("./backups/replaced/tutees.txt", Tutee);
+      Tutee.deleteMany({}, function(err, deleteResult) {
+        Tutee.create(req.body.data, function(err, newTutees) {
+          if (err) {
+            console.error(err);
+            req.flash("error", "An unexpected error occurred.");
+          } else
+            req.flash("success", "The selected backup was successfully restored: All previous tutees were backed up and replaced.");
+          res.redirect("/settings/backups");
+        });
+      });
+    /* if the backup is an array of tutors */
+    } else if (req.body.data[0].email) {
+      backup.mongooseModel("./backups/replaced/tutors.txt", Tutor);
+      Tutor.deleteMany({}, function(err, deleteResult) {
+        Tutor.create(req.body.data, function(err, newTutors) {
+          if (err) {
+            console.error(err);
+            req.flash("error", "An unexpected error occurred.");
+          } else
+            req.flash("success", "The selected backup was successfully restored: All previous tutors were backed up and replaced.");
+          res.redirect("/settings/backups");
+        });
+      });
+    /* if the backup is an array of members */
+    } else if (req.body.data[0].id) {
+      backup.mongooseModel("./backups/replaced/members.txt", Member);
+      Member.deleteMany({}, function(err, deleteResult) {
+        Member.create(req.body.data, function(err, newMembers) {
+          if (err) {
+            console.error(err);
+            req.flash("error", "An unexpected error occurred.");
+          } else
+            req.flash("success", "The selected backup was successfully restored: All previous members were backed up and replaced.");
+          res.redirect("/settings/backups");
+        });
+      });
+    }
+  } else {
     req.flash("error", "You cannot restore from an empty backup.");
-    return res.redirect("/settings/backups");
-  } else if (req.body.date || req.body.data && req.body.data[0].date)
-    model = Member;
-  else if (req.body.data && req.body.data[0].parentEmail)
-    model = Tutee;
-  else if (req.body.data && req.body.data[0].email)
-    model = Tutor;
-  else if (req.body.id || req.body.data && req.body.data[0].id)
-    model = Member;
-  model.create(req.body.data ? req.body.data : [req.body], function(err, createdData) {
-    if (createdData)
-      req.flash("success", "The selected backup was successfully restored.");
-    else
-      req.flash("error", "The selected backup was NOT restored (or only partially if the backup contained multiple entries) because it would overwrite current data. Check for a member/meeting that exists with the same ID/date.");
     res.redirect("/settings/backups");
-  });
+  }
 });
 
 router.delete("/backups", middleware.hasAccessLevel(3), function(req, res) {
@@ -127,10 +211,105 @@ router.delete("/backups", middleware.hasAccessLevel(3), function(req, res) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
-    } else {
+    } else
       req.flash("success", "The selected backup was successfully deleted.");
-    }
     res.redirect("/settings/backups");
+  });
+});
+
+router.get("/diagnostics", middleware.hasAccessLevel(3), function(req, res) {
+  res.render("settings/diagnostics");
+});
+
+router.get("/diagnostics/run-test", middleware.hasAccessLevel(3), function(req, res) {
+  var result = "", matched = false, foundTutee = null, foundTutor = null, course = null;
+  Meeting.find({}, function(err, meetings) {
+    Member.find({}, function(err, members) {
+      meetings.forEach(function(meeting) {
+        /* checks for duplicate attendance records */
+        var dupeRecords = utils.findDuplicatesInArray(meeting.membersAttended);
+        if (dupeRecords.length > 0) {
+          result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
+          + "</a> has duplicate attendance records of members " + utils.arrayToSentence(dupeRecords) + ".<br>";
+        }
+        /* checks meetings' and members' attendance records to detect discrepancies */
+        meeting.membersAttended.forEach(function(memberID) {
+          member = members.find(member => member.id == memberID);
+          if (!member) {
+            result += "One member who attended the <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
+            + "</a> with ID " + memberID + " does not exist.<br>";
+          } else if (!member.meetingsAttended.includes(meeting.date))
+            result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
+            + "</a> shows that <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + memberID + "</a> attended while the member\'s attendance records do not show this.<br>";
+        });
+      });
+      members.forEach(function(member) {
+        /* checks for duplicate attendance records */
+        dupeRecords = utils.findDuplicatesInArray(member.meetingsAttended);
+        if (dupeRecords.length > 0) {
+          result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + member.id + "</a> has duplicate attendance records of meetings on "
+          + utils.arrayToSentence(dupeRecords.map(record => utils.reformatDate(record))) + ".<br>";
+        }
+        /* checks members' and meetings' attendance records to detect discrepancies */
+        member.meetingsAttended.forEach(function(meetingDate) {
+          meeting = meetings.find(meeting => meeting.date == meetingDate);
+          if (!meeting) {
+            result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id
+            + "</a> indicate them attending a meeting on date " + utils.reformatDate(meetingDate) + " that does not exist.<br>";
+          } else if (!meeting.membersAttended.includes(member.id))
+            result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> show that they attended the <a class='link--white' href='/meetings/"
+            + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date) + "</a> while the meeting\'s do not show this.<br>";
+        });
+      });
+      Tutor.find({}, function(err, tutors) {
+        Tutee.find({}, function(err, tutees) {
+          tutors.forEach(function(tutor) {
+            /* checks if tutors and their tutees are in pairs */
+            tutor.tuteeSessions.forEach(function(tuteeSession) {
+              foundTutee = tutees.find(tutee => tutee._id == tuteeSession.tuteeID);
+              if (!foundTutee) {
+                result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a> indicate them tutoring Tutee "
+                + tuteeSession.tuteeID + " while that tutee does not exist.<br>";
+              } else {
+                foundTutee.tutorSessions.forEach(function(tutorSession) {
+                  if (tuteeSession.courses.includes(tutorSession.course) && tutorSession.tutorID == tutor._id)
+                    matched = true;
+                  else
+                    course = tutorSession.course;
+                });
+                if (!matched)
+                  result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a> indicate them tutoring <a class='link--white' href='/tutees/"
+                  + tuteeSession.tuteeID + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tuteeSession.tuteeID + "</a> for course " + course + " while the tutee\'s records do not.<br>";
+                matched = false;
+              }
+            });
+          });
+          /* checks if tutees and their tutors are in pairs */
+          tutees.forEach(function(tutee) {
+            tutee.tutorSessions.forEach(function(tutorSession) {
+              if (tutorSession.tutorID == null)
+                return;
+              foundTutor = tutors.find(tutor => tutor._id == tutorSession.tutorID);
+              if (!foundTutor) {
+                result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee._id + "</a> indicate them being tutored by Tutor "
+                + tutorSession.tutorID + " while that tutor does not exist.<br>";
+              } else {
+                foundTutor.tuteeSessions.forEach(function(tuteeSession) {
+                  if (tuteeSession.tuteeID = tutee._id && tuteeSession.courses.includes(tutorSession.course))
+                    matched = true;
+                });
+                if (!matched)
+                  result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "'>Tutee " + tutee._id + "</a> indicate them being tutored by <a class='link--white' href='/tutors/"
+                  + tutorSession.tutorID + "'>Tutor " + tutorSession.tutorID + "</a> for course " + tutorSession.course + " while the tutor\'s records do not.<br>";
+                matched = false;
+              }
+            });
+          });
+          req.flash("info", result ? result.substring(0, result.length-4) : "No discrepancies were found in the database.");
+          res.redirect("/settings/diagnostics");
+        });
+      });
+    });
   });
 });
 

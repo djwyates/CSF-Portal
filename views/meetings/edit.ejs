@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
-<form class="form" action="/meetings/<%- meeting._id %>?_method=put" method="post">
-  <a class="form__link" href="/meetings/<%- meeting._id %>">Back</a>
+<form class="form" action="/meetings/<%- meeting._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
+  <a class="form__link" href="/meetings/<%- meeting._id %><% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Back</a>
   <div class="form__title">Edit Meeting on <%- ejs.reformatDate(meeting.date) %></div>
   <div class="form__item">
     <label class="form__label" for="date">Date</label>
@@ -9,13 +9,13 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="description">Description</label>
-    <textarea class="form__input form__input--textarea" name="meeting[description]" maxlength="500" placeholder="Optional description for the meeting"><%- meeting.description %></textarea>
+    <textarea class="form__input form__input--textarea" name="meeting[description]" maxlength="500" placeholder="Optional description of the meeting"><%- meeting.description %></textarea>
   </div>
   <div class="form__item">
     <button class="form__button" type="submit">Save</button>
   </div>
 </form>
-<form class="form" action="/meetings/<%- meeting._id %>?_method=delete" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
+<form class="form" action="/meetings/<%- meeting._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
   <div class="form__item">
     <button class="form__button form__button--red" type="submit">Delete</button>
   </div>

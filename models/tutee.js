@@ -14,7 +14,7 @@ var tuteeSchema = new mongoose.Schema({
   parentPhoneNum: {type: String, required: true},
   paymentForm: {type: String, enum: ["Service", "Both"], required: true},
   courses: {type: [String], required: true},
-  currentTutors: {type: Map, of: String, required: true, default: new Map()}, // course => tutorID
+  tutorSessions: {type: Array, required: true, default: []},
   createdOn: {type: String, required: true, default: "No date found"}
 });
 

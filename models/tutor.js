@@ -15,7 +15,7 @@ var tutorSchema = new mongoose.Schema({
   paymentForm: {type: String, enum: ["Cash", "Both"], required: true},
   courses: {type: [String], required: true},
   maxTutees: {type: Number, min: 1, max: 3, required: true},
-  currentTutees: {type: Map, of: String, required: true, default: new Map()} /* tuteeID => course */
+  tuteeSessions: {type: Array, required: true, default: []}
 });
 
 module.exports = mongoose.model("Tutor", tutorSchema);

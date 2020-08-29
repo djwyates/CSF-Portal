@@ -19,7 +19,12 @@
 	color: rgb(0,128,154);
 }
 
-.link:hover {
+.link--white {
+	text-decoration: none;
+	color: rgb(255,255,255);
+}
+
+.link:hover, .link--white:hover {
 	text-decoration: underline;
 }
 
@@ -41,6 +46,10 @@
 
 /* mobile styles */
 @media screen and (max-width:1030px) {
+	.container--responsive {
+		flex-direction: column;
+	}
+
 	/* header */
   .nav__section {
     display: none;
@@ -87,9 +96,19 @@
     display: inline-block;
   }
 
+	/* directory */
+	.directory {
+		margin-bottom: 10px;
+	}
+
 	/* footer */
 	.footer {
 		flex-direction: column-reverse;
+	}
+
+	/* forms */
+	.form__input--responsive {
+		width: 70%;
 	}
 
 	/* tables */

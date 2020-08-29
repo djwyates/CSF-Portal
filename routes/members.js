@@ -13,7 +13,7 @@ router.get("/attendance", function(req, res) {
       req.flash("error", "An unexpected error occurred.");
       res.redirect("/members/attendance");
     } else {
-      meetings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+      meetings.sort((a, b) => new Date(a.date) - new Date(b.date));
       if (!req.query.id)
         return res.render("members/attendance", {member: null, meetings: meetings});
       req.query.id = req.sanitize(req.query.id.trim());
@@ -25,14 +25,11 @@ router.get("/attendance", function(req, res) {
         } else if (!foundMember) {
           req.flash("error", "That member does not exist. ID entered: " + req.query.id);
           res.redirect("/members/attendance");
-        } else {
+        } else
           res.render("members/attendance", {member: foundMember, meetings: meetings});
-        }
       });
     }
   });
-
-
 });
 
 router.get("/", middleware.hasAccessLevel(1), function(req, res) {
@@ -80,7 +77,7 @@ router.get("/:id", middleware.hasAccessLevel(1), function(req, res) {
       res.redirect("/members");
     } else {
       Meeting.find({}, function(err, meetings) {
-        meetings.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        meetings.sort((a, b) => new Date(a.date) - new Date(b.date));
         res.render("members/show", {member: foundMember, meetings: meetings});
       });
     }

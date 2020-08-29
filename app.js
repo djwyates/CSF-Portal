@@ -30,6 +30,7 @@ app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitia
 app.use(passport.initialize());
 app.use(passport.session());
 require("./config/passport-setup");
+require("./config/aws-setup");
 app.use(function(req, res, next) {
   res.locals.currentUser = req.user;
   res.locals.ejs = require("./services/ejs");

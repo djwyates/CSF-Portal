@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/djwyates/CSF-Portal#readme",
   "dependencies": {
+    "aws-sdk": "^2.739.0",
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
     "directory-tree": "^2.2.4",

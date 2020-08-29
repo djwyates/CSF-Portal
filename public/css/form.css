@@ -207,6 +207,10 @@
 	text-decoration: underline;
 }
 
+.form__list {
+  margin-left: 20px;
+}
+
 .form__input-footnote {
   padding-top: 10px;
   color: rgb(130,130,130);

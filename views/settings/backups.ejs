@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
 <a class="link" href="/settings">Back</a>
-<div class="container">
+<div class="container container--responsive">
   <ul class="directory">
     <%- getDirTreeHTML(backupsDirTree) %>
   </ul>
@@ -50,12 +50,12 @@
       var form = document.createElement("form");
       form.action = "/settings/backups?_method=put";
       form.method = "post";
-      form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It will not overwrite current data.')");
       var formTitle = document.createElement("div");
       formTitle.classList.add("form__title");
       formTitle.innerText = backupsFile.name;
       form.appendChild(formTitle);
       if (Array.isArray(backupsFile.data)) {
+        form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It will back up and replace ALL current data of this type!')");
         var formItem = document.createElement("div");
         formItem.classList.add("form__item");
         var formLabel = document.createElement("label");
@@ -85,6 +85,7 @@
         formItem.appendChild(formInput);
         form.appendChild(formItem);
       } else {
+        form.setAttribute("onSubmit", "return confirm('Are you sure you want to restore from this backup? It will not overwrite current data.')");
         for (let [key, value] of Object.entries(backupsFile.data)) {
           if (key == "_id" || key == "__v")
             continue;

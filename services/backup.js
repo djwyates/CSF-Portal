@@ -10,7 +10,7 @@ backup.object = function(path, object) {
 }
 
 backup.mongooseModel = function(path, model, limit) {
-  model.find({}, function(err, documents) {
+  model.find({}).lean().exec(function(err, documents) {
     if (err || !documents)
       console.error(err ? err : "ERROR: The model you tried to back up does not exist.");
     else

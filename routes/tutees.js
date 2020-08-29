@@ -3,6 +3,8 @@ const express = require("express"),
       shortid = require("shortid"),
       middleware = require("../middleware/index"),
       backup = require("../services/backup"),
+      sns = require("../services/sns"),
+      utils = require("../services/utils"),
       courses = require("../config/courses"),
       Tutee = require("../models/tutee"),
       Tutor = require("../models/tutor");
@@ -35,6 +37,10 @@ router.post("/", function(req, res) {
   req.body.tutee.parentEmail = req.sanitize(req.body.tutee.parentEmail);
   req.body.tutee.parentPhoneNum = req.sanitize(req.body.tutee.parentPhoneNum);
   req.body.tutee.createdOn = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
+  req.body.tutee.tutorSessions = [];
+  req.body.tutee.courses.forEach(function(course) {
+    req.body.tutee.tutorSessions.push({course: course, tutorID: null, status: "Unpaired"});
+  });
   Tutee.findOneAndUpdate({id: req.body.tutee.id}, req.body.tutee, {new: true, upsert: true}, function(err, tutee) {
     if (err) {
       console.error(err);
@@ -77,48 +83,42 @@ router.put("/:id", middleware.hasTuteeAccess, function(req, res) {
 });
 
 router.put("/:id/pair", middleware.hasAccessLevel(2), function(req, res) {
-  Tutee.findById(req.params.id, function(err, foundTutee) {
-    if (err || !foundTutee) {
-      res.redirect("/tutees");
-    } else {
-      var pairedTutors = new Map(), availableTutor = null, paymentQuery = foundTutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"];
-      Tutor.find({verified: true, verifiedPhone: true, paymentForm: {$in: paymentQuery}}, function(err, tutors) {
-        foundTutee.courses.forEach(function(course) {
-          if (!foundTutee.currentTutors.get(course)) {
-            tutors.forEach(function(tutor) {
-              if (tutor.currentTutees.size < tutor.maxTutees && tutor.courses.includes(course) && (!availableTutor || tutor.currentTutees.size < availableTutor.currentTutees.size))
-                availableTutor = tutor;
-            });
-            if (availableTutor) {
-              var tutorKey = "currentTutees." + foundTutee._id, tuteeKey = "currentTutors." + course; // TODO: correctly update currentTutors & currentTutees fields
-              Tutor.findByIdAndUpdate(availableTutor._id, {$set: {"currentTutees.tuteeID": course}});
-              Tutee.findByIdAndUpdate(foundTutee._id, {$set: {"currentTutors.course": availableTutor._id}}, function(err, updatedTutee){});
-              pairedTutors.set(course, availableTutor.name);
-              availableTutor = null;
-            }
-          }
+  Tutee.findById(req.params.id, function(err, tutee) {
+    Tutor.find({courses: {$in: tutee.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]}, verified: true, verifiedPhone: true}).lean().exec(function(err, tutors) {
+      tutors = tutors.map(tutor => Object.assign(tutor, {mutualCourses: tutor.courses.filter(course => tutee.courses.includes(course))}));
+      var matchingTutor = null, alreadyTutorsThisTutee = null, matchedAlreadyTutors = null, pairInfo = [];
+      tutee.tutorSessions.filter(tutorSession => tutorSession.status == "Unpaired").forEach(function(tutorSession) {
+        /* pairs the tutee with a matching tutor; priority given to tutors who already tutor this tutee, who share the most courses with this tutee, & who are tutoring the least tutees */
+        tutors.forEach(function(tutor) {
+          alreadyTutorsThisTutee = tutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id);
+          if (matchingTutor) matchedAlreadyTutors = matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id);
+          if (tutor.courses.includes(tutorSession.course) && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee) && (!matchingTutor || alreadyTutorsThisTutee
+              || (!matchedAlreadyTutors && tutor.mutualCourses.length > matchingTutor.mutualCourses.length)
+              || (!matchedAlreadyTutors && tutor.mutualCourses.length == matchingTutor.mutualCourses.length && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))
+                matchingTutor = tutor;
         });
-        var pairMessage = "Tutee " + foundTutee.name, i = 1;
-        if (pairedTutors.size == 0) {
-          pairMessage += " did not find any available tutors for their selected courses.";
-        } else if (pairedTutors.size == 1) {
-          pairMessage += " has been successfully paired with";
-          pairedTutors.forEach(function(tutorName, course, pairedTutors) {
-            if (pairedTutors.size == 1) {
-              pairMessage += " Tutor " + tutorName + " for Course " + course + ".";
-            } else if (i < pairedTutors.size) {
-              pairMessage += " Tutor " + tutorName + " for Course " + course + (pairedTutors.size == 2 ? "" : ",");
-              i++;
-            } else {
-              pairMessage += " and Tutor " + tutorName + " for Course " + course + ".";
-            }
-          });
+        /* updates the database to pair the matching tutor and tutee */
+        if (matchingTutor) {
+          Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element]": {course: tutorSession.course, tutorID: matchingTutor._id, status: "Pending"}}, {arrayFilters: [{"element.course": tutorSession.course}]}).exec();
+          if (matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id))
+            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions.$[element].courses": tutorSession.course}}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+          else {
+            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions": {tuteeID: tutee._id, courses: [tutorSession.course], status: "Pending"}}}).exec();
+            tutors.find(tutor => tutor._id == matchingTutor._id).tuteeSessions.push({tuteeID: tutee._id, courses: [tutorSession.course], status: "Pending"});
+          }
+          pairInfo.push("Tutor " + matchingTutor.name + " for Course " + tutorSession.course);
+          matchingTutor = null;
         }
-        // TODO: send text via AWS to members with accessLevel >= 2 based on foundTutee && pairedTutors
-        req.flash("info", pairMessage);
-        res.redirect("/tutees");
       });
-    }
+      /* formulates a message on the outcome of the pairing */
+      var pairMessage = "Tutee " + tutee.name;
+      if (pairInfo.length == 0)
+        pairMessage += " did not find any available tutors for their selected courses.";
+      else
+        pairMessage += " has been successfully paired with " + utils.arrayToSentence(pairInfo);
+      req.flash("info", pairMessage);
+      res.redirect("/tutees");
+    });
   });
 });
 
