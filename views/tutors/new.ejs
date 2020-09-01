@@ -8,7 +8,8 @@
   </p>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>
-    <input class="form__input" id="id" type="text" name="tutor[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" required/>
+    <input class="form__input" id="id" type="text" name="tutor[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID"
+    <% if (currentUser.accessLevel < 2) { %> value="<%- currentUser.id %>" readonly <% } %> required/>
   </div>
   <div class="form__item">
     <label class="form__label" for="gender">Gender</label>
@@ -50,13 +51,7 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="courses">Which courses will you tutor for?</label>
-    <% for (courseID in courses) { %>
-      <label class="form__label--checkbox" for="<%- courseID %>">
-        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutor[courses]" value="<%- courseID %>"/>
-        <div class="form__input--checkboxsquare"></div>
-        <%- courses[courseID] %>
-      </label>
-    <% } %>
+    <%- include("../partials/course-selector") %>
   </div>
   <div class="form__item">
     <button class="form__button" type="submit">Sign Up</button>

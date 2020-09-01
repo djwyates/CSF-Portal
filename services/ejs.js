@@ -5,6 +5,18 @@ ejs.reformatDate = function(date) {
   return(months[date.getMonth()] + ' ' + (date.getDate()+1) + ', ' + date.getFullYear());
 }
 
+ejs.reformatVar = function(variable) {
+  var result = variable[0].toUpperCase();
+  for (var i = 0; i < variable.length-1; i++) {
+    if (i != 0)
+      result += variable[i];
+    if (variable[i+1] === variable[i+1].toUpperCase())
+      result += " ";
+  }
+  result += variable[variable.length-1];
+  return result;
+}
+
 ejs.getURLLocation = function(url, fromQuery, currentUser) {
   if (fromQuery && fromQuery.substring(0,9) == "/settings" || url.substring(0,9) == "/settings")
     return "Settings";
@@ -16,6 +28,8 @@ ejs.getURLLocation = function(url, fromQuery, currentUser) {
     return "Tutors";
   else if (!fromQuery && url.substring(0,11) == "/tutees/new")
     return "Request a Tutor";
+  else if (!fromQuery && currentUser && currentUser.tuteeID && url.substring(0,8+currentUser.tuteeID.length) == "/tutees/" + currentUser.tuteeID)
+    return "My Tutor Request";
   else if (fromQuery && fromQuery.substring(0,7) == "/tutees" || url.substring(0,7) == "/tutees")
     return "Tutees";
   else if (url.substring(0,9) == "/meetings")

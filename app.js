@@ -4,6 +4,7 @@ const express = require("express"),
       flash = require("connect-flash"),
       expressSanitizer = require("express-sanitizer"),
       expressFileUpload = require("express-fileupload"),
+      favicon = require("serve-favicon"),
       methodOverride = require("method-override"),
       mongoose = require("mongoose"),
       passport = require("passport"),
@@ -24,13 +25,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(flash());
 app.use(expressSanitizer());
 app.use(expressFileUpload());
+app.use(favicon(__dirname + "/public/images/favicon.ico"));
 app.use(methodOverride("_method"));
 mongoose.connect("mongodb://localhost:27017/csf", {useCreateIndex: true, useFindAndModify: false, useNewUrlParser: true, useUnifiedTopology: true});
 app.use(expressSession({secret: keys.session.secret, resave: false, saveUninitialized: false, cookie: {maxAge: 3*24*60*60*1000}}));
 app.use(passport.initialize());
 app.use(passport.session());
 require("./config/passport-setup");
-require("./config/aws-setup");
 app.use(function(req, res, next) {
   res.locals.currentUser = req.user;
   res.locals.ejs = require("./services/ejs");

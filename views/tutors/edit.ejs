@@ -40,7 +40,10 @@
     <label class="form__label" for="phoneNum">Phone Number</label>
     <input class="form__input" id="phoneNum" type="text" name="tutor[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
     value="<%- tutor.phoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
-    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator</span>
+    <span class="form__input-footnote">
+      <% if (!tutor.verifiedPhone) { %>If needed, <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">resend verification</a>.<% } %>
+      To change your phone number, contact the tutoring coordinator.
+    </span>
   </div>
   <div class="form__item">
     <label class="form__label" for="maxTutees">How many students can you realisticly tutor at the same time?</label>
@@ -60,14 +63,8 @@
     </label>
   </div>
   <div class="form__item">
-    <label class="form__label" for="courses"><% if (currentUser.id == tutor.id) { %>Your courses<% } else { %>Courses<% } %></label>
-    <% for (courseID in courses) { %>
-      <label class="form__label--checkbox" for="<%- courseID %>">
-        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutor[courses]" <% if (tutor.courses.includes(courseID)) { %>checked<% } %> value="<%- courseID %>"/>
-        <div class="form__input--checkboxsquare"></div>
-        <%- courses[courseID] %>
-      </label>
-    <% } %>
+    <label class="form__label" for="courses">Courses</label>
+    <%- include("../partials/course-selector") %>
   </div>
   <div class="form__item">
     <button class="form__button" type="submit">Save</button>

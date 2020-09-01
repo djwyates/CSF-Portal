@@ -46,3 +46,18 @@ if (filterTable) {
     }
   });
 }
+
+/* accordion scripts */
+const accordionHeaders = document.querySelectorAll(".accordion__header");
+if (accordionHeaders) {
+  accordionHeaders.forEach(function(accordionHeader) {
+    accordionHeader.addEventListener("click", function() {
+      const accordionBody = accordionHeader.nextElementSibling;
+      accordionHeader.classList.toggle("accordion__header--active");
+      if (accordionHeader.classList.contains("accordion__header--active"))
+        accordionBody.style.maxHeight = accordionBody.scrollHeight + "px";
+      else
+        accordionBody.style.maxHeight = 0;
+    });
+  });
+}

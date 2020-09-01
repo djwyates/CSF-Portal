@@ -7,7 +7,8 @@ const express = require("express"),
       utils = require("../services/utils"),
       courses = require("../config/courses"),
       Tutee = require("../models/tutee"),
-      Tutor = require("../models/tutor");
+      Tutor = require("../models/tutor"),
+      Member = require("../models/member");
 
 router.get("/", middleware.hasAccessLevel(2), function(req, res) {
   Tutee.find({}, function(err, tutees) {
@@ -24,11 +25,13 @@ router.get("/", middleware.hasAccessLevel(2), function(req, res) {
 });
 
 router.get("/new", function(req, res) {
-  res.render("tutees/new", {courses: courses});
+  if (req.user && req.user.tuteeID && req.user.accessLevel < 2)
+    res.redirect("/tutees/" + req.user.tuteeID);
+  else
+    res.render("tutees/new", {courses: courses});
 });
 
 router.post("/", function(req, res) {
-  req.body.tutee.$setOnInsert = {_id: shortid.generate()};
   req.body.tutee.id = req.sanitize(req.body.tutee.id);
   req.body.tutee.name = req.sanitize(req.body.tutee.name);
   req.body.tutee.email = req.sanitize(req.body.tutee.email);
@@ -37,21 +40,33 @@ router.post("/", function(req, res) {
   req.body.tutee.parentEmail = req.sanitize(req.body.tutee.parentEmail);
   req.body.tutee.parentPhoneNum = req.sanitize(req.body.tutee.parentPhoneNum);
   req.body.tutee.createdOn = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
+  req.body.tutee.courses = req.body.courses;
+  if (!req.body.tutee.courses) {
+    req.flash("error", "You must select courses to be tutored in.");
+    return res.redirect("/tutees/new");
+  }
+  if (!Array.isArray(req.body.tutee.courses)) req.body.tutee.courses = [req.body.tutee.courses];
   req.body.tutee.tutorSessions = [];
   req.body.tutee.courses.forEach(function(course) {
     req.body.tutee.tutorSessions.push({course: course, tutorID: null, status: "Unpaired"});
   });
-  Tutee.findOneAndUpdate({id: req.body.tutee.id}, req.body.tutee, {new: true, upsert: true}, function(err, tutee) {
+  Tutee.create([req.body.tutee], {new: true, upsert: true}, function(err, newTutee) {
     if (err) {
       console.error(err);
-      req.flash("error", "An unexpected error occurred. Try to submit the form again.");
+      if (err.code == 11000)
+        req.flash("error", "A tutee already exists with that ID. Login with your school email to view or edit your request.");
+      else
+        req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutees/new" + (req.query.from ? "?from=" + req.query.from : ""));
-    } else if (req.user && req.user.id == tutee.id) {
-      req.flash("success", "Your tutoring request has been successfully submitted.");
-      res.redirect("/tutees/" + tutee._id + (req.query.from ? "?from=" + req.query.from : ""));
     } else {
-      req.flash("success", "Your tutoring request has been successfully submitted. To view your request, login with the student or parent email associated with your request (you can only login with a Google or school email).");
-      res.redirect(req.query.from ? req.query.from : "/");
+      Member.findOneAndUpdate({id: newTutee[0].id}, {tuteeID: newTutee[0]._id}).exec();
+      if (req.user && req.user.id == newTutee[0].id) {
+        req.flash("success", "Your tutoring request has been successfully submitted.");
+        res.redirect("/tutees/" + newTutee[0]._id + (req.query.from ? "?from=" + req.query.from : ""));
+      } else {
+        req.flash("success", "Your tutoring request has been successfully submitted. To view your request, login with your school email.");
+        res.redirect(req.query.from ? req.query.from : "/");
+      }
     }
   });
 });
@@ -65,12 +80,14 @@ router.get("/:id/edit", middleware.hasTuteeAccess, function(req, res) {
 });
 
 router.put("/:id", middleware.hasTuteeAccess, function(req, res) {
+  delete req.body.tutee.id;
   req.body.tutee.name = req.sanitize(req.body.tutee.name);
   req.body.tutee.email = req.sanitize(req.body.tutee.email);
   req.body.tutee.phoneNum = req.sanitize(req.body.tutee.phoneNum);
   req.body.tutee.parentName = req.sanitize(req.body.tutee.parentName);
   req.body.tutee.parentEmail = req.sanitize(req.body.tutee.parentEmail);
   req.body.tutee.parentPhoneNum = req.sanitize(req.body.tutee.parentPhoneNum);
+  req.body.tutee.courses = req.body.courses;
   Tutee.findByIdAndUpdate(req.params.id, req.body.tutee, function(err, foundTutee) {
     if (err) {
       console.error(err);
@@ -121,5 +138,10 @@ router.put("/:id/pair", middleware.hasAccessLevel(2), function(req, res) {
     });
   });
 });
+
+/* TODO:
+1. When tutee edits & adds more courses, add to tuteeSessions.
+2. When someone requests for tutor with same ID, do not change anything & notify them
+*/
 
 module.exports = router;

@@ -9,7 +9,8 @@ var memberSchema = new mongoose.Schema({
   termCount: {type: Number, min: 0, max: 7, required: true},
   meetingsAttended: {type: [String], required: true, default: []},
   accessLevel: {type: Number, min: 0, max: 3, required: true, default: 0},
-  tutorID: {type: String, required: false} /* _id of this member's tutor profile if they are a tutor */
+  tutorID: {type: String, required: false}, /* _id of this member's tutor profile if they are a tutor */
+  tuteeID: {type: String, required: false} /* _id of this member's tutee profile if they are a tutee */
 });
 
 module.exports = mongoose.model("Member", memberSchema);

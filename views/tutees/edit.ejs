@@ -71,14 +71,8 @@
     </label>
   </div>
   <div class="form__item">
-    <label class="form__label" for="courses"><% if (currentUser.id == tutee.id) { %>Your courses<% } else { %>Courses<% } %></label>
-    <% for (courseID in courses) { %>
-      <label class="form__label--checkbox" for="<%- courseID %>">
-        <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="tutee[courses]" <% if (tutee.courses.includes(courseID)) { %>checked<% } %> value="<%- courseID %>"/>
-        <div class="form__input--checkboxsquare"></div>
-        <%- courses[courseID] %>
-      </label>
-    <% } %>
+    <label class="form__label" for="courses">Courses</label>
+    <%- include("../partials/course-selector") %>
   </div>
   <div class="form__item">
     <button class="form__button" type="submit">Save</button>

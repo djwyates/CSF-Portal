@@ -2,7 +2,7 @@
 
 <div class="form">
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
-  <div class="form__title">View <% if (currentUser.id == tutee.id) { %>Your <% } %>Tutoring Request</div>
+  <div class="form__title">View Tutoring Request</div>
   <% if (currentUser.accessLevel <= 1) { %>
     <p class="form__description">If you wish to delete your tutoring request, contact the tutoring coordinator.</p>
   <% } %>

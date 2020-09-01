@@ -2,7 +2,7 @@
 
 <div class="form">
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
-  <div class="form__title">View <% if (currentUser.id == tutor.id) { %>Your <% } %>Tutor Profile</div>
+  <div class="form__title">View Tutor Profile</div>
   <% if (currentUser.accessLevel <= 1) { %>
     <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
   <% } if (currentUser.id == tutor.id) { %>
@@ -18,7 +18,7 @@
           <% } else if (!tutor.verified) { %>
             attend one of the training sessions and turn in the tutoring permission form. If you have done this, allow some time for CSF to verify you.
           <% } else if (!tutor.verifiedPhone) { %>
-            click the verification link sent to your phone. Contact the tutoring coordinator if you need another one.
+            click the verification link sent to your phone. <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">Resend verification</a>
           <% } %>
         </span>
       <% } %>
@@ -68,7 +68,10 @@
   <div class="form__item">
     <label class="form__label" for="verified">Verification Status</label>
     <input class="form__input" value="<% if (tutor.verified && tutor.verifiedPhone) { %>Verified<% } else { %>Unverified<% } %>" readonly/>
-    <pre class="form__input-footnote">CSF Verified: <% if (tutor.verified) { %>True<% } else { %>False<% } %>,   Phone Verified: <% if (tutor.verifiedPhone) { %>True<% } else { %>False<% } %></pre>
+    <span class="form__input-footnote">
+      CSF Verified: <% if (tutor.verified) { %>True<% } else { %>False<% } %>,&nbsp;&nbsp;&nbsp;
+      Phone Verified: <% if (tutor.verifiedPhone) { %>True<% } else { %>False - <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">Resend verification</a><% } %>
+    </span>
   </div>
   <div class="form__item form__item--row">
     <a class="form__button" href="/tutors/<%- tutor._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>

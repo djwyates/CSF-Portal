@@ -1,0 +1,11 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutors/verify-phone/<%- verificationCode %>?_method=put" method="post">
+  <p class="form__description">To confirm that it's you, please enter your ID to verify your phone.</p>
+  <div class="form__item--row">
+    <input class="form__input form__input--responsive" type="text" name="id" minlength="1" placeholder="Student ID" required/>
+    <button class="form__button form__button--tall" type="submit">Verify</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

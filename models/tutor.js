@@ -15,7 +15,12 @@ var tutorSchema = new mongoose.Schema({
   paymentForm: {type: String, enum: ["Cash", "Both"], required: true},
   courses: {type: [String], required: true},
   maxTutees: {type: Number, min: 1, max: 3, required: true},
-  tuteeSessions: {type: Array, required: true, default: []}
+  tuteeSessions: {type: Array, required: true, default: []},
+  verification: {
+    code: {type: String, required: false},
+    timesSent: {type: Number, required: false},
+    lastSent: {type: String, required: false}
+  }
 });
 
 module.exports = mongoose.model("Tutor", tutorSchema);

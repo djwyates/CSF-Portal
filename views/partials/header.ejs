@@ -12,52 +12,56 @@
     <link rel="stylesheet" href="/css/table.css"/>
     <link rel="stylesheet" href="/css/search.css"/>
     <link rel="stylesheet" href="/css/directory.css"/>
+    <link rel="stylesheet" href="/css/accordion.css"/>
     <link rel="stylesheet" href="/css/main.css"/>
     <title>MVHS CSF<% if (location) { %> - <%- location %><% } %></title>
   </head>
   <body ontouchstart>
-    <div class="body-container">
-      <header>
-        <nav class="nav">
-          <a href="/" class="nav__logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
-          <div class="nav__section">
-        	  <a href="/members/attendance" class="nav__link<% if (location == "Attendance") { %> nav__link--active<% } %>">Check Attendance</a>
-        	  <a href="/meetings" class="nav__link<% if (location == "Meetings") { %> nav__link--active<% } %>">Meetings Overview</a>
-            <% if (currentUser && currentUser.accessLevel >= 1) { %>
-              <a href="/members" class="nav__link<% if (location == "Members") { %> nav__link--active<% } %>">Members Overview</a>
-            <% } %>
-            <div class="nav__link nav__link--dropdown<% if (location == "Tutors" || location == "Tutees" || location == "Request a Tutor" || location == "Tutor Sign Up") { %> nav__link--active<% } %>">
-              Tutoring
-              <span class="material-icons nav__icon nav__icon--down-arrow">keyboard_arrow_down</span>
-              <span class="material-icons nav__icon nav__icon--right-arrow">keyboard_arrow_right</span>
-              <div class="nav__dropdown">
+    <header>
+      <nav class="nav">
+        <a href="/" class="nav__logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
+        <div class="nav__section">
+      	  <a href="/members/attendance" class="nav__link<% if (location == "Attendance") { %> nav__link--active<% } %>">Check Attendance</a>
+      	  <a href="/meetings" class="nav__link<% if (location == "Meetings") { %> nav__link--active<% } %>">Meetings Overview</a>
+          <% if (currentUser && currentUser.accessLevel >= 1) { %>
+            <a href="/members" class="nav__link<% if (location == "Members") { %> nav__link--active<% } %>">Members Overview</a>
+          <% } %>
+          <div class="nav__link nav__link--dropdown<% if (location == "Tutors" || location == "Tutees" || location == "Request a Tutor" || location == "Tutor Sign Up") { %> nav__link--active<% } %>">
+            Tutoring
+            <span class="material-icons nav__icon nav__icon--down-arrow">keyboard_arrow_down</span>
+            <span class="material-icons nav__icon nav__icon--right-arrow">keyboard_arrow_right</span>
+            <div class="nav__dropdown">
+              <% if (currentUser && currentUser.tuteeID) { %>
+                <a href="/tutees/<%- currentUser.tuteeID %>" class="nav__link<% if (location == "My Tutor Request") { %> nav__link--active<% } %>">My Tutor Request</a>
+              <% } else { %>
                 <a href="/tutees/new" class="nav__link<% if (location == "Request a Tutor") { %> nav__link--active<% } %>">Request a Tutor</a>
-                <% if (currentUser && currentUser.tutorID) { %>
-                  <a href="/tutors/<%- currentUser.tutorID %>" class="nav__link<% if (location == "My Tutor Profile") { %> nav__link--active<% } %>">My Tutor Profile</a>
-                <% } else { %>
-                  <a href="/tutors/new" class="nav__link<% if (location == "Tutor Sign Up") { %> nav__link--active<% } %>">Sign Up as a Tutor</a>
-                <% } if (currentUser && currentUser.accessLevel >= 2) { %>
-                  <a href="/tutors" class="nav__link<% if (location == "Tutors") { %> nav__link--active<% } %>">Tutors Overview</a>
-                  <a href="/tutees" class="nav__link<% if (location == "Tutees") { %> nav__link--active<% } %>">Tutees Overview</a>
-                <% } %>
-              </div>
+              <% } if (currentUser && currentUser.tutorID) { %>
+                <a href="/tutors/<%- currentUser.tutorID %>" class="nav__link<% if (location == "My Tutor Profile") { %> nav__link--active<% } %>">My Tutor Profile</a>
+              <% } else { %>
+                <a href="/tutors/new" class="nav__link<% if (location == "Tutor Sign Up") { %> nav__link--active<% } %>">Sign Up as a Tutor</a>
+              <% } if (currentUser && currentUser.accessLevel >= 2) { %>
+                <a href="/tutors" class="nav__link<% if (location == "Tutors") { %> nav__link--active<% } %>">Tutors Overview</a>
+                <a href="/tutees" class="nav__link<% if (location == "Tutees") { %> nav__link--active<% } %>">Tutees Overview</a>
+              <% } %>
             </div>
-            <% if (currentUser && currentUser.accessLevel >= 3) { %>
-              <a href="/settings" class="nav__link nav__link--settings<% if (location == "Settings") { %> nav__link--active<% } %>"><span class="material-icons nav__icon">settings</span></a>
-            <% } if (!currentUser) { %>
-              <a href="/login/google" class="nav__button">Google Login</a>
-            <% } else { %>
-              <a href="/logout" class="nav__button">Logout</a>
-            <% } %>
           </div>
-      	  <!-- for mobile devices -->
-      	  <div class="burger" onclick="toggleBurger(this)">
-      		  <div class="burger__1"></div>
-      		  <div class="burger__2"></div>
-      		  <div class="burger__3"></div>
-          </div>
-        </nav>
-      </header>
+          <% if (currentUser && currentUser.accessLevel >= 3) { %>
+            <a href="/settings" class="nav__link nav__link--settings<% if (location == "Settings") { %> nav__link--active<% } %>"><span class="material-icons nav__icon">settings</span></a>
+          <% } if (!currentUser) { %>
+            <a href="/login/google" class="nav__button">Google Login</a>
+          <% } else { %>
+            <a href="/logout" class="nav__button">Logout</a>
+          <% } %>
+        </div>
+    	  <!-- for mobile devices -->
+    	  <div class="burger" onclick="toggleBurger(this)">
+    		  <div class="burger__1"></div>
+    		  <div class="burger__2"></div>
+    		  <div class="burger__3"></div>
+        </div>
+      </nav>
+    </header>
+    <div class="body-container">
       <% if (flash.success.length > 0) { %>
         <div class="flash flash--success"><%- flash.success %></div>
       <% } else if (flash.info.length > 0) { %>

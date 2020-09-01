@@ -1,0 +1,19 @@
+<div class="accordion">
+  <% for (courseCategory in courses) { %>
+    <div class="accordion__item">
+      <div class="accordion__header"><%- ejs.reformatVar(courseCategory) %></div>
+      <div class="accordion__body">
+        <div class="accordion__content">
+          <% for (courseID in courses[courseCategory]) { %>
+            <label class="form__label--checkbox" for="<%- courseID %>">
+              <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="courses" value="<%- courseID %>"/>
+              <div class="form__input--checkboxsquare"></div>
+              <%- courses[courseCategory][courseID] %>
+            </label>
+            <br>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+</div>

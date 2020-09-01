@@ -59,11 +59,18 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
     /* formulates a message if any members of the uploaded file could not be parsed */
     var warningMsg = "";
     if (parsedMembers.warnings.length > 0)
-      warningMsg += " WARNING: The member(s) in row(s) " + utils.arrayToSentence(parsedMembers.warnings) + " of the uploaded Excel sheet is invalid and was not added.";
+      warningMsg += " WARNING: The members in rows " + utils.arrayToSentence(parsedMembers.warnings) + " of the uploaded Excel sheet are invalid and were not added.";
     /* finds previous members who were officers, then deletes all previous members & creates new ones who were successfully parsed from the uploaded file */
     Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
-      Member.deleteMany({}, function(err, deleteResult) {
+      Member.deleteMany({id: {$ne: req.user.id}}, function(err, deleteResult) {
         console.info("Deleted all members from the database: " + JSON.stringify(deleteResult));
+        /* if the current user is a new member, they will be not deleted & will be updated separately so term migration does not log them out */
+        var newMemberOfUser = parsedMembers.members.find(member => member.id == req.user.id);
+        if (parsedMembers.members.indexOf(newMemberOfUser) >= 0) {
+          parsedMembers.members.splice(parsedMembers.members.indexOf(newMemberOfUser), 1);
+          Member.findOneAndUpdate({id: req.user.id}, newMemberOfUser).exec();
+        } else
+          Member.deleteOne({id: req.user.id}).exec();
         Member.create(parsedMembers.members, function(err, newMembers) {
           /* conserves permissions of previous officers if found in the collection of new members */
           if (!previousOfficers) {
@@ -75,19 +82,20 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
               if (matchingNewMember) {
                 Member.findByIdAndUpdate(matchingNewMember._id, {accessLevel: previousOfficer.accessLevel}, function(err, updatedMember){});
                 console.info(matchingNewMember.name + "\'s (" + matchingNewMember.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
+              } else if (req.user.id == previousOfficer.id) {
+                console.info(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
               } else {
                 console.warn(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel + " was NOT conserved.");
                 previousOfficersNotPreserved.push(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel);
               }
             });
             /* formulates a message about the officers who did or did not conserve permissions */
-            if (previousOfficersNotPreserved.length > 0)
-              warningMsg += "<br>WARNING: " + utils.arrayToSentence(previousOfficersNotPreserved) + " was NOT conserved.";
-            else
-              warningMsg += "<br>All previous officers\' permissions were conserved.";
+            if (previousOfficersNotPreserved.length > 0) warningMsg += "<br>WARNING: " + utils.arrayToSentence(previousOfficersNotPreserved) + " was NOT conserved.";
+            else warningMsg += "<br>All previous officers\' permissions were conserved.";
           }
           /* term migration is successful; this redirects the user & displays the term migration report via a flash message */
-          req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees.<br>" + newMembers.length + " new members have been loaded into the database." + warningMsg);
+          var totalNewMembers = newMembers.length + (newMemberOfUser ? 1 : 0);
+          req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees.<br>" + totalNewMembers + " new members have been loaded into the database." + warningMsg);
           res.redirect("/settings/permissions");
         });
       });

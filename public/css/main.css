@@ -24,6 +24,10 @@
 	color: rgb(255,255,255);
 }
 
+.link--gray {
+	color: rgb(130,130,130);
+}
+
 .link:hover, .link--white:hover {
 	text-decoration: underline;
 }
@@ -108,7 +112,7 @@
 
 	/* forms */
 	.form__input--responsive {
-		width: 70%;
+		width: calc(100% - 94px);
 	}
 
 	/* tables */
