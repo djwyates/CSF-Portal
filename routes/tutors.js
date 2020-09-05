@@ -4,10 +4,12 @@ const express = require("express"),
       middleware = require("../middleware/index"),
       backup = require("../services/backup"),
       sns = require("../services/sns"),
+      utils = require("../services/utils"),
       courses = require("../config/courses"),
       keys = require("../config/keys"),
       Tutor = require("../models/tutor"),
-      Member = require("../models/member");
+      Member = require("../models/member"),
+      Tutee = require("../models/tutee");
 
 router.get("/", middleware.hasAccessLevel(2), function(req, res) {
   Tutor.find({}, function(err, tutors) {
@@ -35,9 +37,8 @@ router.get("/new", function(req, res) {
 });
 
 router.post("/", function(req, res) {
-  if (req.user.accessLevel < 2) req.body.tutor.id = req.user.id;
-  else req.body.tutor.id = req.sanitize(req.body.tutor.id);
-  Member.findOne({id: req.sanitize(req.body.tutor.id)}, function(err, foundMember) {
+  req.body.tutor.id = req.user.accessLevel >= 2 ? req.sanitize(req.body.tutor.id) : req.user.id;
+  Member.findOne({id: req.body.tutor.id}, function(err, foundMember) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
@@ -46,37 +47,36 @@ router.post("/", function(req, res) {
       req.flash("error", "Only members of CSF can become tutors.");
       res.redirect("/tutors/new");
     } else {
-      req.body.tutor.name = foundMember.name;
-      req.body.tutor.grade = foundMember.grade;
-      req.body.tutor.email = req.sanitize(req.body.tutor.email);
-      req.body.tutor.phoneNum = req.sanitize(req.body.tutor.phoneNum);
-      req.body.tutor.courses = req.body.courses;
-      if (!req.body.tutor.courses) {
-        req.flash("error", "You must select courses to tutor.");
-        return res.redirect("/tutees/new");
-      }
-      if (!Array.isArray(req.body.tutor.courses)) req.body.tutor.courses = [req.body.tutor.courses];
-      req.body.tutor.verification = {
-        code: shortid.generate(),
-        lastSent: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
+      var newTutor = {
+        id: req.body.tutor.id,
+        name: foundMember.name,
+        grade: foundMember.grade,
+        gender: req.body.tutor.gender,
+        email: req.sanitize(req.body.tutor.email),
+        phoneNum: req.sanitize(req.body.tutor.phoneNum),
+        maxTutees: req.body.tutor.maxTutees,
+        paymentForm: req.body.tutor.paymentForm,
+        courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses],
+        verification: {
+          code: shortid.generate(),
+          lastSent: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
+        }
       };
-      Tutor.create([req.body.tutor], function(err, newTutor) {
+      Tutor.create([newTutor], function(err, newTutor) {
         if (err) {
           console.error(err);
-          if (err.code == 11000)
-            req.flash("error", "A tutor already exists with that ID.");
-          else
-            req.flash("error", "An unexpected error occurred.");
+          if (err.code == 11000) req.flash("error", "A tutor already exists with that ID.");
+          else req.flash("error", "An unexpected error occurred.");
           res.redirect("/tutors/new");
         } else {
           sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + newTutor[0].verification.code, newTutor[0].phoneNum);
           Member.findByIdAndUpdate(foundMember._id, {tutorID: newTutor[0]._id}).exec();
           if (req.user && req.user.id == newTutor[0].id) {
             req.flash("success", "You have successfully signed up as a tutor! Please click the verification link sent to your phone.");
-            res.redirect("/tutors/" + newTutor[0]._id);
+            res.redirect("/tutors/" + newTutor[0]._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
           } else {
-            req.flash("success", "You have successfully signed up member " + newTutor[0].id + " as a tutor.");
-            res.redirect("/tutors/" + newTutor[0]._id);
+            req.flash("success", "You have successfully signed up the member with ID " + newTutor[0].id + " as a tutor.");
+            res.redirect("/tutors/" + newTutor[0]._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
           }
         }
       });
@@ -93,12 +93,18 @@ router.get("/:id/edit", middleware.hasTutorAccess, function(req, res) {
 });
 
 router.put("/:id", middleware.hasTutorAccess, function(req, res) {
-  delete req.body.tutor.id;
-  req.body.tutor.email = req.sanitize(req.body.tutor.email);
-  if (req.user.accessLevel < 2) delete req.body.tutor.phoneNum;
-  else req.body.tutor.phoneNum = req.sanitize(req.body.tutor.phoneNum);
-  req.body.tutor.courses = req.body.courses;
-  Tutor.findByIdAndUpdate(req.params.id, req.body.tutor, function(err, foundTutor) {
+  var editedTutor = {
+    gender: req.body.tutor.gender,
+    email: req.sanitize(req.body.tutor.email),
+    paymentForm: req.body.tutor.paymentForm,
+    courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses],
+    maxTutees: req.body.tutor.maxTutees
+  };
+  if (req.user.accessLevel >= 2) {
+    editedTutor.phoneNum = req.sanitize(req.body.tutor.phoneNum);
+    editedTutor.warnings = req.body.tutor.warnings;
+  }
+  Tutor.findByIdAndUpdate(req.params.id, editedTutor, function(err, foundTutor) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
@@ -140,6 +146,19 @@ router.put("/:id/unverify", middleware.hasAccessLevel(2), function(req, res) {
   });
 });
 
+router.put("/:id/warn", middleware.hasAccessLevel(2), function(req, res) {
+  Tutor.findByIdAndUpdate(req.params.id, {$inc: {warnings: 1}}, function(err, tutor) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/tutors");
+    } else {
+      req.flash("success", "Successfully warned Tutor " + tutor.name);
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    }
+  });
+});
+
 router.get("/:id/resend-verification", middleware.hasTutorAccess, function(req, res) {
   if (req.foundTutor.verifiedPhone) {
     req.flash("info", "Your phone has already been verified.");
@@ -147,13 +166,15 @@ router.get("/:id/resend-verification", middleware.hasTutorAccess, function(req, 
   } else {
     var currentDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-"));
     var lastSent = new Date(req.foundTutor.verification.lastSent);
-    var timeoutEndDate = lastSent.setDate(lastSent.getDate() + 1);
+    var timeoutEndDate = new Date(lastSent.setDate(lastSent.getDate() + 1));
     if (currentDate >= timeoutEndDate) {
       sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + req.foundTutor.verification.code, req.foundTutor.phoneNum);
+      Tutor.findByIdAndUpdate(req.foundTutor._id, {"verification.lastSent": new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")}).exec();
       req.flash("success", "The phone verification link has been resent.");
       res.redirect("back");
     } else {
-      req.flash("error", "The phone verification link can only be sent every 24 hours.");
+      timeoutEndDate = utils.reformatDate(timeoutEndDate.toLocaleString()) + " at " + timeoutEndDate.toLocaleString().split(" ")[1] + " " + timeoutEndDate.toLocaleString().split(" ")[2];
+      req.flash("error", "The phone verification link can only be sent every 24 hours. Next available on: " + timeoutEndDate);
       res.redirect("back");
     }
   }

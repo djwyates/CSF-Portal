@@ -21,15 +21,19 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="meetingsAttended">Attendance</label>
-    <% meetings.forEach(function(meeting) {
-      if (member.meetingsAttended.includes(meeting.date)) { %>
-        <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
-      <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
-        <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
-      <% } else { %>
-        <input class="form__input red" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
-      <% }
-    }); %>
+    <% if (meetings.length == 0) { %>
+      <input class="form__input" value="No meetings currently exist" %>" readonly/>
+    <% } else {
+      meetings.forEach(function(meeting) {
+        if (member.meetingsAttended.includes(meeting.date)) { %>
+          <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
+        <% } else if (new Date(meeting.date + ", 12:00:00 AM") > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
+          <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
+        <% } else { %>
+          <input class="form__input red" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
+        <% }
+      });
+    } %>
   </div>
   <% if (currentUser.accessLevel >= 3) { %>
     <div class="form__item">

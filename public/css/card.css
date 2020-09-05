@@ -1,0 +1,90 @@
+.card {
+  position: relative;
+  min-height: 125px;
+  width: 90%;
+  max-width: 430px;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
+  padding: 10px 25px;
+  align-items: center;
+  align-content: center;
+}
+
+.card__title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d0925;
+}
+
+.card__footnote {
+  display: block;
+  color: #7b7992;
+  margin-top: 5px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.card__description {
+  font-size: 19px;
+  color: #4e4a67;
+  margin-top: 15px;
+  line-height: 1;
+  text-align: justify;
+}
+
+.card__icon {
+  position: relative;
+  top: 6px;
+	margin-right: 3px;
+}
+
+.card__icon--link {
+  color: #7b7992;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.card__icon--link:hover {
+  color: rgb(0,136,154);
+}
+
+.card__icon--right {
+  float: right;
+  top: 3px;
+}
+
+.card__dropdown {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 432px;
+  max-width: 112px;
+  padding: 10px 0;
+  z-index: 5;
+  white-space: nowrap;
+	background-color: rgb(255,255,255);
+	border-radius: 0.5rem;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
+}
+
+.card__dropdown--visible {
+  display: block;
+}
+
+.card__dropdown-link {
+  display: block;
+  padding: 5px 15px;
+  color: rgb(0,0,0);
+  text-decoration: none;
+  font-size: medium;
+  font-weight: normal;
+  transition: 0.1s;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.card__dropdown-link:hover {
+  color: rgb(0,136,154);
+}

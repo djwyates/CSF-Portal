@@ -1,3 +1,5 @@
+const courses = require("../config/courses");
+
 var utils = {};
 
 utils.arrayToSentence = function(array) {
@@ -16,8 +18,9 @@ utils.findDuplicatesInArray = function(array) {
 }
 
 utils.reformatDate = function(date) {
+  if (date.length <= 10) date += ", 12:00:00 AM";
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], date = new Date(date);
-  return(months[date.getMonth()] + " " + (date.getDate()+1) + ", " + date.getFullYear());
+  return(months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear());
 }
 
 module.exports = utils;

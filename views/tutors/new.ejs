@@ -1,6 +1,6 @@
 <%- include("../partials/header") %>
 
-<form class="form" action="/tutors" method="post">
+<form class="form" action="/tutors<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>" method="post">
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
   <div class="form__title">Sign Up as a Tutor</div>
   <p class="form__description">

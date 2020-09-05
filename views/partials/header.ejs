@@ -13,11 +13,12 @@
     <link rel="stylesheet" href="/css/search.css"/>
     <link rel="stylesheet" href="/css/directory.css"/>
     <link rel="stylesheet" href="/css/accordion.css"/>
+    <link rel="stylesheet" href="/css/card.css"/>
     <link rel="stylesheet" href="/css/main.css"/>
     <title>MVHS CSF<% if (location) { %> - <%- location %><% } %></title>
   </head>
   <body ontouchstart>
-    <header>
+    <header class="header">
       <nav class="nav">
         <a href="/" class="nav__logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
         <div class="nav__section">
@@ -48,9 +49,9 @@
           <% if (currentUser && currentUser.accessLevel >= 3) { %>
             <a href="/settings" class="nav__link nav__link--settings<% if (location == "Settings") { %> nav__link--active<% } %>"><span class="material-icons nav__icon">settings</span></a>
           <% } if (!currentUser) { %>
-            <a href="/login/google" class="nav__button">Google Login</a>
+            <a href="/login/google" class="nav__button no-drag">Google Login</a>
           <% } else { %>
-            <a href="/logout" class="nav__button">Logout</a>
+            <a href="/logout" class="nav__button no-drag">Logout</a>
           <% } %>
         </div>
     	  <!-- for mobile devices -->

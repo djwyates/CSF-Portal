@@ -230,89 +230,11 @@ router.get("/diagnostics", middleware.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/diagnostics/run-test", middleware.hasAccessLevel(3), function(req, res) {
-  var result = "", matched = false, foundTutee = null, foundTutor = null, course = null;
   Meeting.find({}, function(err, meetings) {
     Member.find({}, function(err, members) {
-      meetings.forEach(function(meeting) {
-        /* checks for duplicate attendance records */
-        var dupeRecords = utils.findDuplicatesInArray(meeting.membersAttended);
-        if (dupeRecords.length > 0) {
-          result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
-          + "</a> has duplicate attendance records of members " + utils.arrayToSentence(dupeRecords) + ".<br>";
-        }
-        /* checks meetings' and members' attendance records to detect discrepancies */
-        meeting.membersAttended.forEach(function(memberID) {
-          member = members.find(member => member.id == memberID);
-          if (!member) {
-            result += "One member who attended the <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
-            + "</a> with ID " + memberID + " does not exist.<br>";
-          } else if (!member.meetingsAttended.includes(meeting.date))
-            result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
-            + "</a> shows that <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + memberID + "</a> attended while the member\'s attendance records do not show this.<br>";
-        });
-      });
-      members.forEach(function(member) {
-        /* checks for duplicate attendance records */
-        dupeRecords = utils.findDuplicatesInArray(member.meetingsAttended);
-        if (dupeRecords.length > 0) {
-          result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + member.id + "</a> has duplicate attendance records of meetings on "
-          + utils.arrayToSentence(dupeRecords.map(record => utils.reformatDate(record))) + ".<br>";
-        }
-        /* checks members' and meetings' attendance records to detect discrepancies */
-        member.meetingsAttended.forEach(function(meetingDate) {
-          meeting = meetings.find(meeting => meeting.date == meetingDate);
-          if (!meeting) {
-            result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id
-            + "</a> indicate them attending a meeting on date " + utils.reformatDate(meetingDate) + " that does not exist.<br>";
-          } else if (!meeting.membersAttended.includes(member.id))
-            result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> show that they attended the <a class='link--white' href='/meetings/"
-            + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date) + "</a> while the meeting\'s do not show this.<br>";
-        });
-      });
       Tutor.find({}, function(err, tutors) {
         Tutee.find({}, function(err, tutees) {
-          tutors.forEach(function(tutor) {
-            /* checks if tutors and their tutees are in pairs */
-            tutor.tuteeSessions.forEach(function(tuteeSession) {
-              foundTutee = tutees.find(tutee => tutee._id == tuteeSession.tuteeID);
-              if (!foundTutee) {
-                result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a> indicate them tutoring Tutee "
-                + tuteeSession.tuteeID + " while that tutee does not exist.<br>";
-              } else {
-                foundTutee.tutorSessions.forEach(function(tutorSession) {
-                  if (tuteeSession.courses.includes(tutorSession.course) && tutorSession.tutorID == tutor._id)
-                    matched = true;
-                  else
-                    course = tutorSession.course;
-                });
-                if (!matched)
-                  result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a> indicate them tutoring <a class='link--white' href='/tutees/"
-                  + tuteeSession.tuteeID + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tuteeSession.tuteeID + "</a> for course " + course + " while the tutee\'s records do not.<br>";
-                matched = false;
-              }
-            });
-          });
-          /* checks if tutees and their tutors are in pairs */
-          tutees.forEach(function(tutee) {
-            tutee.tutorSessions.forEach(function(tutorSession) {
-              if (tutorSession.tutorID == null)
-                return;
-              foundTutor = tutors.find(tutor => tutor._id == tutorSession.tutorID);
-              if (!foundTutor) {
-                result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee._id + "</a> indicate them being tutored by Tutor "
-                + tutorSession.tutorID + " while that tutor does not exist.<br>";
-              } else {
-                foundTutor.tuteeSessions.forEach(function(tuteeSession) {
-                  if (tuteeSession.tuteeID = tutee._id && tuteeSession.courses.includes(tutorSession.course))
-                    matched = true;
-                });
-                if (!matched)
-                  result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "'>Tutee " + tutee._id + "</a> indicate them being tutored by <a class='link--white' href='/tutors/"
-                  + tutorSession.tutorID + "'>Tutor " + tutorSession.tutorID + "</a> for course " + tutorSession.course + " while the tutor\'s records do not.<br>";
-                matched = false;
-              }
-            });
-          });
+          var result = require("../services/diagnostics")(meetings, members, tutors, tutees);
           req.flash("info", result ? result.substring(0, result.length-4) : "No discrepancies were found in the database.");
           res.redirect("/settings/diagnostics");
         });

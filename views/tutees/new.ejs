@@ -1,6 +1,6 @@
 <%- include("../partials/header") %>
 
-<form class="form" action="/tutees" method="post">
+<form class="form" action="/tutees<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>" method="post">
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
   <div class="form__title">Request a Tutor</div>
   <p class="form__description">
@@ -8,7 +8,8 @@
   </p>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>
-    <input class="form__input" id="id" type="text" name="tutee[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" required/>
+    <input class="form__input" id="id" type="text" name="tutee[id]" pattern="[0-9]{9}" minlength="9" maxlength="9"
+    <% if (currentUser && currentUser.id) { %>value="<%- currentUser.id %>"<% } %> placeholder="9-digit student ID" required/>
   </div>
   <div class="form__item">
     <label class="form__label" for="name">Name</label>

@@ -80,7 +80,11 @@ router.post("/", middleware.hasAccessLevel(3), function(req, res) {
 
 router.get("/:id", middleware.hasAccessLevel(1), function(req, res) {
   Member.findById(req.params.id, function(err, foundMember) {
-    if (err || !foundMember) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/members");
+    } else if (!foundMember) {
       res.redirect("/members");
     } else {
       Meeting.find({}, function(err, meetings) {
@@ -93,33 +97,59 @@ router.get("/:id", middleware.hasAccessLevel(1), function(req, res) {
 
 router.get("/:id/edit", middleware.hasAccessLevel(3), function(req, res) {
   Member.findById(req.params.id, function(err, foundMember) {
-    if (err || !foundMember) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/members/" + req.params.id);
+    } else if (!foundMember) {
       res.redirect("/members");
     } else {
-      res.render("members/edit", {member: foundMember});
+      Meeting.find({}, function(err, meetings) {
+        meetings.sort((a, b) => new Date(a.date) - new Date(b.date));
+        res.render("members/edit", {member: foundMember, meetings: meetings});
+      });
     }
   });
 });
 
 router.put("/:id", middleware.hasAccessLevel(3), function(req, res) {
-  req.body.member.id = req.sanitize(req.body.member.id);
-  req.body.member.name = req.sanitize(req.body.member.name);
-  Member.findByIdAndUpdate(req.params.id, req.body.member, function(err, foundMember) {
-    if (err) {
-      console.error(err);
-      if (err.code == 11000)
-        req.flash("error", "More than one member cannot have the same ID.");
-      res.redirect("/members/" + req.params.id + "/edit");
-    } else {
-      if (req.body.member.id != foundMember.id) {
-        foundMember.meetingsAttended.forEach(function(meetingDate) {
-          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}).exec();
-          Meeting.findOneAndUpdate({date: meetingDate}, {$push: {"membersAttended": req.body.member.id}}).exec();
-        });
-      }
-      Tutor.findOneAndUpdate({id: foundMember.id}, {id: req.body.member.id, name: req.body.member.name, grade: req.body.member.grade}).exec();
-      res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+  var editedMember = [{
+    id: req.sanitize(req.body.member.id),
+    name: req.sanitize(req.body.member.name),
+    grade: req.body.member.grade,
+    termCount: req.body.member.termCount,
+    accessLevel: req.body.member.accessLevel,
+    $addToSet: {meetingsAttended: {$each: []}}
+  }, {$pull: {meetingsAttended: {$in: []}}}];
+  if (req.body.member.attendance) {
+    for (var meetingDate in req.body.member.attendance) {
+      if (req.body.member.attendance[meetingDate].includes("Not attended"))
+        editedMember[1].$pull.meetingsAttended.$in.push(meetingDate);
+      else if (req.body.member.attendance[meetingDate].includes("Attended"))
+        editedMember[0].$addToSet.meetingsAttended.$each.push(meetingDate);
     }
+  }
+  Member.findByIdAndUpdate(req.params.id, editedMember[1], function(err, foundMember1) {
+    Member.findByIdAndUpdate(req.params.id, editedMember[0], function(err, foundMember) {
+      if (err) {
+        console.error(err);
+        if (err.code == 11000)
+          req.flash("error", "More than one member cannot have the same ID.");
+        res.redirect("/members/" + req.params.id + "/edit");
+      } else {
+        var pulledFromMeetingsAttended = editedMember[1].$pull.meetingsAttended.$in;
+        var allMeetingsAttended = foundMember.meetingsAttended.filter(date => !pulledFromMeetingsAttended.includes(date)).concat(editedMember[0].$addToSet.meetingsAttended.$each);
+        pulledFromMeetingsAttended.forEach(function(meetingDate) {
+          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {membersAttended: foundMember.id}}).exec();
+        });
+        allMeetingsAttended.forEach(function(meetingDate) {
+          if (editedMember[0].id != foundMember.id) Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}).exec();
+          Meeting.findOneAndUpdate({date: meetingDate}, {$addToSet: {"membersAttended": editedMember[0].id}}).exec();
+        });
+        Tutor.findOneAndUpdate({id: foundMember.id}, {id: editedMember[0].id, name: editedMember[0].name, grade: editedMember[0].grade}).exec();
+        res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+      }
+    });
   });
 });
 

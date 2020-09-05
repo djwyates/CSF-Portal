@@ -4,27 +4,12 @@ function toggleBurger(burgerContainer) {
   document.querySelector(".nav__section").classList.toggle("nav__section--opened");
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  /* table scripts */
-  const rows = document.querySelectorAll(".table__body-row[data-href]");
-  rows.forEach(function(row) {
-    row.addEventListener("click", function() {
-      window.location.href = row.dataset.href;
-    });
+/* table scripts */
+const rows = document.querySelectorAll(".table__body-row[data-href]");
+rows.forEach(function(row) {
+  row.addEventListener("click", function() {
+    window.location.href = row.dataset.href;
   });
-  /* form scripts */
-  const realFileButton = document.getElementById("newMembers");
-  const customButton = document.getElementById("newMembersButton");
-  const customText = document.getElementById("newMembersText");
-  if (customButton) {
-    customButton.addEventListener("click", function() {
-      realFileButton.click();
-    });
-  } if (realFileButton) {
-    realFileButton.addEventListener("change", function() {
-      customText.innerHTML = realFileButton.value ? realFileButton.value.match(/[\/\\]([\w\d\s\.\-\(\)]+)$/)[1] : "No file chosen";
-    });
-  }
 });
 
 /* table filter scripts */
@@ -47,6 +32,42 @@ if (filterTable) {
   });
 }
 
+/* upload file form scripts */
+const realFileButton = document.getElementById("newMembers");
+const customButton = document.getElementById("newMembersButton");
+const customText = document.getElementById("newMembersText");
+if (customButton) {
+  customButton.addEventListener("click", function() {
+    realFileButton.click();
+  });
+} if (realFileButton) {
+  realFileButton.addEventListener("change", function() {
+    customText.innerHTML = realFileButton.value ? realFileButton.value.match(/[\/\\]([\w\d\s\.\-\(\)]+)$/)[1] : "No file chosen";
+  });
+}
+
+/* attendance changer form scripts */
+const formIconLinks = document.querySelectorAll(".form__icon--link");
+if (formIconLinks) {
+  formIconLinks.forEach(function(formIconLink) {
+    formIconLink.addEventListener("click", function() {
+      console.log(formIconLink.closest(".form__item--row"));
+      var attendance = formIconLink.closest(".form__item--row").querySelector(".form__input").value;
+      if (attendance.includes("Not attended")) {
+        formIconLink.closest(".form__item--row").querySelector(".form__input").value = attendance.substring(0, attendance.length-12) + "Attended";
+        formIconLink.closest(".form__item--row").querySelector(".form__input").classList.add("green");
+        formIconLink.closest(".form__item--row").querySelector(".form__input").classList.remove("red");
+        formIconLink.innerText = "remove_circle";
+      } else if (attendance.includes("Attended")) {
+        formIconLink.closest(".form__item--row").querySelector(".form__input").value = attendance.substring(0, attendance.length-8) + "Not attended";
+        formIconLink.closest(".form__item--row").querySelector(".form__input").classList.remove("green");
+        formIconLink.closest(".form__item--row").querySelector(".form__input").classList.add("red");
+        formIconLink.innerText = "add_circle";
+      }
+    });
+  });
+}
+
 /* accordion scripts */
 const accordionHeaders = document.querySelectorAll(".accordion__header");
 if (accordionHeaders) {
@@ -60,4 +81,28 @@ if (accordionHeaders) {
         accordionBody.style.maxHeight = 0;
     });
   });
+}
+
+/* card scripts */
+var cardIconLinks = document.querySelectorAll(".card__icon--link"), cardDropdowns = document.querySelectorAll(".card__dropdown");
+if (cardIconLinks && cardDropdowns) {
+  cardIconLinks.forEach(function(cardIconLink) {
+    cardIconLink.addEventListener("click", function() {
+      cardDropdowns.forEach(function(cardDropdown) {
+        if (cardDropdown != cardIconLink.closest(".card__title").querySelector(".card__dropdown"))
+          cardDropdown.classList.remove("card__dropdown--visible");
+      });
+      cardIconLink.closest(".card__title").querySelector(".card__dropdown").classList.toggle("card__dropdown--visible");
+    });
+  });
+}
+
+window.onclick = function(event) {
+  if (cardIconLinks && cardDropdowns) {
+    if (!event.target.matches(".card__icon--link")) {
+      cardDropdowns.forEach(function(cardDropdown) {
+        cardDropdown.classList.remove("card__dropdown--visible");
+      });
+    }
+  }
 }

@@ -54,13 +54,18 @@ router.get("/:id/edit", middleware.hasAccessLevel(1), function(req, res) {
 });
 
 router.put("/:id", middleware.hasAccessLevel(1), function(req, res) {
-  req.body.meeting.description = req.sanitize(req.body.meeting.description);
-  Meeting.findByIdAndUpdate(req.params.id, req.body.meeting, function(err, foundMeeting) {
+  Meeting.findByIdAndUpdate(req.params.id, {date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}, function(err, foundMeeting) {
     if (err) {
       if (err.code == 11000)
         req.flash("error", "More than one meeting cannot have the same date.");
       res.redirect("/meetings/" + req.params.id + "/edit");
     } else {
+      if (req.body.meeting.date != foundMeeting.date) {
+        foundMeeting.membersAttended.forEach(function(memberID) {
+          Member.findOneAndUpdate({id: memberID}, {$pull: {"meetingsAttended": foundMeeting.date}}).exec();
+          Member.findOneAndUpdate({id: memberID}, {$push: {"meetingsAttended": req.body.meeting.date}}).exec();
+        });
+      }
       res.redirect("/meetings/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });

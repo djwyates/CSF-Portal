@@ -20,6 +20,28 @@
     <input class="form__input form__input--small" id="termCount" type="number" name="member[termCount]" min="0" max="7" placeholder="Up to 7" value="<%- member.termCount %>" required/>
   </div>
   <div class="form__item">
+    <label class="form__label" for="meetingsAttended">Attendance</label>
+    <% if (meetings.length == 0) { %>
+      <input class="form__input" value="No meetings currently exist" %>" readonly/>
+    <% } else {
+      meetings.forEach(function(meeting) {
+        if (member.meetingsAttended.includes(meeting.date)) { %>
+          <div class="form__item--row">
+            <input class="form__input form__input--small green" name="member[attendance][<%- meeting.date %>]" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
+            <span class="form__icon form__icon--link no-select material-icons">remove_circle</span>
+          </div>
+        <% } else if (new Date(meeting.date + ", 12:00:00 AM") > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
+          <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
+        <% } else { %>
+          <div class="form__item--row">
+            <input class="form__input form__input--small no-select red" name="member[attendance][<%- meeting.date %>]" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
+            <span class="form__icon form__icon--link no-select material-icons">add_circle</span>
+          </div>
+        <% }
+      });
+    } %>
+  </div>
+  <div class="form__item">
     <label class="form__label" for="accessLevel">Position</label>
     <select class="form__input--select" id="accessLevel" name="member[accessLevel]" required>
       <option value="0" <% if (member.accessLevel == 0) { %>selected<% } %>>Member</option>

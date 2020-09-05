@@ -18,7 +18,7 @@
       <% meetings.forEach(function(meeting) {
         if (member ? member.meetingsAttended.includes(meeting.date) : currentUser.meetingsAttended.includes(meeting.date)) { %>
           <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
-        <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
+        <% } else if (new Date(meeting.date + ", 12:00:00 AM") > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
           <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>
         <% } else { %>
           <input class="form__input red" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>

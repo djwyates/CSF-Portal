@@ -6,7 +6,8 @@
         <div class="accordion__content">
           <% for (courseID in courses[courseCategory]) { %>
             <label class="form__label--checkbox" for="<%- courseID %>">
-              <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="courses" value="<%- courseID %>"/>
+              <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="courses" value="<%- courseID %>"
+              <% if (typeof tutor != "undefined" && tutor.courses.includes(courseID) || typeof tutee != "undefined" && tutee.courses.includes(courseID)) { %>checked<% } %>/>
               <div class="form__input--checkboxsquare"></div>
               <%- courses[courseCategory][courseID] %>
             </label>

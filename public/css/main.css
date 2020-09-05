@@ -48,13 +48,44 @@
 	color: rgb(255,140,0);
 }
 
+.no-drag {
+	-webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+.no-select {
+	-webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+  -o-user-select: none;
+  user-select: none;
+}
+
 /* mobile styles */
-@media screen and (max-width:1030px) {
+@media screen and (max-width:555px) {
+	/* cards */
+	.card__dropdown {
+		top: 50px;
+	  left: calc(100% - 112px);
+	}
+}
+
+@media screen and (max-width:1020px) {
 	.container--responsive {
 		flex-direction: column;
 	}
 
 	/* header */
+	.header {
+	  position: -webkit-sticky;
+	  position: sticky;
+	  top: 0;
+		z-index: 10;
+	}
+
   .nav__section {
     display: none;
 		position: fixed;

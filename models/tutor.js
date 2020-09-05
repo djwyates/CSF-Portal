@@ -9,13 +9,18 @@ var tutorSchema = new mongoose.Schema({
   /* tutor-specific info */
   gender: {type: String, enum: ["Male", "Female"], required: true},
   email: {type: String, required: true},
-  phoneNum: {type: String, required: true},
+  phoneNum: {type: String, validate: {validator: function(v) {return /\d{3}-\d{3}-\d{4}/.test(v);}}, required: true},
   verified: {type: Boolean, required: true, default: false},
   verifiedPhone: {type: Boolean, required: true, default: false},
   paymentForm: {type: String, enum: ["Cash", "Both"], required: true},
   courses: {type: [String], required: true},
   maxTutees: {type: Number, min: 1, max: 3, required: true},
-  tuteeSessions: {type: Array, required: true, default: []},
+  tuteeSessions: {type: [{
+    tuteeID: {type: String, required: true},
+    courses: {type: [String], required: true},
+    status: {type: String, enum: ["Unpaired", "Unnotified", "Pending", "Active", "Inactive"], required: true}
+  }], required: true, default: []},
+  warnings: {type: Number, min: 0, required: true, default: 0},
   verification: {
     code: {type: String, required: false},
     timesSent: {type: Number, required: false},
