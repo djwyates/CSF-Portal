@@ -66,12 +66,16 @@
       tutor.tuteeSessions.forEach(function(tuteeSession) { %>
       <div class="card">
         <div class="card__title">
-          <span class="card__icon material-icons">account_circle</span>Tutee <%- tuteeSession.tuteeID %>
+          <span class="card__icon material-icons">account_circle</span>
           <% if (currentUser.accessLevel >= 2) { %>
+            <a class="link--black" href="/tutees/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>">Tutee <%- tuteeSession.tuteeID.name %></a>
+          <% } else { %>
+            Tutee <%- tuteeSession.tuteeID.name %>
+          <% } if (currentUser.accessLevel >= 2) { %>
             <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
             <div class="card__dropdown">
-              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/notify/<%- tuteeSession.tuteeID %>">Notify Tutor</a>
-              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID %>">Unpair</a>
+              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/notify/<%- tuteeSession.tuteeID._id %>">Notify Tutor</a>
+              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID._id %>">Unpair</a>
             </div>
           <% } %>
         </div>

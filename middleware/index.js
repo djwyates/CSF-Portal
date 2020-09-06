@@ -8,7 +8,7 @@ middleware.hasTutorAccess = function(req, res, next) {
     req.flash("info", "You must be logged in to do that.");
     res.redirect("back");
   } else {
-    Tutor.findById(req.params.id, function(err, foundTutor) {
+    Tutor.findById(req.params.id).populate("tuteeSessions.tuteeID").exec(function(err, foundTutor) {
       if (err || !foundTutor) {
         req.flash("error", "That tutor does not exist.");
         res.redirect("back");
@@ -28,7 +28,7 @@ middleware.hasTuteeAccess = function(req, res, next) {
     req.flash("info", "You must be logged in to do that.");
     res.redirect("back");
   } else {
-    Tutee.findById(req.params.id, function(err, foundTutee) {
+    Tutee.findById(req.params.id).populate("tutorSessions.tutorID").exec(function(err, foundTutee) {
       if (err || !foundTutee) {
         req.flash("error", "That tutee does not exist.");
         res.redirect("back");

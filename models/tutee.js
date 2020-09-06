@@ -15,10 +15,10 @@ var tuteeSchema = new mongoose.Schema({
   paymentForm: {type: String, enum: ["Service", "Both"], required: true},
   courses: {type: [String], required: true},
   tutorSessions: {type: [{
-    course: {type: String, required: true},
-    tutorID: {type: String, required: false},
-    status: {type: String, enum: ["Unpaired", "Unnotified", "Pending", "Active", "Inactive"], required: true}
-  }], required: true, default: []},
+    tutorID: {type: String, ref: "Tutor", required: true},
+    courses: {type: [String], required: true},
+    status: {type: String, enum: ["Unnotified", "Pending", "Active", "Inactive"], required: true}
+  }], _id: false, required: true, default: []},
   createdOn: {type: String, required: true, default: "No date found"}
 });
 

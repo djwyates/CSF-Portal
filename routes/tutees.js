@@ -44,13 +44,9 @@ router.post("/", function(req, res) {
     parentPhoneNum: req.sanitize(req.body.tutee.parentPhoneNum),
     paymentForm: req.body.tutee.paymentForm,
     courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses],
-    tutorSessions: [],
     createdOn: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
   };
-  newTutee.courses.forEach(function(course) {
-    newTutee.tutorSessions.push({course: course, tutorID: null, status: "Unpaired"});
-  });
-  Tutee.create([newTutee], {new: true, upsert: true}, function(err, newTutee) {
+  Tutee.create([newTutee], {new: true}, function(err, newTutee) {
     if (err) {
       console.error(err);
       if (err.code == 11000) req.flash("error", "A tutee already exists with that ID. Login with your school email to view or edit your request.");
@@ -106,34 +102,38 @@ router.put("/:id/pair", middleware.hasAccessLevel(2), function(req, res) {
     Tutor.find({courses: {$in: tutee.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]}, verified: true, verifiedPhone: true}).lean().exec(function(err, tutors) {
       tutors = tutors.map(tutor => Object.assign(tutor, {mutualCourses: tutor.courses.filter(course => tutee.courses.includes(course))}));
       var matchingTutor = null, alreadyTutorsThisTutee = false, matchingTutorAlreadyTutorsThisTutee = false, pairInfo = [];
-      tutee.tutorSessions.filter(tutorSession => tutorSession.status == "Unpaired").forEach(function(tutorSession) {
+      tutee.courses.filter(course => tutee.tutorSessions.find(tutorSession => tutorSession.courses.includes(course)) ? false : true).forEach(function(course) {
         /* pairs the tutee with a matching tutor; priority given to tutors who already tutor this tutee, who share the most courses with this tutee, & who are tutoring the least tutees */
         tutors.forEach(function(tutor) {
           alreadyTutorsThisTutee = tutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id) ? true : false;
           if (matchingTutor) matchingTutorAlreadyTutorsThisTutee = matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id) ? true : false;
-          else matchingTutorAlreadyTutorsThisTutee = false;
-          if (tutor.courses.includes(tutorSession.course) && tutor.id != tutee.id && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee)
+          if (tutor.courses.includes(course) && tutor.id != tutee.id && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee)
               && (!matchingTutor || alreadyTutorsThisTutee || (!matchingTutorAlreadyTutorsThisTutee && tutor.mutualCourses.length > matchingTutor.mutualCourses.length)
               || (!matchingTutorAlreadyTutorsThisTutee && tutor.mutualCourses.length == matchingTutor.mutualCourses.length && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))
                 matchingTutor = tutor;
         });
         /* updates the database to pair the matching tutor and tutee */
         if (matchingTutor) {
-          Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element]": {course: tutorSession.course, tutorID: matchingTutor._id, status: "Unnotified"}}, {arrayFilters: [{"element.course": tutorSession.course}]}).exec();
-          if (matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id))
-            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions.$[element].courses": tutorSession.course}}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+          if (tutee.tutorSessions.find(tutorSession => tutorSession.tutorID == matchingTutor._id))
+            Tutee.findByIdAndUpdate(tutee._id, {$push: {"tutorSessions.$[element].courses": course}}, {arrayFilters: [{"element.tutorID": matchingTutor._id}]}).exec();
           else {
-            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions": {tuteeID: tutee._id, courses: [tutorSession.course], status: "Unnotified"}}}).exec();
-            tutors.find(tutor => tutor._id == matchingTutor._id).tuteeSessions.push({tuteeID: tutee._id, courses: [tutorSession.course], status: "Unnotified"});
+            Tutee.findByIdAndUpdate(tutee._id, {$push: {"tutorSessions": {tutorID: matchingTutor._id, courses: [course], status: "Unnotified"}}}).exec();
+            tutee.tutorSessions.push({tutorID: matchingTutor._id, courses: [course], status: "Unnotified"});
           }
-          pairInfo.push("Tutor " + matchingTutor.name + " for Course " + tutorSession.course);
+          if (matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id))
+            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions.$[element].courses": course}}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+          else {
+            Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions": {tuteeID: tutee._id, courses: [course], status: "Unnotified"}}}).exec();
+            tutors.find(tutor => tutor._id == matchingTutor._id).tuteeSessions.push({tuteeID: tutee._id, courses: [course], status: "Unnotified"});
+          }
+          pairInfo.push("Tutor " + matchingTutor.name + " for Course " + course);
           matchingTutor = null;
         }
       });
       /* formulates a message on the outcome of the pairing */
       var pairMessage = "Tutee " + tutee.name;
       if (pairInfo.length == 0)
-        pairMessage += " did not find any available tutors for the courses they are unpaired in.";
+        pairMessage += " did not find any available tutors.";
       else
         pairMessage += " has been successfully paired with " + utils.arrayToSentence(pairInfo);
       req.flash("info", pairMessage);

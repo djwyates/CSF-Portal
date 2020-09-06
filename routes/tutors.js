@@ -104,13 +104,15 @@ router.put("/:id", middleware.hasTutorAccess, function(req, res) {
     editedTutor.phoneNum = req.sanitize(req.body.tutor.phoneNum);
     editedTutor.warnings = req.body.tutor.warnings;
   }
-  Tutor.findByIdAndUpdate(req.params.id, editedTutor, function(err, foundTutor) {
+  Tutor.findByIdAndUpdate(req.params.id, editedTutor, function(err, tutor) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutors/" + req.params.id + "/edit");
+    } else if (!tutor) {
+      res.redirect("/tutors");
     } else {
-      if (req.body.tutor.phoneNum != foundTutor.phoneNum) {
+      if (req.body.tutor.phoneNum != tutor.phoneNum) {
         var verificationCode = shortid.generate(), currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
         Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": verificationCode, "verification.lastSent": currentDate}).exec();
         sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, req.body.tutor.phoneNum);
@@ -121,10 +123,12 @@ router.put("/:id", middleware.hasTutorAccess, function(req, res) {
 });
 
 router.put("/:id/verify", middleware.hasAccessLevel(2), function(req, res) {
-  Tutor.findByIdAndUpdate(req.params.id, {verified: true}, function(err, tutor) {
+  Tutor.findByIdAndUpdate(req.params.id, {verified: true, verifiedPhone: true/* <-- REMOVE THIS! */}, function(err, tutor) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
+      res.redirect("/tutors");
+    } else if (!tutor) {
       res.redirect("/tutors");
     } else {
       req.flash("success", "Successfully verified Tutor " + tutor.name);
@@ -139,6 +143,8 @@ router.put("/:id/unverify", middleware.hasAccessLevel(2), function(req, res) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutors");
+    } else if (!tutor) {
+      res.redirect("/tutors");
     } else {
       req.flash("success", "Successfully unverified Tutor " + tutor.name);
       res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
@@ -152,6 +158,8 @@ router.put("/:id/warn", middleware.hasAccessLevel(2), function(req, res) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutors");
+    } else if (!tutor) {
+      res.redirect("/tutors");
     } else {
       req.flash("success", "Successfully warned Tutor " + tutor.name);
       res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
@@ -159,6 +167,35 @@ router.put("/:id/warn", middleware.hasAccessLevel(2), function(req, res) {
   });
 });
 
+router.get("/:id/notify/:tuteeID", middleware.hasAccessLevel(2), function(req, res) {
+  Tutor.findById(req.params.id, function(err, tutor) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("back");
+    } else {
+      Tutee.findById(req.params.tuteeID, function(err, tutee) {
+        if (err) {
+          console.error(err);
+          req.flash("error", "An unexpected error occurred.");
+          res.redirect("back");
+        } else if (!tutor || !tutee) {
+          res.redirect("back");
+        } else {
+          var message = "<pairing message>";
+          sns.sendSMS(message, tutor.phoneNum);
+        }
+      });
+    }
+  });
+});
+/*
+let message = sprintf("Here is the information for the student that you will be tutoring.\n\nStudent Information:\n%s\n%s\nNeeds help with:\n%s\n\nParent Information:\n%s\n%s\n\n" +
+"To accept this pairing, open %s\n\n**If this match doesn't work out, please let me know so that I can assign you and the student someone else!**\n\nRemember to:\n1. Call the parent first, ASAP!\n" +
+"2. Tell them what form of payment you are asking for (hours/money). Make sure it matches what they've requested.
+\n3. Set up meeting times.\n4. Log your meetings.\n5. Let me know when the student no longer needs your services!!",
+entry.fullName, entry.cellPhoneNum, entry.courses.join(', '), entry.parentFullName, entry.parentCellPhoneNum, _url + 'api/accept-pairing/' + id);
+*/
 router.get("/:id/resend-verification", middleware.hasTutorAccess, function(req, res) {
   if (req.foundTutor.verifiedPhone) {
     req.flash("info", "Your phone has already been verified.");

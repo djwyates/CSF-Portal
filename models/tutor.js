@@ -16,10 +16,10 @@ var tutorSchema = new mongoose.Schema({
   courses: {type: [String], required: true},
   maxTutees: {type: Number, min: 1, max: 3, required: true},
   tuteeSessions: {type: [{
-    tuteeID: {type: String, required: true},
+    tuteeID: {type: String, ref: "Tutee", required: true},
     courses: {type: [String], required: true},
-    status: {type: String, enum: ["Unpaired", "Unnotified", "Pending", "Active", "Inactive"], required: true}
-  }], required: true, default: []},
+    status: {type: String, enum: ["Unnotified", "Pending", "Active", "Inactive"], required: true}
+  }], _id: false, required: true, default: []},
   warnings: {type: Number, min: 0, required: true, default: 0},
   verification: {
     code: {type: String, required: false},

@@ -32,16 +32,16 @@
     <input class="form__input" value="<%- tutee.phoneNum %>" readonly/>
   </div>
   <div class="form__item">
-    <label class="form__label" for="parentName">Parent"s Name</label>
+    <label class="form__label" for="parentName">Parent's Name</label>
     <input class="form__input" value="<%- tutee.parentName %>" readonly/>
   </div>
   <div class="form__item">
-    <label class="form__label" for="parentEmail">Parent"s Email</label>
+    <label class="form__label" for="parentEmail">Parent's Email</label>
     <input class="form__input" value="<%- tutee.parentEmail %>" readonly/>
     <span class="form__input-footnote">Only used to contact you as a last resort</span>
   </div>
   <div class="form__item">
-    <label class="form__label" for="parentPhoneNum">Parent"s Phone Number</label>
+    <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
     <input class="form__input" value="<%- tutee.parentPhoneNum %>" readonly/>
   </div>
   <div class="form__item">
@@ -52,27 +52,24 @@
     <label class="form__label" for="courses">Requested Courses</label>
     <input class="form__input" value="<%- ejs.reformatCourse(tutee.courses[0]) %><% for (var i=1; i<tutee.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tutee.courses[i]) %><% } %>" readonly/>
   </div>
-  <% var reformatedTutorSessions = [];
-  tutee.tutorSessions.forEach(function(tutorSession) {
-    if (tutorSession.status == "Unpaired") return;
-    var existing = reformatedTutorSessions.find(newTutorSession => newTutorSession.tutorID == tutorSession.tutorID);
-    if (existing) existing.courses.push(tutorSession.course);
-    else reformatedTutorSessions.push({tutorID: tutorSession.tutorID, courses: [tutorSession.course], status: tutorSession.status});
-  }); %>
   <div class="form__item">
     <label class="form__label" for="tutorSessions">Current Tutors</label>
-    <% if (currentUser.accessLevel < 2) reformatedTutorSessions = reformatedTutorSessions.filter(tutorSession => tutorSession.status != "Unnotified");
-    if (reformatedTutorSessions.length == 0) { %>
+    <% if (currentUser.accessLevel < 2) tutee.tutorSessions = tutee.tutorSessions.filter(tutorSession => tutorSession.status != "Unnotified");
+    if (tutee.tutorSessions.length == 0) { %>
       <input class="form__input" type="text" value="Not yet paired with tutors" readonly/>
     <% } else {
-      reformatedTutorSessions.forEach(function(tutorSession) { %>
+      tutee.tutorSessions.forEach(function(tutorSession) { %>
       <div class="card">
         <div class="card__title">
-          <span class="card__icon material-icons">account_circle</span>Tutor <%- tutorSession.tutorID %>
+          <span class="card__icon material-icons">account_circle</span>
           <% if (currentUser.accessLevel >= 2) { %>
+            <a class="link--black" href="/tutors/<%- tutorSession.tutorID._id %>?from=%2Ftutees%2F<%- tutee._id %>">Tutor <%- tutorSession.tutorID.name %></a>
+          <% } else { %>
+            Tutor <%- tutorSession.tutorID.name %>
+          <% } if (currentUser.accessLevel >= 2) { %>
             <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
             <div class="card__dropdown">
-              <a class="card__dropdown-link" href="/tutors/<%- tutorSession.tutorID %>/notify/<%- tutee._id %>">Notify Tutor</a>
+              <a class="card__dropdown-link" href="/tutors/<%- tutorSession.tutorID._id %>/notify/<%- tutee._id %>">Notify Tutor</a>
               <a class="card__dropdown-link" href="/tutees/<%- tutee._id %>/unpair/<%- tutorSession.course %>">Unpair</a>
             </div>
           <% } %>

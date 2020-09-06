@@ -24,11 +24,16 @@
 	color: rgb(255,255,255);
 }
 
+.link--black {
+	text-decoration: none;
+	color: black;
+}
+
 .link--gray {
 	color: rgb(130,130,130);
 }
 
-.link:hover, .link--white:hover {
+.link:hover, .link--white:hover, .link--black:hover {
 	text-decoration: underline;
 }
 

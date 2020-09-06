@@ -6,7 +6,7 @@ const utils = require("./utils"),
 
 module.exports = function runDiagnosticsTest(meetings, members, tutors, tutees) {
   result = testMeetings(meetings, members);
-  result += testMembers(meetings, members, tutors);
+  result += testMembers(meetings, members, tutors, tutees);
   result += testTutors(members, tutors, tutees);
   result += testTutees(members, tutors, tutees);
   return result;
@@ -40,7 +40,7 @@ function testMeetings(meetings, members) {
   return result;
 }
 
-function testMembers(meetings, members, tutors) {
+function testMembers(meetings, members, tutors, tutees) {
   var result = "", linkedTutor = null, linkedTutee = null;
   /* checks for duplicate IDs */
   var dupeIDs = utils.findDuplicatesInArray(members.map(member => member.id));
