@@ -5,7 +5,7 @@ const snsJS = new AWS.SNS();
 var sns = {};
 
 sns.sendSMS = function(message, phoneNum) {
-  console.log("SMS Messaging is currently disabled.");
+  console.log("SMS Messaging is currently disabled");
   /*
   phoneNum = phoneNum.replace(/-/g, "");
   var params = {

@@ -2,7 +2,7 @@ const express = require("express"),
       router = express.Router(),
       fs = require("fs"),
       dirTree = require("directory-tree"),
-      middleware = require("../middleware/index"),
+      auth = require("../middleware/auth"),
       backup = require("../services/backup"),
       utils = require("../services/utils"),
       xlsx = require("../services/xlsx"),
@@ -11,25 +11,22 @@ const express = require("express"),
       Tutor = require("../models/tutor"),
       Tutee = require("../models/tutee");
 
-router.get("/", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/", auth.hasAccessLevel(3), function(req, res) {
   res.render("settings/index");
 });
 
-router.get("/permissions", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/permissions", auth.hasAccessLevel(3), function(req, res) {
   Member.find({accessLevel: {$gte: 1}}, function(err, members) {
-    if (err) {
-      console.error(err);
-    } else {
-      res.render("settings/permissions", {members: members});
-    }
+    if (err) console.error(err);
+    else res.render("settings/permissions", {members: members});
   });
 });
 
-router.get("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   res.render("settings/term-migration");
 });
 
-router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
+router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   /* backs up the current database */
   var currentDate = new Date().toISOString().slice(0,10);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/meetings.txt", Meeting);
@@ -94,7 +91,7 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
             else warningMsg += "<br>All previous officers\' permissions were conserved.";
           }
           /* term migration is successful; this redirects the user & displays the term migration report via a flash message */
-          var totalNewMembers = newMembers.length + (newMemberOfUser ? 1 : 0);
+          var totalNewMembers = (newMembers ? newMembers.length : 0) + (newMemberOfUser ? 1 : 0);
           req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees.<br>" + totalNewMembers + " new members have been loaded into the database." + warningMsg);
           res.redirect("/settings/permissions");
         });
@@ -103,11 +100,11 @@ router.put("/term-migration", middleware.hasAccessLevel(3), function(req, res) {
   });
 });
 
-router.get("/backups", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/backups", auth.hasAccessLevel(3), function(req, res) {
   res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/}), backupsData: backup.getBackupsData()});
 });
 
-router.put("/backups", middleware.hasAccessLevel(3), function(req, res) {
+router.put("/backups", auth.hasAccessLevel(3), function(req, res) {
   if (req.body.data) req.body.data = JSON.parse(req.body.data);
   var warningMsg = "";
   /* if the backup is a single meeting */
@@ -214,7 +211,7 @@ router.put("/backups", middleware.hasAccessLevel(3), function(req, res) {
   }
 });
 
-router.delete("/backups", middleware.hasAccessLevel(3), function(req, res) {
+router.delete("/backups", auth.hasAccessLevel(3), function(req, res) {
   fs.unlink(req.body.path, function(err) {
     if (err) {
       console.error(err);
@@ -225,11 +222,11 @@ router.delete("/backups", middleware.hasAccessLevel(3), function(req, res) {
   });
 });
 
-router.get("/diagnostics", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/diagnostics", auth.hasAccessLevel(3), function(req, res) {
   res.render("settings/diagnostics");
 });
 
-router.get("/diagnostics/run-test", middleware.hasAccessLevel(3), function(req, res) {
+router.get("/diagnostics/run-test", auth.hasAccessLevel(3), function(req, res) {
   Meeting.find({}, function(err, meetings) {
     Member.find({}, function(err, members) {
       Tutor.find({}, function(err, tutors) {

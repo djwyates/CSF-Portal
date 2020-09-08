@@ -1,0 +1,42 @@
+<%- include("../partials/header") %>
+
+<form class="form" action="/tutors/<%- tutor._id %>/accept-pairing/<%- tutee._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
+  <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
+  <div class="form__title">Accept Pairing</div>
+  <p class="form__description">Here is an overview of the tutee you were paired with.</p>
+  <div class="form__item">
+    <label class="form__label" for="name">Student's Name</label>
+    <input class="form__input" value="<%- tutee.name %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="phoneNum">Student's Phone Number</label>
+    <input class="form__input" value="<%- tutee.phoneNum %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentName">Parent's Name</label>
+    <input class="form__input" value="<%- tutee.parentName %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
+    <input class="form__input" value="<%- tutee.parentPhoneNum %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="paymentForm">Their Form of Payment</label>
+    <input class="form__input" value="<%- tutee.paymentForm %>" readonly/>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="list">Remember to:</label>
+    <ol class="form__list">
+      <li>Call the parent first, ASAP!</li>
+      <li>Tell them what form of payment you are asking for and make sure it matches what they have requested.</li>
+      <li>Set up meeting times.</li>
+      <li>Log your meetings.</li>
+      <li>Contact us when the student no longer needs your services!</li>
+    </ol>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Accept Pairing</button>
+  </div>
+</form>
+
+<%- include("../partials/footer") %>

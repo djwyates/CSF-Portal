@@ -20,6 +20,13 @@
     <input class="form__input" value="<%- member.termCount %>" readonly/>
   </div>
   <div class="form__item">
+    <label class="form__label" for="accessLevel">Position</label>
+    <input class="form__input" value="<% if (member.accessLevel == 0) { %>Member
+    <% } else if (member.accessLevel == 1) { %>Officer
+    <% } else if (member.accessLevel == 2) { %>Tutoring Coordinator
+    <% } else if (member.accessLevel == 3) { %>Developer<% } %>" readonly/>
+  </div>
+  <div class="form__item">
     <label class="form__label" for="meetingsAttended">Attendance</label>
     <% if (meetings.length == 0) { %>
       <input class="form__input" value="No meetings currently exist" %>" readonly/>
@@ -35,21 +42,14 @@
       });
     } %>
   </div>
-  <% if (currentUser.accessLevel >= 3) { %>
-    <div class="form__item">
-      <label class="form__label" for="accessLevel">Position</label>
-      <input class="form__input" value="<% if (member.accessLevel == 0) { %>Member
-      <% } else if (member.accessLevel == 1) { %>Officer
-      <% } else if (member.accessLevel == 2) { %>Tutoring Coordinator
-      <% } else if (member.accessLevel == 3) { %>Developer<% } %>" readonly/>
-    </div>
-    <div class="form__item form__item--row">
-      <a class="form__button" href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
+  <div class="form__item form__item--row">
+    <a class="form__button no-drag" href="/members/<%- member._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
+    <% if (currentUser.accessLevel >= 3) { %>
       <form action="/members/<%- member._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this member?')">
         <button class="form__button form__button--red" type="submit">Delete</button>
       </form>
-    </div>
-  <% } %>
+    <% } %>
+  </div>
 </div>
 
 <%- include("../partials/footer") %>

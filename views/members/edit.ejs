@@ -5,20 +5,42 @@
   <div class="form__title">Edit Member</div>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>
-    <input class="form__input" id="id" type="text" name="member[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" value="<%- member.id %>" required/>
+    <input class="form__input" id="id" type="text" name="member[id]" pattern="[0-9]{9}" minlength="9" maxlength="9" placeholder="9-digit student ID" value="<%- member.id %>" required
+    <% if (currentUser.accessLevel < 3) { %>readonly<% } %>/>
   </div>
   <div class="form__item">
     <label class="form__label" for="name">Name</label>
-    <input class="form__input" id="name" type="text" name="member[name]" placeholder="Full name" value="<%- member.name %>" required/>
+    <input class="form__input" id="name" type="text" name="member[name]" placeholder="Full name" value="<%- member.name %>" required <% if (currentUser.accessLevel < 3) { %>readonly<% } %>/>
   </div>
   <div class="form__item">
     <label class="form__label" for="grade">Grade</label>
-    <input class="form__input form__input--small" id="grade" type="number" name="member[grade]" min="9" max="12" placeholder="Grade level (9 - 12)" value="<%- member.grade %>" required/>
+    <input class="form__input form__input--small" id="grade" type="number" name="member[grade]" min="9" max="12" placeholder="Grade level (9 - 12)" value="<%- member.grade %>" required
+    <% if (currentUser.accessLevel < 3) { %>readonly<% } %>/>
   </div>
   <div class="form__item">
     <label class="form__label" for="termCount">Terms in CSF</label>
-    <input class="form__input form__input--small" id="termCount" type="number" name="member[termCount]" min="0" max="7" placeholder="Up to 7" value="<%- member.termCount %>" required/>
+    <input class="form__input form__input--small" id="termCount" type="number" name="member[termCount]" min="0" max="7" placeholder="Up to 7" value="<%- member.termCount %>" required
+    <% if (currentUser.accessLevel < 3) { %>readonly<% } %>/>
   </div>
+  <% if (currentUser.accessLevel >= 3) { %>
+    <div class="form__item">
+      <label class="form__label" for="accessLevel">Position</label>
+      <select class="form__input--select" id="accessLevel" name="member[accessLevel]" required>
+        <option value="0" <% if (member.accessLevel == 0) { %>selected<% } %>>Member</option>
+        <option value="1" <% if (member.accessLevel == 1) { %>selected<% } %>>Officer</option>
+        <option value="2" <% if (member.accessLevel == 2) { %>selected<% } %>>Tutoring Coordinator</option>
+        <option value="3" <% if (member.accessLevel == 3) { %>selected<% } %>>Developer</option>
+      </select>
+    </div>
+  <% } else { %>
+    <div class="form__item">
+      <label class="form__label" for="accessLevel">Position</label>
+      <input class="form__input" value="<% if (member.accessLevel == 0) { %>Member
+      <% } else if (member.accessLevel == 1) { %>Officer
+      <% } else if (member.accessLevel == 2) { %>Tutoring Coordinator
+      <% } else if (member.accessLevel == 3) { %>Developer<% } %>" readonly/>
+    </div>
+  <% } %>
   <div class="form__item">
     <label class="form__label" for="meetingsAttended">Attendance</label>
     <% if (meetings.length == 0) { %>
@@ -42,22 +64,15 @@
     } %>
   </div>
   <div class="form__item">
-    <label class="form__label" for="accessLevel">Position</label>
-    <select class="form__input--select" id="accessLevel" name="member[accessLevel]" required>
-      <option value="0" <% if (member.accessLevel == 0) { %>selected<% } %>>Member</option>
-      <option value="1" <% if (member.accessLevel == 1) { %>selected<% } %>>Officer</option>
-      <option value="2" <% if (member.accessLevel == 2) { %>selected<% } %>>Tutoring Coordinator</option>
-      <option value="3" <% if (member.accessLevel == 3) { %>selected<% } %>>Developer</option>
-    </select>
-  </div>
-  <div class="form__item">
     <button class="form__button" type="submit">Save</button>
   </div>
 </form>
-<form class="form" action="/members/<%- member._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this member?')">
-  <div class="form__item">
-    <button class="form__button form__button--red" type="submit">Delete</button>
-  </div>
-</form>
+<% if (currentUser.accessLevel >= 3) { %>
+  <form class="form" action="/members/<%- member._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this member?')">
+    <div class="form__item">
+      <button class="form__button form__button--red" type="submit">Delete</button>
+    </div>
+  </form>
+<% } %>
 
 <%- include("../partials/footer") %>

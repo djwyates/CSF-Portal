@@ -14,6 +14,22 @@
 	display: flex;
 }
 
+.green {
+	color: rgb(0,192,42);
+}
+
+.red {
+	color: rgb(213,0,0);
+}
+
+.blue {
+	color: rgb(0,0,190);
+}
+
+.orange {
+	color: rgb(255,140,0);
+}
+
 .link {
 	text-decoration: none;
 	color: rgb(0,128,154);
@@ -37,20 +53,27 @@
 	text-decoration: underline;
 }
 
-.green {
-	color: rgb(0,192,42);
+.form-link {
+	display: inline;
 }
 
-.red {
-	color: rgb(213,0,0);
+.button-link {
+  padding: 0;
+	background: none;
+  border: none;
+	font-size: inherit;
+  text-decoration: none;
+	color: rgb(255,255,255);
+  cursor: pointer;
 }
 
-.blue {
-	color: rgb(0,0,190);
+.button-link:hover {
+	text-decoration: underline;
 }
 
-.orange {
-	color: rgb(255,140,0);
+.button-link:focus {
+	outline: none;
+	text-decoration: underline;
 }
 
 .no-drag {
@@ -70,11 +93,11 @@
 }
 
 /* mobile styles */
-@media screen and (max-width:555px) {
+@media screen and (max-width:575px) {
 	/* cards */
 	.card__dropdown {
 		top: 50px;
-	  left: calc(100% - 112px);
+	  left: calc(100% - 132px);
 	}
 }
 

@@ -59,7 +59,7 @@
   position: absolute;
   top: 0px;
   left: 432px;
-  max-width: 112px;
+  max-width: 132px;
   padding: 10px 0;
   z-index: 5;
   white-space: nowrap;
@@ -72,19 +72,23 @@
   display: block;
 }
 
-.card__dropdown-link {
-  display: block;
+.card__dropdown-button {
   padding: 5px 15px;
-  color: rgb(0,0,0);
+  background: none;
+  border: none;
   text-decoration: none;
   font-size: medium;
   font-weight: normal;
+  color: rgb(0,0,0);
+  cursor: pointer;
   transition: 0.1s;
-	cursor: pointer;
-	user-select: none;
-	-webkit-tap-highlight-color: transparent;
 }
 
-.card__dropdown-link:hover {
+.card__dropdown-button:hover {
+  color: rgb(0,136,154);
+}
+
+.card__dropdown-button:focus {
+  outline: none;
   color: rgb(0,136,154);
 }

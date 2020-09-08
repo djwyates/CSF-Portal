@@ -30,8 +30,8 @@
       <% } %>
     </div>
     <div class="form__item form__item--row">
-      <a class="form__button" href="/meetings/<%- meeting._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
-      <a class="form__button" href="/meetings/<%- meeting._id %>/checkin<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Record Attendance</a>
+      <a class="form__button no-drag" href="/meetings/<%- meeting._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
+      <a class="form__button no-drag" href="/meetings/<%- meeting._id %>/checkin<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Record Attendance</a>
       <form action="/meetings/<%- meeting._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
         <button class="form__button form__button--red" type="submit">Delete</button>
       </form>

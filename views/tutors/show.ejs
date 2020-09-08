@@ -18,7 +18,7 @@
           <% } else if (!tutor.verified) { %>
             attend one of the training sessions and turn in the tutoring permission form. If you have done this, allow some time for CSF to verify you.
           <% } else if (!tutor.verifiedPhone) { %>
-            click the verification link sent to your phone. <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">Resend verification</a>
+            click the verification link sent to your phone.
           <% } %>
         </span>
       <% } %>
@@ -71,13 +71,34 @@
             <a class="link--black" href="/tutees/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>">Tutee <%- tuteeSession.tuteeID.name %></a>
           <% } else { %>
             Tutee <%- tuteeSession.tuteeID.name %>
-          <% } if (currentUser.accessLevel >= 2) { %>
-            <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
-            <div class="card__dropdown">
-              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/notify/<%- tuteeSession.tuteeID._id %>">Notify Tutor</a>
-              <a class="card__dropdown-link" href="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID._id %>">Unpair</a>
-            </div>
           <% } %>
+          <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
+          <div class="card__dropdown">
+            <% if (currentUser.accessLevel >= 2 && (tuteeSession.status == "Unnotified" || tuteeSession.status == "Pending")) { %>
+              <form action="/tutors/<%- tutor._id %>/notify/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"
+                onsubmit="return confirm('Are you sure you want to notify the tutor about this pairing?')">
+                <button class="card__dropdown-button" type="submit">Notify Tutor</button>
+              </form>
+            <% } if (currentUser.id == tutor.id && tuteeSession.status == "Pending") { %>
+              <form action="/tutors/<%- tutor._id %>/accept-pairing/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>" method="get">
+                <button class="card__dropdown-button" type="submit">Accept Pairing</button>
+              </form>
+            <% } if (currentUser.id == tutor.id && tuteeSession.status != "Pending") { %>
+              <form action="/tutors/<%- tutor._id %>/view-tutee/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>" method="get">
+                <button class="card__dropdown-button" type="submit">View Info</button>
+              </form>
+            <% } if (currentUser.accessLevel >= 2 && tuteeSession.status != "Inactive") { %>
+              <form action="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"
+                onsubmit="return confirm('Are you sure you want to unpair this tutor? If the request is pending, this is not recommended.')">
+                <button class="card__dropdown-button" type="submit">Unpair</button>
+              </form>
+            <% } if (currentUser.accessLevel >= 2 && tuteeSession.status == "Inactive") { %>
+              <form action="/tutors/<%- tutor._id %>/re-pair/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"
+                onsubmit="return confirm('Are you sure you want to re-pair this tutor and tutee? This will make the session active.')">
+                <button class="card__dropdown-button" type="submit">Re-pair</button>
+              </form>
+            <% } %>
+          </div>
         </div>
         <span class="card__footnote">Status - <%- tuteeSession.status %></span>
         <span class="card__footnote">
@@ -106,7 +127,7 @@
     </div>
   <% } %>
   <div class="form__item form__item--row">
-    <a class="form__button" href="/tutors/<%- tutor._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
+    <a class="form__button no-drag" href="/tutors/<%- tutor._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
     <% if (currentUser.accessLevel >= 2) {
       if (tutor.verified) { %>
         <form action="/tutors/<%- tutor._id %>/unverify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to unverify this tutor?')">

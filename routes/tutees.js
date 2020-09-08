@@ -1,7 +1,7 @@
 const express = require("express"),
       router = express.Router(),
       shortid = require("shortid"),
-      middleware = require("../middleware/index"),
+      auth = require("../middleware/auth"),
       backup = require("../services/backup"),
       sns = require("../services/sns"),
       utils = require("../services/utils"),
@@ -10,7 +10,7 @@ const express = require("express"),
       Tutor = require("../models/tutor"),
       Member = require("../models/member");
 
-router.get("/", middleware.hasAccessLevel(2), function(req, res) {
+router.get("/", auth.hasAccessLevel(2), function(req, res) {
   Tutee.find({}, function(err, tutees) {
     if (err) {
       console.error(err);
@@ -54,7 +54,7 @@ router.post("/", function(req, res) {
       res.redirect("/tutees/new" + (req.query.from ? "?from=" + req.query.from : ""));
     } else {
       Member.findOneAndUpdate({id: newTutee[0].id}, {tuteeID: newTutee[0]._id}).exec();
-      if (req.user && req.user.id == newTutee[0].id) {
+      if (req.user && req.user.id == newTutee[0].id || req.user && req.user.accessLevel >= 2) {
         req.flash("success", "Your tutoring request has been successfully submitted.");
         res.redirect("/tutees/" + newTutee[0]._id + (req.query.from ? "?from=" + req.query.from : ""));
       } else {
@@ -65,15 +65,15 @@ router.post("/", function(req, res) {
   });
 });
 
-router.get("/:id", middleware.hasTuteeAccess, function(req, res) {
-  res.render("tutees/show", {tutee: req.foundTutee});
+router.get("/:id", auth.hasTuteeAccess, function(req, res) {
+  res.render("tutees/show", {tutee: res.locals.tutee});
 });
 
-router.get("/:id/edit", middleware.hasTuteeAccess, function(req, res) {
-  res.render("tutees/edit", {tutee: req.foundTutee, courses: courses});
+router.get("/:id/edit", auth.hasTuteeAccess, function(req, res) {
+  res.render("tutees/edit", {tutee: res.locals.tutee, courses: courses});
 });
 
-router.put("/:id", middleware.hasTuteeAccess, function(req, res) {
+router.put("/:id", auth.hasTuteeAccess, function(req, res) {
   var editedTutee = {
     name: req.sanitize(req.body.tutee.name),
     gender: req.body.tutee.gender,
@@ -97,10 +97,13 @@ router.put("/:id", middleware.hasTuteeAccess, function(req, res) {
   });
 });
 
-router.put("/:id/pair", middleware.hasAccessLevel(2), function(req, res) {
+router.put("/:id/pair", auth.hasAccessLevel(2), function(req, res) {
   Tutee.findById(req.params.id, function(err, tutee) {
     Tutor.find({courses: {$in: tutee.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]}, verified: true, verifiedPhone: true}).lean().exec(function(err, tutors) {
-      tutors = tutors.map(tutor => Object.assign(tutor, {mutualCourses: tutor.courses.filter(course => tutee.courses.includes(course))}));
+      tutors = tutors.map(function(tutor) {
+        Object.assign(tutor, {mutualCourses: tutor.courses.filter(course => tutee.courses.includes(course))});
+        return Object.assign(tutor, {tuteeSessions: tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive")});
+      });
       var matchingTutor = null, alreadyTutorsThisTutee = false, matchingTutorAlreadyTutorsThisTutee = false, pairInfo = [];
       tutee.courses.filter(course => tutee.tutorSessions.find(tutorSession => tutorSession.courses.includes(course)) ? false : true).forEach(function(course) {
         /* pairs the tutee with a matching tutor; priority given to tutors who already tutor this tutee, who share the most courses with this tutee, & who are tutoring the least tutees */
