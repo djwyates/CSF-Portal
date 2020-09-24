@@ -111,13 +111,13 @@
 	  position: -webkit-sticky;
 	  position: sticky;
 	  top: 0;
-		z-index: 10;
+		z-index: 4;
 	}
 
   .nav__section {
     display: none;
 		position: fixed;
-		z-index: 20;
+		z-index: 5;
 		top: 0;
 		left: 0;
 		width: 100%;
@@ -140,6 +140,16 @@
 	.nav__link--dropdown {
 		margin-left: auto;
 		margin-right: auto;
+	}
+
+	.nav__dropdown {
+		padding: 10px 0;
+		min-width: 150%;
+		background-color: rgba(0,0,0,0.85);
+	}
+
+	.nav__dropdown .nav__link {
+		margin-bottom: 0;
 	}
 
 	.nav__icon--down-arrow {

@@ -8,5 +8,20 @@
     <button class="form__button form__button--tall" type="submit">Check-In</button>
   </div>
 </form>
+<br><br><br>
+<form class="form" action="/meetings/<%- meeting._id %>/checkin?_method=put&spreadsheet=true<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post"
+  onsubmit="return confirm('You will use this spreadsheet to record attendance.')">
+  <div class="form__item--row">
+    <label class="form__label form__label--pointer" for="membersAttended">Upload a Spreadsheet (needs one "student_id" column)</label>
+    <div>
+      <input class="form__input--file" id="membersAttended" type="file" name="membersAttended" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>
+      <button class="form__input--filebutton" type="button" name="button">Choose an Excel file</button>
+      <span class="form__input--filetext">No file chosen</span>
+    </div>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Upload</button>
+  </div>
+</form>
 
 <%- include("../partials/footer") %>

@@ -59,8 +59,7 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="tuteeSessions">Current Tutees</label>
-    <% if (currentUser.accessLevel < 2) tutor.tuteeSessions = tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Unnotified");
-    if (tutor.tuteeSessions.length == 0) { %>
+    <% if (tutor.tuteeSessions.length == 0) { %>
       <input class="form__input" type="text" value="Not yet paired with tutees" readonly/>
     <% } else {
       tutor.tuteeSessions.forEach(function(tuteeSession) { %>
@@ -74,7 +73,7 @@
           <% } %>
           <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
           <div class="card__dropdown">
-            <% if (currentUser.accessLevel >= 2 && (tuteeSession.status == "Unnotified" || tuteeSession.status == "Pending")) { %>
+            <% if (currentUser.accessLevel >= 2 && tuteeSession.status == "Pending") { %>
               <form action="/tutors/<%- tutor._id %>/notify/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"
                 onsubmit="return confirm('Are you sure you want to notify the tutor about this pairing?')">
                 <button class="card__dropdown-button" type="submit">Notify Tutor</button>
@@ -83,10 +82,8 @@
               <form action="/tutors/<%- tutor._id %>/accept-pairing/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>" method="get">
                 <button class="card__dropdown-button" type="submit">Accept Pairing</button>
               </form>
-            <% } if (currentUser.id == tutor.id && tuteeSession.status != "Pending") { %>
-              <form action="/tutors/<%- tutor._id %>/view-tutee/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>" method="get">
-                <button class="card__dropdown-button" type="submit">View Info</button>
-              </form>
+            <% } if (currentUser.id == tutor.id && tuteeSession.status != "Inactive") { %>
+              <button class="card__dropdown-button card__dropdown-button--viewinfo" type="button">View Info</button>
             <% } if (currentUser.accessLevel >= 2 && tuteeSession.status != "Inactive") { %>
               <form action="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"
                 onsubmit="return confirm('Are you sure you want to unpair this tutor? If the request is pending, this is not recommended.')">
@@ -104,6 +101,31 @@
         <span class="card__footnote">
           Courses - <%- ejs.reformatCourse(tuteeSession.courses[0]) %><% for (var i=1; i<tuteeSession.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tuteeSession.courses[i]) %><% } %>
         </span>
+        <div class="card__modal">
+          <div class="card__modal-content">
+            <span class="card__modal-close no-select material-icons">close</span>
+            <div class="form__item">
+              <label class="form__label" for="name">Student's Name</label>
+              <input class="form__input" value="<%- tuteeSession.tuteeID.name %>" readonly/>
+            </div>
+            <div class="form__item">
+              <label class="form__label" for="phoneNum">Student's Phone Number</label>
+              <input class="form__input" value="<%- tuteeSession.tuteeID.phoneNum %>" readonly/>
+            </div>
+            <div class="form__item">
+              <label class="form__label" for="parentName">Parent's Name</label>
+              <input class="form__input" value="<%- tuteeSession.tuteeID.parentName %>" readonly/>
+            </div>
+            <div class="form__item">
+              <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
+              <input class="form__input" value="<%- tuteeSession.tuteeID.parentPhoneNum %>" readonly/>
+            </div>
+            <div class="form__item">
+              <label class="form__label" for="paymentForm">Their Form of Payment</label>
+              <input class="form__input" value="<%- tuteeSession.tuteeID.paymentForm %>" readonly/>
+            </div>
+          </div>
+        </div>
       </div>
       <% });
     } %>

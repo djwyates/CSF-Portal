@@ -33,14 +33,13 @@ if (filterTable) {
 }
 
 /* upload file form scripts */
-const realFileButton = document.getElementById("newMembers");
-const customButton = document.getElementById("newMembersButton");
-const customText = document.getElementById("newMembersText");
-if (customButton) {
+const realFileButton = document.querySelector(".form__input--file");
+const customButton = document.querySelector(".form__input--filebutton");
+const customText = document.querySelector(".form__input--filetext");
+if (realFileButton && customButton && customText) {
   customButton.addEventListener("click", function() {
     realFileButton.click();
   });
-} if (realFileButton) {
   realFileButton.addEventListener("change", function() {
     customText.innerHTML = realFileButton.value ? realFileButton.value.match(/[\/\\]([\w\d\s\.\-\(\)]+)$/)[1] : "No file chosen";
   });
@@ -97,11 +96,32 @@ if (cardIconLinks && cardDropdowns) {
   });
 }
 
+var cardModalButtons = document.querySelectorAll(".card__dropdown-button--viewinfo"), cardModals = document.querySelectorAll(".card__modal");
+if (cardModalButtons) {
+  cardModalButtons.forEach(function(cardModalButton) {
+    cardModalButton.addEventListener("click", function() {
+      cardModalButton.closest(".card").querySelector(".card__modal").classList.add("card__modal--visible");
+    });
+  });
+}
+var cardModalCloses = document.querySelectorAll(".card__modal-close");
+if (cardModalCloses) {
+  cardModalCloses.forEach(function(cardModalClose) {
+    cardModalClose.addEventListener("click", function() {
+      cardModalClose.closest(".card__modal").classList.remove("card__modal--visible");
+    });
+  });
+}
+
 window.onclick = function(event) {
   if (cardIconLinks && cardDropdowns) {
     if (!event.target.matches(".card__icon--link")) {
       cardDropdowns.forEach(function(cardDropdown) {
         cardDropdown.classList.remove("card__dropdown--visible");
+      });
+    } if (event.target.matches(".card__modal")) {
+      cardModals.forEach(function(cardModal) {
+        cardModal.classList.remove("card__modal--visible");
       });
     }
   }

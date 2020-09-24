@@ -18,14 +18,13 @@ var tutorSchema = new mongoose.Schema({
   tuteeSessions: {type: [{
     tuteeID: {type: String, ref: "Tutee", required: true},
     courses: {type: [String], required: true},
-    status: {type: String, enum: ["Unnotified", "Pending", "Active", "Inactive"], required: true},
+    status: {type: String, enum: ["Pending", "Active", "Inactive"], required: true},
     firstNotified: {type: String, required: false},
     lastNotified: {type: String, required: false}
   }], _id: false, required: true, default: []},
   warnings: {type: Number, min: 0, required: true, default: 0},
   verification: {
     code: {type: String, required: false},
-    timesSent: {type: Number, required: false},
     lastSent: {type: String, required: false}
   }
 });

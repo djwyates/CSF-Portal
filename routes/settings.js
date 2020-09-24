@@ -28,7 +28,8 @@ router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 
 router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   /* backs up the current database */
-  var currentDate = new Date().toISOString().slice(0,10);
+  var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-").split(" ")[0];
+  currentDate = currentDate.substring(0, currentDate.length-1);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/meetings.txt", Meeting);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/members.txt", Member);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/membersQualifying.txt", Member, function(members) {
@@ -40,7 +41,7 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   Meeting.deleteMany({}, function(err, deleteResult){ console.info("Deleted all meetings from the database: " + JSON.stringify(deleteResult)); });
   Tutor.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutors from the database: " + JSON.stringify(deleteResult)); });
   Tutee.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutees from the database: " + JSON.stringify(deleteResult)); });
-  if (!req.files) {
+  if (!req.files || !req.files.newMembers) {
     Member.deleteMany({}, function(err, deleteResult){ console.info("Deleted all members from the database: " + JSON.stringify(deleteResult)); });
     req.flash("success", "Successfully backed up and deleted all meetings, members, tutors, and tutees. No new members were uploaded into the database.");
     return res.redirect("/");

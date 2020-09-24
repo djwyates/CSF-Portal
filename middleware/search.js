@@ -6,7 +6,7 @@ const Meeting = require("../models/meeting"),
 var search = {};
 
 search.meeting = function(req, res, next) {
-  if (!req.params.id) next();
+  if (!req.params.id) return next();
   Meeting.findById(req.params.id, function(err, meeting) {
     if (err) {
       console.error(err);
@@ -22,7 +22,7 @@ search.meeting = function(req, res, next) {
 }
 
 search.member = function(req, res, next) {
-  if (!req.params.id) next();
+  if (!req.params.id) return next();
   Member.findById(req.params.id, function(err, member) {
     if (err) {
       console.error(err);
@@ -38,7 +38,7 @@ search.member = function(req, res, next) {
 }
 
 search.tutor = function(req, res, next) {
-  if (!req.params.id) next();
+  if (!req.params.id) return next();
   Tutor.findById(req.params.id, function(err, tutor) {
     if (err) {
       console.error(err);
@@ -48,7 +48,7 @@ search.tutor = function(req, res, next) {
       res.redirect("back");
     } else {
       res.locals.tutor = tutor;
-      if (!req.params.tuteeID) next();
+      if (!req.params.tuteeID) return next();
       Tutee.findById(req.params.tuteeID, function(err, tutee) {
         if (err) {
           console.error(err);
@@ -66,7 +66,7 @@ search.tutor = function(req, res, next) {
 }
 
 search.tutee = function(req, res, next) {
-  if (!req.params.id) next();
+  if (!req.params.id) return next();
   Tutee.findById(req.params.id, function(err, tutee) {
     if (err) {
       console.error(err);

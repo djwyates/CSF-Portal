@@ -54,8 +54,7 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="tutorSessions">Current Tutors</label>
-    <% if (currentUser.accessLevel < 2) tutee.tutorSessions = tutee.tutorSessions.filter(tutorSession => tutorSession.status != "Unnotified");
-    if (tutee.tutorSessions.length == 0) { %>
+    <% if (tutee.tutorSessions.length == 0) { %>
       <input class="form__input" type="text" value="Not yet paired with tutors" readonly/>
     <% } else {
       tutee.tutorSessions.forEach(function(tutorSession) { %>
@@ -69,7 +68,7 @@
           <% } if (currentUser.accessLevel >= 2) { %>
             <span class="card__icon card__icon--link card__icon--right no-select material-icons">more_horiz</span>
             <div class="card__dropdown">
-              <% if (tutorSession.status == "Unnotified" || tutorSession.status == "Pending") { %>
+              <% if (tutorSession.status == "Pending") { %>
                 <form action="/tutors/<%- tutorSession.tutorID._id %>/notify/<%- tutee._id %>?_method=put" method="post"
                   onsubmit="return confirm('Are you sure you want to notify the tutor about this pairing?')">
                   <button class="card__dropdown-button" type="submit">Notify Tutor</button>
@@ -104,7 +103,7 @@
     <a class="form__button no-drag" href="/tutees/<%- tutee._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
     <% if (currentUser.accessLevel >= 2) { %>
       <form action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post"
-        onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)? The tutors will not be notified until you manually accept the pairings.')">
+        onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)? The tutors will be automatically notified of the pairings.')">
         <input class="form__button" type="submit" value="Pair"/>
       </form>
       <form action="/tutees/<%- tutee._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this tutee?')">

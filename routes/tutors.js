@@ -117,6 +117,8 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
         var verificationCode = shortid.generate(), currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
         Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": verificationCode, "verification.lastSent": currentDate}).exec();
         sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, req.body.tutor.phoneNum);
+      } if (editedTutor.maxTutees != tutor.maxTutees && editedTutor.maxTutees < tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive").length) {
+        req.flash("info", "NOTICE: The tutee limit you entered is lower than the amount of tutees you are currently paired with (but it was still saved).");
       }
       res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
@@ -174,8 +176,9 @@ router.put("/:id/notify/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
   var tutorSession = tutee.tutorSessions.find(tutorSession => tutorSession.tutorID == tutor._id);
   if (!tuteeSession || !tutorSession) {
     req.flash("error", "The tutor is not paired with this tutee.");
-    return res.redirect("back");
-  } else if (tuteeSession.status == "Pending" && tutorSession.status == "Pending") {
+  } else if (tuteeSession.status != "Pending" || tutorSession.status != "Pending") {
+    req.flash("error", "The tutor already accepted this request.");
+  } else {
     var currentDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-"));
     var lastNotified = new Date(tuteeSession.lastNotified);
     var timeoutEndDate = new Date(lastNotified.setDate(lastNotified.getDate() + 2));
@@ -184,21 +187,16 @@ router.put("/:id/notify/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
       req.flash("error", "You can only notify tutors about who they were paired with every 48 hours. Next available on: " + timeoutEndDate);
       return res.redirect("back");
     }
-  } else if (tuteeSession.status != "Unnotified" || tutorSession.status != "Unnotified") {
-    req.flash("error", "The tutor has already accepted this tutoring request.");
-    return res.redirect("back");
+    var message = "CSF has successfully paired you with a tutee! Their information is below.\n\nTutee Information:\nName - " + tutee.name + "\nPhone - " + tutee.phoneNum + "\nNeeds help with "
+    + utils.arrayToSentence(tutee.courses.map(course => utils.reformatCourse(course))) + "\n\nParent Information:\nName - " + tutee.parentName + "\nPhone - " + tutee.parentPhoneNum
+    + "\nForm of Payment - " + tutee.paymentForm + "\n\nTo accept this pairing, go to " + keys.siteData.url + "/tutors/" + tutor._id + "/accept-pairing/" + tutee._id
+    + "\n*If this match does not work out, please contact us so you can be assigned to someone else!\n\nRemember to:\n1. Call the parent first, ASAP!\n2. Tell them what form of payment "
+    + "you are asking for and make sure it matches what they have requested.\n3. Set up meeting times.\n4. Log your meetings.\n5. Contact us when the student no longer needs your services!";
+    sns.sendSMS(message, tutor.phoneNum);
+    currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
+    Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].lastNotified": currentDate}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+    req.flash("success", "The tutor was notified that they were paired with Tutee " + tutee.id);
   }
-  var message = "CSF has successfully paired you with a tutee! Their information is below.\n\nTutee Information:\nName - " + tutee.name + "\nPhone - " + tutee.phoneNum + "\nNeeds help with "
-  + utils.arrayToSentence(tutee.courses.map(course => utils.reformatCourse(course))) + "\n\nParent Information:\nName - " + tutee.parentName + "\nPhone - " + tutee.parentPhoneNum
-  + "\nForm of Payment - " + tutee.paymentForm + "\n\nTo accept this pairing, go to " + keys.siteData.url + "/tutors/" + tutor._id + "/accept-pairing/" + tutee._id
-  + "\n*If this match does not work out, please contact us so you can be assigned to someone else!\n\nRemember to:\n1. Call the parent first, ASAP!\n2. Tell them what form of payment "
-  + "you are asking for and make sure it matches what they have requested.\n3. Set up meeting times.\n4. Log your meetings.\n5. Contact us when the student no longer needs your services!";
-  sns.sendSMS(message, tutor.phoneNum);
-  var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
-  if (!tuteeSession.firstNotified) Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].firstNotified": currentDate}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
-  Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Pending", "tuteeSessions.$[element].lastNotified": currentDate}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
-  Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Pending"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
-  req.flash("success", "The tutor was notified that they were paired with Tutee " + tutee.id);
   res.redirect("back");
 });
 
@@ -222,17 +220,15 @@ router.put("/:id/accept-pairing/:tuteeID", search.tutor, function(req, res) {
   var tutorSession = tutee.tutorSessions.find(tutorSession => tutorSession.tutorID == tutor._id);
   if (!tuteeSession || !tutorSession) {
     req.flash("error", "You are no longer paired with this tutee.");
-    res.redirect("back");
   } else if (tuteeSession.status != "Pending" || tutorSession.status != "Pending") {
-    if (tuteeSession.status == "Active" && tutorSession.status == "Active") req.flash("error", "You have already accepted this tutoring request.");
-    res.redirect("back");
+    req.flash("error", "You have already accepted this tutoring request.");
   } else {
     Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Active", $unset: {"tuteeSessions.$[element].lastNotified": "", "tuteeSessions.$[element].firstNotified": ""}},
     {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
     Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Active"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
     req.flash("success", "You have accepted this tutoring request.");
-    res.redirect(req.query.from ? req.query.from : "/");
   }
+  res.redirect("back");
 });
 
 router.put("/:id/unpair/:tuteeID", auth.hasAccessLevel(2), search.tutor, function(req, res) {
@@ -243,9 +239,9 @@ router.put("/:id/unpair/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
     req.flash("error", "The tutor is not paired with this tutee.");
     return res.redirect("back");
   } else if (tuteeSession.status == "Inactive" && tutorSession.status == "Inactive") {
-    req.flash("error", "This tutor and tutee are not currently paired with each other.");
+    req.flash("error", "This tutor and tutee were already unpaired.");
     return res.redirect("back");
-  } else if (tuteeSession.status == "Pending" && tutorSession.status == "Pending" && tuteeSession.firstNotified) {
+  } else if (tuteeSession.status == "Pending" && tutorSession.status == "Pending") {
     var currentDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-"));
     var firstNotified = new Date(tuteeSession.firstNotified);
     var timeoutEndDate = new Date(firstNotified.setDate(firstNotified.getDate() + 5));
@@ -255,15 +251,10 @@ router.put("/:id/unpair/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
       + " >>> <form class='form-link' action='/tutors" + req.url + "&override=true' method='post'><button class='button-link' type='submit'>Override and unpair</button></form>");
       return res.redirect("back");
     } else
-      sns.sendSMS("You have been unpaired with Tutee " + tutee.name + " because you did not accept their request for 5+ days or for another reason.", tutor.phoneNum);
+      sns.sendSMS("You have been unpaired with Tutee " + tutee.name + (req.query.override ? "." : " because you did not accept their request for 5 or more days.", tutor.phoneNum));
   }
-  if (tuteeSession.status == "Active" && tutorSession.status == "Active") {
-    Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
-    Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
-  } else {
-    Tutor.findByIdAndUpdate(tutor._id, {$pull: {tuteeSessions: tuteeSession}}).exec();
-    Tutee.findByIdAndUpdate(tutee._id, {$pull: {tutorSessions: tutorSession}}).exec();
-  }
+  Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+  Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
   req.flash("success", "You have unpaired this tutor and tutee.");
   res.redirect("back");
 });
@@ -339,6 +330,18 @@ router.put("/verify-phone/:code", function(req, res) {
       });
     }
   });
+});
+
+router.delete("/:id", auth.hasAccessLevel(2), search.tutor, function(req, res) {
+  if (res.locals.tutor.tuteeSessions.length > 0) {
+    req.flash("error", "You cannot delete tutors who are paired with tutees.");
+    res.redirect("/tutors/" + res.locals.tutor._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+  } else {
+    Member.findByIdAndUpdate({tutorID: res.locals.tutor._id}, {$unset: {tutorID: ""}}).exec();
+    Tutor.deleteOne({_id: res.locals.tutor._id}, function(err, tutor) {
+      res.redirect("/tutors" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    });
+  }
 });
 
 module.exports = router;

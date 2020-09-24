@@ -7,35 +7,35 @@ xlsx.parseMembers = function(file) {
   var fileData = xlsxJS.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]), members = [], warnings = [];
   for (var row in fileData) {
     members.push({});
-    for (var header in fileData[row]) {
-      switch(header.trim()) {
+    for (var column in fileData[row]) {
+      switch(column.trim()) {
         case "student_id":
-          if (!fileData[row][header].toString() || isNaN(fileData[row][header]) || fileData[row][header].toString().length != 9)
+          if (!fileData[row][column].toString() || isNaN(fileData[row][column]) || fileData[row][column].toString().length != 9)
             console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
           else
-            members[members.length-1].id = fileData[row][header].toString();
+            members[members.length-1].id = fileData[row][column].toString();
           break;
         case "name":
-          if (!fileData[row][header].toString())
+          if (!fileData[row][column].toString())
             console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid name.");
           else
-            members[members.length-1].name = fileData[row][header].toString();
+            members[members.length-1].name = fileData[row][column].toString();
           break;
         case "grade":
-          if (isNaN(fileData[row][header]) || parseInt(fileData[row][header]) < 9 || parseInt(fileData[row][header]) > 12)
+          if (isNaN(fileData[row][column]) || parseInt(fileData[row][column]) < 9 || parseInt(fileData[row][column]) > 12)
             console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid grade.");
           else
-            members[members.length-1].grade = parseInt(fileData[row][header]);
+            members[members.length-1].grade = parseInt(fileData[row][column]);
           break;
         case "terms":
-          if (isNaN(fileData[row][header]) || parseInt(fileData[row][header]) < 0 || parseInt(fileData[row][header]) > 7)
+          if (isNaN(fileData[row][column]) || parseInt(fileData[row][column]) < 0 || parseInt(fileData[row][column]) > 7)
             console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid term count.");
           else
-            members[members.length-1].termCount = parseInt(fileData[row][header]);
+            members[members.length-1].termCount = parseInt(fileData[row][column]);
           break;
         default:
           if (row == 0)
-            console.warn("WARNING: The header \"" + header.trim() + "\" of the uploaded Excel sheet cannot be parsed.");
+            console.warn("WARNING: The column \"" + column.trim() + "\" of the uploaded Excel sheet cannot be parsed.");
           break;
       }
     }
@@ -46,6 +46,23 @@ xlsx.parseMembers = function(file) {
     }
   }
   return {members: members, warnings: warnings};
+}
+
+xlsx.parseIDs = function(file) {
+  var workbook = xlsxJS.readFile(file);
+  var fileData = xlsxJS.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]), ids = [], warnings = [];
+  for (var row in fileData) {
+    for (var column in fileData[row]) {
+      if (column.trim() == "student_id") {
+        if (fileData[row][column].toString().match(new RegExp("^\\d{9}$")))
+          ids.push(fileData[row][column].toString());
+        else
+          console.warn("WARNING: The ID in row " + (parseInt(row)+2) + " of the uploaded attendance sheet is invalid.");
+        continue;
+      }
+    }
+  }
+  return ids;
 }
 
 module.exports = xlsx;

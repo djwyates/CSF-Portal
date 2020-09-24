@@ -5,7 +5,7 @@
   <div class="form__title">Term Migration</div>
   <p class="form__description">
     Term Migration backs up and deletes all meetings, members, tutors, and tutees.
-    Upload an Excel file with the correct headers ("student_id" "name" "grade" "terms") to seed the database for the next term.
+    Upload an Excel file with the correct columns ("student_id" "name" "grade" "terms") to seed the database for the next term.
     If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
     You will be logged out after the process of term migration if you are not in the uploaded file of new members.
   </p>
@@ -26,8 +26,8 @@
     <label class="form__label form__label--pointer" for="newMembers">New Members</label>
     <div>
       <input class="form__input--file" id="newMembers" type="file" name="newMembers" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>
-      <button class="form__input--filebutton" id="newMembersButton" type="button" name="button">Choose an Excel file</button>
-      <span class="form__input--filetext" id="newMembersText">No file chosen</span>
+      <button class="form__input--filebutton" type="button" name="button">Choose an Excel file</button>
+      <span class="form__input--filetext">No file chosen</span>
     </div>
   </div>
   <div class="form__item">

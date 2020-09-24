@@ -61,7 +61,7 @@
   left: 432px;
   max-width: 132px;
   padding: 10px 0;
-  z-index: 5;
+  z-index: 1;
   white-space: nowrap;
 	background-color: rgb(255,255,255);
 	border-radius: 0.5rem;
@@ -90,5 +90,41 @@
 
 .card__dropdown-button:focus {
   outline: none;
+  color: rgb(0,136,154);
+}
+
+.card__modal {
+  display: none;
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: none;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+
+.card__modal--visible {
+  display: block;
+}
+
+.card__modal-content {
+  width: 400px;
+  margin: 150px auto;
+  padding: 20px;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
+  background-color: #fefefe;
+}
+
+.card__modal-close {
+  float: right;
+  cursor: pointer;
+  transition: 0.1s;
+}
+
+.card__modal-close:hover, .card__modal-close:focus {
   color: rgb(0,136,154);
 }
