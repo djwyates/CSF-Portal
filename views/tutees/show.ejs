@@ -50,7 +50,11 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="courses">Requested Courses</label>
-    <input class="form__input" value="<%- ejs.reformatCourse(tutee.courses[0]) %><% for (var i=1; i<tutee.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tutee.courses[i]) %><% } %>" readonly/>
+    <ul class="form__input form__list">
+      <% tutee.courses.forEach(function(courseID) { %>
+        <li><%- ejs.reformatCourse(courseID); %></li>
+      <% }); %>
+    </ul>
   </div>
   <div class="form__item">
     <label class="form__label" for="tutorSessions">Current Tutors</label>

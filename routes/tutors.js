@@ -251,10 +251,15 @@ router.put("/:id/unpair/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
       + " >>> <form class='form-link' action='/tutors" + req.url + "&override=true' method='post'><button class='button-link' type='submit'>Override and unpair</button></form>");
       return res.redirect("back");
     } else
-      sns.sendSMS("You have been unpaired with Tutee " + tutee.name + (req.query.override ? "." : " because you did not accept their request for 5 or more days.", tutor.phoneNum));
+      sns.sendSMS("You have been unpaired with Tutee " + tutee.name + (req.query.override ? "." : " because you did not accept their request for 5 or more days."), tutor.phoneNum);
   }
-  Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
-  Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
+  if (tutorSession.status == "Pending" && tuteeSession.status == "Pending") {
+    Tutor.findByIdAndUpdate(tutor._id, {$pull: {tuteeSessions: tuteeSession}}).exec();
+    Tutee.findByIdAndUpdate(tutee._id, {$pull: {tutorSessions: tutorSession}}).exec();
+  } else {
+    Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+    Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Inactive"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
+  }
   req.flash("success", "You have unpaired this tutor and tutee.");
   res.redirect("back");
 });
@@ -303,7 +308,7 @@ router.get("/verify-phone/:code", function(req, res) {
     if (err || !tutor) {
       if (err) console.error(err);
       req.flash("error", "Invalid verification code. Check if your phone is already verified.");
-      res.redirect("/" + (req.user && req.user.tutorID ? "tutors/" + req.user.tutorID : ""));
+      res.redirect(req.user && req.user.tutorID ? "/tutors/" + req.user.tutorID : "/members/attendance");
     } else
       res.render("tutors/verify-phone", {verificationCode: tutor.verification.code});
   });
@@ -315,7 +320,7 @@ router.put("/verify-phone/:code", function(req, res) {
     if (err || !tutor) {
       if (err) console.error(err);
       req.flash("error", "An unexpected error occurred.");
-      res.redirect("/" + (req.user && req.user.tutorID ? "tutors/" + req.user.tutorID : ""));
+      res.redirect(req.user && req.user.tutorID ? "/tutors/" + req.user.tutorID : "/members/attendance");
     } else if (tutor.id != req.body.id) {
       req.flash("error", "You entered an invalid student ID.");
       res.redirect("/tutors/verify-phone/" + tutor.verification.code);
@@ -326,7 +331,7 @@ router.put("/verify-phone/:code", function(req, res) {
           req.flash("error", "An unexpected error occurred.");
         } else
           req.flash("success", "Your phone has been verified successfully.");
-        res.redirect("/" + (req.user && req.user.tutorID ? "tutors/" + req.user.tutorID : ""));
+        res.redirect(req.user && req.user.tutorID ? "/tutors/" + req.user.tutorID : "/members/attendance");
       });
     }
   });

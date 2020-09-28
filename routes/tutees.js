@@ -81,13 +81,15 @@ router.put("/:id", auth.hasTuteeAccess, function(req, res) {
     gender: req.body.tutee.gender,
     grade: req.body.tutee.grade,
     email: req.sanitize(req.body.tutee.email),
-    phoneNum: req.sanitize(req.body.tutee.phoneNum),
     parentName: req.sanitize(req.body.tutee.parentName),
     parentEmail: req.sanitize(req.body.tutee.parentEmail),
-    parentPhoneNum: req.sanitize(req.body.tutee.parentPhoneNum),
     paymentForm: req.body.tutee.paymentForm,
     courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses]
   };
+  if (req.user.accessLevel >= 2) {
+    editedTutee.phoneNum = req.sanitize(req.body.tutee.phoneNum);
+    editedTutee.parentPhoneNum = req.sanitize(req.body.tutee.parentPhoneNum);
+  }
   Tutee.findByIdAndUpdate(req.params.id, editedTutee, function(err, tutee) {
     if (err) {
       console.error(err);
@@ -112,8 +114,8 @@ router.put("/:id/pair", auth.hasAccessLevel(2), search.tutee, function(req, res)
         alreadyTutorsThisTutee = tutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id) ? true : pairedTutors.find(pairedTutor => pairedTutor._id == tutor._id) ? true : false;
         if (matchingTutor) matchingTutorAlreadyTutorsThisTutee = matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id) ? true : false;
         if (tutor.courses.includes(course) && tutor.id != tutee.id && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee)
-            && (!matchingTutor || alreadyTutorsThisTutee || (!matchingTutorAlreadyTutorsThisTutee && tutor.mutualCourses.length > matchingTutor.mutualCourses.length)
-            || (!matchingTutorAlreadyTutorsThisTutee && tutor.mutualCourses.length == matchingTutor.mutualCourses.length && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))
+            && (!matchingTutor || alreadyTutorsThisTutee || (!matchingTutorAlreadyTutorsThisTutee && (tutor.mutualCourses.length > matchingTutor.mutualCourses.length
+            || (tutor.mutualCourses.length == matchingTutor.mutualCourses.length && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))))
               matchingTutor = tutor;
       });
       /* updates the database to pair the matching tutor and tutee */
@@ -129,23 +131,23 @@ router.put("/:id/pair", auth.hasAccessLevel(2), search.tutee, function(req, res)
           Tutee.findByIdAndUpdate(tutee._id, {$push: {"tutorSessions": {tutorID: matchingTutor._id, courses: [course], status: "Pending"}}}).exec();
           Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions": {tuteeID: tutee._id, courses: [course], status: "Pending", firstNotified: currentDate, lastNotified: currentDate}}}).exec();
         } if (!pairedNow) {
-          matchingTutor.courses = [course];
+          matchingTutor.pairedCourses = [course];
           pairedTutors.push(matchingTutor);
         } else
-          pairedTutors.find(pairedTutor => pairedTutor._id == matchingTutor._id).courses.push(course);
+          pairedTutors.find(pairedTutor => pairedTutor._id == matchingTutor._id).pairedCourses.push(course);
         pairMsg.push("<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Ftutees%2F" + tutee._id + "'>Tutor " + matchingTutor.name + "</a> for Course " + course);
         matchingTutor = null;
       }
     });
     /* formulates & sends SMS message to notify paired tutors */
     pairedTutors.forEach(function(pairedTutor) {
-      pairedTutor.courses = pairedTutor.courses.map(course => utils.reformatCourse(course));
+      pairedTutor.pairedCourses = pairedTutor.pairedCourses.map(course => utils.reformatCourse(course));
       if (pairedTutor.pairedBefore) {
         var message = "Tutee " + tutee.name + ", who you were already paired with, has requested help in additional courses you cover: "
-        + utils.arrayToSentence(pairedTutor.courses.map(course => utils.reformatCourse(course)));
+        + utils.arrayToSentence(pairedTutor.pairedCourses.map(course => utils.reformatCourse(course)));
       } else {
         var message = "CSF has successfully paired you with a tutee! Their information is below.\n\nTutee Information:\nName - " + tutee.name + "\nPhone - " + tutee.phoneNum + "\nNeeds help with "
-        + utils.arrayToSentence(pairedTutor.courses.map(course => utils.reformatCourse(course))) + "\n\nParent Information:\nName - " + tutee.parentName + "\nPhone - " + tutee.parentPhoneNum
+        + utils.arrayToSentence(pairedTutor.pairedCourses.map(course => utils.reformatCourse(course))) + "\n\nParent Information:\nName - " + tutee.parentName + "\nPhone - " + tutee.parentPhoneNum
         + "\nForm of Payment - " + tutee.paymentForm + "\n\nTo accept this pairing, go to " + keys.siteData.url + "/tutors/" + pairedTutor._id + "/accept-pairing/" + tutee._id
         + "\n*If this match does not work out, please contact us so you can be assigned to someone else!\n\nRemember to:\n1. Call the parent first, ASAP!\n2. Tell them what form of payment "
         + "you are asking for and make sure it matches what they have requested.\n3. Set up meeting times.\n4. Log your meetings.\n5. Contact us when the student no longer needs your services!";

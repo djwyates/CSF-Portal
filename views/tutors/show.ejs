@@ -132,7 +132,11 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="courses">Courses to Tutor</label>
-    <input class="form__input" value="<%- ejs.reformatCourse(tutor.courses[0]) %><% for (var i=1; i<tutor.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tutor.courses[i]) %><% } %>" readonly/>
+    <ul class="form__input form__list">
+      <% tutor.courses.forEach(function(courseID) { %>
+        <li><%- ejs.reformatCourse(courseID); %></li>
+      <% }); %>
+    </ul>
   </div>
   <div class="form__item">
     <label class="form__label" for="verified">Verification Status</label>

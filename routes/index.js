@@ -7,7 +7,7 @@ const express = require("express"),
       Tutee = require("../models/tutee");
 
 router.get("/", function(req, res) {
-  res.render("landing");
+  res.redirect("/members/attendance"); /* no home page as of now */
 });
 
 router.get("/login/google", passport.authenticate("google", {scope: ["email"]}));
@@ -20,7 +20,7 @@ router.get("/login/google/callback", passport.authenticate("google"), function(r
 router.get("/logout", function(req, res) {
   req.logout();
   req.flash("success", "You have been logged out.");
-  res.redirect("/");
+  res.redirect("/members/attendance");
 });
 
 router.get("/search", function(req, res) {

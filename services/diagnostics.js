@@ -87,7 +87,7 @@ function testMembers(meetings, members, tutors, tutees) {
 }
 
 function testTutors(members, tutors, tutees) {
-  var result = "", matched = false, foundTutee = null, course = null, matchingMember = null;
+  var result = "", matchingTutee = null, matchingTutorSession = null, matchingMember = null;
   /* checks for duplicate IDs */
   var dupeIDs = utils.findDuplicatesInArray(tutors.map(tutor => tutor.id));
   if (dupeIDs.length > 0) {
@@ -96,21 +96,24 @@ function testTutors(members, tutors, tutees) {
   tutors.forEach(function(tutor) {
     /* checks if tutors and their tutees are in pairs */
     tutor.tuteeSessions.forEach(function(tuteeSession) {
-      foundTutee = tutees.find(tutee => tutee._id == tuteeSession.tuteeID);
-      if (!foundTutee) {
+      matchingTutee = tutees.find(tutee => tutee._id == tuteeSession.tuteeID);
+      if (!matchingTutee) {
         result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "</a> indicate them tutoring Tutee "
         + tuteeSession.tuteeID + " while that tutee does not exist.<br>";
       } else {
-        foundTutee.tutorSessions.forEach(function(tutorSession) {
-          if (tuteeSession.courses.includes(tutorSession.course) && tutorSession.tutorID == tutor._id)
-            matched = true;
-          else
-            course = tutorSession.course;
-        });
-        if (!matched)
-          result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "</a> indicate them tutoring <a class='link--white' href='/tutees/"
-          + tuteeSession.tuteeID + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tuteeSession.tuteeID + "</a> for course " + course + " while the tutee\'s records do not.<br>";
-        matched = false;
+        matchingTutorSession = matchingTutee.tutorSessions.find(tutorSession => tutorSession.tutorID == tutor._id);
+        if (!matchingTutorSession) {
+          result += "Records of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "</a> indicate them tutoring "
+          + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "</a>  while the tutee\'s records do not.<br>"
+        } else {
+          if (tuteeSession.status != matchingTutorSession.status) {
+            result += "The statuses of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "\'s</a> and "
+            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.";
+          } if (tuteeSession.courses.sort().join(",") != matchingTutorSession.courses.sort().join(",")) {
+            result += "The courses of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "\'s</a> and "
+            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.";
+          }
+        }
       }
     });
     /* checks if tutors are linked with an existing and accurate member */
@@ -126,7 +129,7 @@ function testTutors(members, tutors, tutees) {
 }
 
 function testTutees(members, tutors, tutees) {
-  var result = "", matched = false, foundTutor = null;
+  var result = "", matchingTutor = null, matchingTuteeSession = null, matchingMember = null;
   /* checks for duplicate IDs */
   var dupeIDs = utils.findDuplicatesInArray(tutees.map(tutee => tutee.id));
   if (dupeIDs.length > 0) {
@@ -135,21 +138,24 @@ function testTutees(members, tutors, tutees) {
   tutees.forEach(function(tutee) {
     /* checks if tutees and their tutors are in pairs */
     tutee.tutorSessions.forEach(function(tutorSession) {
-      if (tutorSession.tutorID == null)
-        return;
-      foundTutor = tutors.find(tutor => tutor._id == tutorSession.tutorID);
-      if (!foundTutor) {
+      matchingTutor = tutors.find(tutor => tutor._id == tutorSession.tutorID);
+      if (!matchingTutor) {
         result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a> indicate them being tutored by Tutor "
         + tutorSession.tutorID + " while that tutor does not exist.<br>";
       } else {
-        foundTutor.tuteeSessions.forEach(function(tuteeSession) {
-          if (tuteeSession.tuteeID = tutee._id && tuteeSession.courses.includes(tutorSession.course))
-            matched = true;
-        });
-        if (!matched)
-          result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a> indicate them being tutored by <a class='link--white' href='/tutors/"
-          + tutorSession.tutorID + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutorSession.tutorID + "</a> for course " + tutorSession.course + " while the tutor\'s records do not.<br>";
-        matched = false;
+        matchingTuteeSession = matchingTutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id);
+        if (!matchingTuteeSession) {
+          result += "Records of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a> indicate them being tutored by "
+          + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "</a>  while the tutor\'s records do not.<br>"
+        } else {
+          if (tutorSession.status != matchingTuteeSession.status) {
+            result += "The statuses of <a class='link--white' href='/tutees/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "\'s</a> and "
+            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.";
+          } if (tutorSession.courses.sort().join(",") != matchingTuteeSession.courses.sort().join(",")) {
+            result += "The courses of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "\'s</a> and "
+            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.";
+          }
+        }
       }
     });
     /* checks if tutees are linked with an existing and accurate member */

@@ -40,6 +40,7 @@
     <label class="form__label" for="phoneNum">Phone Number</label>
     <input class="form__input" id="phoneNum" type="text" name="tutee[phoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
     value="<%- tutee.phoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
+    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator.</span>
   </div>
   <div class="form__item">
     <label class="form__label" for="parentName">Parent's Name</label>
@@ -54,6 +55,7 @@
     <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>
     <input class="form__input" id="parentPhoneNum" type="text" name="tutee[parentPhoneNum]" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" minlength="12" maxlength="12"
     value="<%- tutee.parentPhoneNum %>" placeholder="In xxx-xxx-xxxx format" <% if (currentUser.accessLevel <= 1) { %>readonly<% } %> required/>
+    <span class="form__input-footnote">To change your phone number, contact the tutoring coordinator.</span>
   </div>
   <div class="form__item">
     <label class="form__label" for="paymentForm">Form of Payment</label>

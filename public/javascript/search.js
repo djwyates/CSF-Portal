@@ -1,7 +1,6 @@
 import InstantSearch from "./InstantSearch.js";
 
 function reformatDate(date) {
-  if (date.length <= 10) date += ", 12:00:00 AM";
   var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], date = new Date(date);
   return(months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear());
 }

@@ -23,6 +23,24 @@
     </label>
   </div>
   <div class="form__item">
+    <label class="form__label" for="preserve">Do not delete</label>
+    <label class="form__label--checkbox" for="preserveMeetings">
+      <input class="form__input--checkbox" id="preserveMeetings" type="checkbox" name="preserveMeetings" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Meetings
+    </label>
+    <label class="form__label--checkbox" for="preserveTutors">
+      <input class="form__input--checkbox" id="preserveTutors" type="checkbox" name="preserveTutors" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Tutors
+    </label>
+    <label class="form__label--checkbox" for="preserveTutees">
+      <input class="form__input--checkbox" id="preserveTutees" type="checkbox" name="preserveTutees" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Tutees
+    </label>
+  </div>
+  <div class="form__item">
     <label class="form__label form__label--pointer" for="newMembers">New Members</label>
     <div>
       <input class="form__input--file" id="newMembers" type="file" name="newMembers" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>

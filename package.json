@@ -4,6 +4,7 @@
   "description": "CSF web application that manages member attendance and tutoring",
   "main": "app.js",
   "scripts": {
+    "start": "node --harmony app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -3,7 +3,7 @@ const mongoose = require("mongoose"),
 
 var memberSchema = new mongoose.Schema({
   _id: {type: String, default: shortid.generate},
-  id: {type: String, minlength: 9, maxlength: 9, trim: true, unique: true, required: true},
+  id: {type: String, minlength: 9, maxlength: 9, trim: true, unique: true, required: true, validate: {validator: function(v) {return /^\d{9}$/.test(v);}}},
   name: {type: String, trim: true, required: true},
   grade: {type: Number, min: 9, max: 12, required: true},
   termCount: {type: Number, min: 0, max: 7, required: true},

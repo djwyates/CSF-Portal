@@ -28,7 +28,7 @@ router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 
 router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   /* backs up the current database */
-  var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-").split(" ")[0];
+  var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-").split(" ")[0], flashMsg = "", deletedModels = [];
   currentDate = currentDate.substring(0, currentDate.length-1);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/meetings.txt", Meeting);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/members.txt", Member);
@@ -38,26 +38,32 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutors.txt", Tutor);
   backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutees.txt", Tutee);
   /* deletes the current database (besides members if a file is uploaded) */
-  Meeting.deleteMany({}, function(err, deleteResult){ console.info("Deleted all meetings from the database: " + JSON.stringify(deleteResult)); });
-  Tutor.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutors from the database: " + JSON.stringify(deleteResult)); });
-  Tutee.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutees from the database: " + JSON.stringify(deleteResult)); });
-  if (!req.files || !req.files.newMembers) {
+  deletedModels.push("members");
+  if (!req.body.preserveMeetings) {
+    Meeting.deleteMany({}, function(err, deleteResult){ console.info("Deleted all meetings from the database: " + JSON.stringify(deleteResult)); });
+    deletedModels.push("meetings");
+  } if (!req.body.preserveTutors) {
+    Tutor.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutors from the database: " + JSON.stringify(deleteResult)); });
+    deletedModels.push("tutors");
+  } if (!req.body.preserveTutees) {
+    Tutee.deleteMany({}, function(err, deleteResult){ console.info("Deleted all tutees from the database: " + JSON.stringify(deleteResult)); });
+    deletedModels.push("tutees");
+  } if (!req.files || !req.files.newMembers) {
     Member.deleteMany({}, function(err, deleteResult){ console.info("Deleted all members from the database: " + JSON.stringify(deleteResult)); });
-    req.flash("success", "Successfully backed up and deleted all meetings, members, tutors, and tutees. No new members were uploaded into the database.");
-    return res.redirect("/");
+    req.flash("info", "Successfully backed up and deleted all " + utils.arrayToSentence(deletedModels) + ". No new members were uploaded into the database.");
+    return res.redirect("/settings/permissions");
   }
   /* parses the uploaded file; if it is empty or not in the correct format, the process will be terminated & previous members will not be deleted */
   req.files.newMembers.mv(req.files.newMembers.name, function() {
     var parsedMembers = xlsx.parseMembers(req.files.newMembers.name);
     fs.unlink(req.files.newMembers.name, function(err){});
     if (!parsedMembers.members) {
-      req.flash("error", "Backed up and deleted all meetings, tutors, and tutees. Something went wrong with the uploaded member file, so members were not deleted. Review the file and try again.");
+      req.flash("error", "Backed up and deleted all " + utils.arrayToSentence(deletedModels) + ". Something went wrong with the uploaded member file, so members were not deleted. Review the file and try again.");
       return res.redirect("/settings/term-migration");
     }
     /* formulates a message if any members of the uploaded file could not be parsed */
-    var warningMsg = "";
     if (parsedMembers.warnings.length > 0)
-      warningMsg += " WARNING: The members in rows " + utils.arrayToSentence(parsedMembers.warnings) + " of the uploaded Excel sheet are invalid and were not added.";
+      flashMsg += "<br>WARNING: The members in rows " + utils.arrayToSentence(parsedMembers.warnings) + " of the uploaded Excel sheet are invalid and were not added.";
     /* finds previous members who were officers, then deletes all previous members & creates new ones who were successfully parsed from the uploaded file */
     Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
       Member.deleteMany({id: {$ne: req.user.id}}, function(err, deleteResult) {
@@ -72,7 +78,7 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
         Member.create(parsedMembers.members, function(err, newMembers) {
           /* conserves permissions of previous officers if found in the collection of new members */
           if (!previousOfficers) {
-            warningMsg += "<br>NOTICE: Since no officers existed in the previous database, no permissions were conserved. Make sure to grant permissions!";
+            flashMsg += "<br>NOTICE: Since no officers existed in the previous database, no permissions were conserved. Make sure to grant permissions!";
           } else {
             var previousOfficersNotPreserved = [];
             previousOfficers.forEach(function(previousOfficer) {
@@ -88,12 +94,13 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
               }
             });
             /* formulates a message about the officers who did or did not conserve permissions */
-            if (previousOfficersNotPreserved.length > 0) warningMsg += "<br>WARNING: " + utils.arrayToSentence(previousOfficersNotPreserved) + " was NOT conserved.";
-            else warningMsg += "<br>All previous officers\' permissions were conserved.";
+            if (previousOfficersNotPreserved.length > 0) flashMsg += "<br>WARNING: " + utils.arrayToSentence(previousOfficersNotPreserved) + " was NOT conserved.";
+            else flashMsg += "<br>All previous officers\' permissions were conserved.";
           }
           /* term migration is successful; this redirects the user & displays the term migration report via a flash message */
           var totalNewMembers = (newMembers ? newMembers.length : 0) + (newMemberOfUser ? 1 : 0);
-          req.flash("info", "Backed up and deleted all meetings, members, tutors, and tutees.<br>" + totalNewMembers + " new members have been loaded into the database." + warningMsg);
+          flashMsg = "Backed up and deleted all " + utils.arrayToSentence(deletedModels) + ".<br>" + totalNewMembers + " new members have been loaded into the database." + flashMsg;
+          req.flash("info", flashMsg);
           res.redirect("/settings/permissions");
         });
       });
@@ -114,17 +121,22 @@ router.put("/backups", auth.hasAccessLevel(3), function(req, res) {
     else req.body.membersAttended = req.body.membersAttended.split(",");
     Meeting.create([req.body], function(err, newMeeting) {
       if (newMeeting) {
-        newMeeting[0].membersAttended.forEach(function(memberID) {
-          Member.updateOne({id: memberID}, {$addToSet: {"meetingsAttended": newMeeting[0].date}}, function(err, updateResult) {
-            if (updateResult.n == 0) {
-              warningMsg += "<br>WARNING: The attendance records of the restored meeting contains a member with ID " + memberID + " that does not exist.";
-              console.warn("WARNING: The attendance records of the meeting on " + utils.reformatDate(newMeeting[0].date) + " that was restored from backup contains a member with ID " + memberID + " that does not exist.");
-            } if (newMeeting[0].membersAttended.indexOf(memberID) == newMeeting[0].membersAttended.length-1) {
-              req.flash("success", "The selected backup was successfully restored." + warningMsg);
-              res.redirect("/settings/backups");
-            }
+        if (newMeeting[0].membersAttended.length > 0) {
+          newMeeting[0].membersAttended.forEach(function(memberID) {
+            Member.updateOne({id: memberID}, {$addToSet: {"meetingsAttended": newMeeting[0].date}}, function(err, updateResult) {
+              if (updateResult.n == 0) {
+                warningMsg += "<br>WARNING: The attendance records of the restored meeting contains a member with ID " + memberID + " that does not exist.";
+                console.warn("WARNING: The attendance records of the meeting on " + utils.reformatDate(newMeeting[0].date) + " that was restored from backup contains a member with ID " + memberID + " that does not exist.");
+              } if (newMeeting[0].membersAttended.indexOf(memberID) == newMeeting[0].membersAttended.length-1) {
+                req.flash("success", "The selected backup was successfully restored." + warningMsg);
+                res.redirect("/settings/backups");
+              }
+            });
           });
-        });
+        } else {
+          req.flash("success", "The selected backup was successfully restored.");
+          res.redirect("/settings/backups");
+        }
       } else {
         req.flash("error", "The selected backup was not restored because it would overwrite current data. Check for a meeting that exists with the same date.");
         res.redirect("/settings/backups");
@@ -136,17 +148,22 @@ router.put("/backups", auth.hasAccessLevel(3), function(req, res) {
     else req.body.meetingsAttended = req.body.meetingsAttended.split(",");
     Member.create([req.body], function(err, newMember) {
       if (newMember) {
-        newMember[0].meetingsAttended.forEach(function(meetingDate) {
-          Meeting.updateOne({date: meetingDate}, {$addToSet: {"membersAttended": newMember[0].id}}, function(err, updateResult) {
-            if (updateResult.n == 0) {
-              warningMsg += "<br>WARNING: The attendance records of the restored member contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.";
-              console.warn("WARNING: The attendance records of the member with ID " + newMember[0].id + " that was restored from backup contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.");
-            } if (newMember[0].meetingsAttended.indexOf(meetingDate) == newMember[0].meetingsAttended.length-1) {
-              req.flash("success", "The selected backup was successfully restored." + warningMsg);
-              res.redirect("/settings/backups");
-            }
+        if (newMember[0].meetingsAttended.length > 0) {
+          newMember[0].meetingsAttended.forEach(function(meetingDate) {
+            Meeting.updateOne({date: meetingDate}, {$addToSet: {"membersAttended": newMember[0].id}}, function(err, updateResult) {
+              if (updateResult.n == 0) {
+                warningMsg += "<br>WARNING: The attendance records of the restored member contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.";
+                console.warn("WARNING: The attendance records of the member with ID " + newMember[0].id + " that was restored from backup contains a meeting on " + utils.reformatDate(meetingDate) + " that does not exist.");
+              } if (newMember[0].meetingsAttended.indexOf(meetingDate) == newMember[0].meetingsAttended.length-1) {
+                req.flash("success", "The selected backup was successfully restored." + warningMsg);
+                res.redirect("/settings/backups");
+              }
+            });
           });
-        });
+        } else {
+          req.flash("success", "The selected backup was successfully restored.");
+          res.redirect("/settings/backups");
+        }
       } else {
         req.flash("error", "The selected backup was not restored because it would overwrite current data. Check for a member that exists with the same ID.");
         res.redirect("/settings/backups");
