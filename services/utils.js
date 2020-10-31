@@ -17,6 +17,15 @@ utils.findDuplicatesInArray = function(array) {
   return duplicates;
 }
 
+utils.getCurrentDate = function(format) {
+  if (format == "mm-dd-yyyy") {
+    var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-").split(" ")[0];
+    return currentDate.substring(0, currentDate.length-1);
+  } if (format == "mm-dd-yyyy, 00:00:00") {
+    return new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
+  }
+}
+
 utils.reformatCourse = function(thisCourseID) {
   for (courseCategory in courses) {
     for (courseID in courses[courseCategory]) {

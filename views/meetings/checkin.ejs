@@ -8,5 +8,19 @@
     <button class="form__button form__button--tall" type="submit">Check-In</button>
   </div>
 </form>
+<form class="form" action="/meetings/<%- meeting._id %>/checkin?_method=put&spreadsheet=true<% if (query.from) { %>&from=<%- query.from %><% } %>"
+  method="post" enctype="multipart/form-data" onsubmit="return confirm('Are you sure you want to record attendance for all student IDs found in this spreadsheet?')">
+  <div class="form__item">
+    <label class="form__label form__label--pointer" for="attendance">Attendance Spreadsheet</label>
+    <div>
+      <input class="form__input--file" id="attendance" type="file" name="attendance" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden required/>
+      <button class="form__input--filebutton" type="button" name="button">Choose an Excel file</button>
+      <span class="form__input--filetext">No file chosen</span>
+    </div>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">Submit Spreadsheet</button>
+  </div>
+</form>
 
 <%- include("../partials/footer") %>

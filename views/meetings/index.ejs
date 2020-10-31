@@ -17,9 +17,6 @@
       <th class="table__cell">Meeting</th>
       <th class="table__cell">Date</th>
       <th class="table__cell">Description</th>
-      <% if (currentUser && currentUser.meetingsAttended) { %>
-        <th class="table__cell">Attendance</th>
-      <% } %>
     </tr>
   </thead>
   <tbody>
@@ -28,13 +25,6 @@
         <td class="table__cell"><%- i %></td>
         <td class="table__cell"><%- ejs.reformatDate(meeting.date) %></td>
         <td class="table__cell"><%- meeting.description %></td>
-        <% if (currentUser && currentUser.meetingsAttended) { %>
-          <td class="table__cell">
-            <% if (currentUser && currentUser.meetingsAttended && currentUser.meetingsAttended.includes(meeting.date)) { %><span class="green">Attended</span>
-            <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %><span class="blue">Upcoming</span>
-            <% } else { %><span class="red">Not attended</span><% } %>
-          </td>
-        <% } %>
       </tr>
     <% i++; }); %>
   </tbody>

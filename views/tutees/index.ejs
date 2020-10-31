@@ -23,7 +23,7 @@
   </thead>
   <tbody>
     <% tutees.forEach(function(tutee) { %>
-      <tr class="table__body-row" data-href="http://localhost:3000/tutees/<%- tutee._id %>?from=%2Ftutees">
+      <tr class="table__body-row" data-href="/tutees/<%- tutee._id %>?from=%2Ftutees">
         <td class="table__cell"><%- tutee.name %></td>
         <td class="table__cell"><%- tutee.id %></td>
         <td class="table__cell table__cell--grade"><%- tutee.grade %></td>

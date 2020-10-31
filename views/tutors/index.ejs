@@ -24,7 +24,7 @@
   </thead>
   <tbody>
     <% tutors.forEach(function(tutor) { %>
-      <tr class="table__body-row" data-href="http://localhost:3000/tutors/<%- tutor._id %>?from=%2Ftutors">
+      <tr class="table__body-row" data-href="/tutors/<%- tutor._id %>?from=%2Ftutors">
         <td class="table__cell"><%- tutor.name %></td>
         <td class="table__cell"><%- tutor.id %></td>
         <td class="table__cell table__cell--grade"><%- tutor.grade %></td>

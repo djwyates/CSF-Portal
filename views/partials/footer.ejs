@@ -6,7 +6,14 @@
       </div>
       <div class="footer__section">
         <span class="material-icons footer__icon">event_note</span>
-        Feb. 27 <p>Next meeting in 7 days</p>
+        <% if (nextMeetingDate) {
+          nextMeetingDate = new Date(nextMeetingDate).setTime(new Date(nextMeetingDate).getTime()+(16*60*60*1000));
+          var dateDifference = Math.ceil((new Date(nextMeetingDate) - new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) / (24*60*60*1000)); %>
+          <%- ejs.reformatDate(nextMeetingDate) %>
+          <p>Next meeting in <%- dateDifference %> day<% if (dateDifference > 1) { %>s<% } %></p>
+        <% } else { %>
+          N/A <p>No upcoming meetings</p>
+        <% } %>
         <hr class="footer__hr">
         <div class="search" id="searchEverything">
           <div class="search__input-container">

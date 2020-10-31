@@ -35,6 +35,11 @@
 	color: rgb(0,128,154);
 }
 
+.link--underlined {
+	text-decoration: underline;
+	color: rgb(0,128,154);
+}
+
 .link--white {
 	text-decoration: none;
 	color: rgb(255,255,255);

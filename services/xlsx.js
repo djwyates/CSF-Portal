@@ -8,7 +8,7 @@ xlsx.parseMembers = function(file) {
   for (var row in fileData) {
     members.push({});
     for (var column in fileData[row]) {
-      switch(column.trim()) {
+      switch(column.trim().toLowerCase()) {
         case "student_id":
           if (!fileData[row][column].toString() || isNaN(fileData[row][column]) || fileData[row][column].toString().length != 9)
             console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
@@ -56,13 +56,28 @@ xlsx.parseIDs = function(file) {
       if (column.trim() == "student_id") {
         if (fileData[row][column].toString().match(new RegExp("^\\d{9}$")))
           ids.push(fileData[row][column].toString());
-        else
+        else {
           console.warn("WARNING: The ID in row " + (parseInt(row)+2) + " of the uploaded attendance sheet is invalid.");
-        continue;
+          warnings.push(parseInt(row)+2);
+        }
       }
     }
   }
-  return ids;
+  return {ids: ids, warnings: warnings};
+}
+
+xlsx.writeMongooseModel = function(model, path, limit) {
+  return new Promise(function(resolve, reject) {
+    var workbook = xlsxJS.utils.book_new();
+    model.find({}).lean().exec(function(err, documents) {
+      if (err || !documents) console.error(err ? err : "ERROR: The model you tried to back up does not exist.");
+      else {
+        documents.forEach(doc => { delete doc.__v; delete doc._id; });
+        xlsxJS.utils.book_append_sheet(workbook, xlsxJS.utils.json_to_sheet(limit ? limit(documents) : documents));
+        xlsxJS.writeFile(workbook, path);
+      } resolve();
+    });
+  });
 }
 
 module.exports = xlsx;

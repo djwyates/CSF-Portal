@@ -127,7 +127,7 @@ router.put("/:id/pair", auth.hasAccessLevel(2), search.tutee, function(req, res)
           Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions.$[element].courses": course}}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
           if (pairedBefore) matchingTutor.pairedBefore = true;
         } else {
-          var currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
+          var currentDate = utils.getCurrentDate("mm-dd-yyyy, 00:00:00");
           Tutee.findByIdAndUpdate(tutee._id, {$push: {"tutorSessions": {tutorID: matchingTutor._id, courses: [course], status: "Pending"}}}).exec();
           Tutor.findByIdAndUpdate(matchingTutor._id, {$push: {"tuteeSessions": {tuteeID: tutee._id, courses: [course], status: "Pending", firstNotified: currentDate, lastNotified: currentDate}}}).exec();
         } if (!pairedNow) {

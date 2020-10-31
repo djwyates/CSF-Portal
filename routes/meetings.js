@@ -4,6 +4,7 @@ const express = require("express"),
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
       backup = require("../services/backup"),
+      utils = require("../services/utils"),
       xlsx = require("../services/xlsx"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member");
@@ -81,23 +82,47 @@ router.get("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req,
 });
 
 router.put("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req, res) {
-  var meeting = res.locals.meeting;
-  req.body.id = req.sanitize(req.body.id.trim());
-  Member.findOne({id: req.body.id}, function(err, member) {
-    if (err) {
-      console.error(err);
-      req.flash("error", "An unexpected error occurred.");
-    } else if (!member) {
-      req.flash("error", "That member does not exist. ID entered: " + req.body.id);
-    } else if (meeting.membersAttended.includes(member.id) && member.meetingsAttended.includes(meeting.date)) {
-      req.flash("info", member.id + " already attended the meeting.");
-    } else {
-      Meeting.findByIdAndUpdate(meeting._id, {$addToSet: {"membersAttended": member.id}}).exec();
-      Member.findOneAndUpdate({id: member.id}, {$addToSet: {"meetingsAttended": meeting.date}}).exec();
-      req.flash("success", member.id + " attended the meeting.");
-    }
-    res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
-  });
+  var meeting = res.locals.meeting, flashMsg = "", notMembers = [];
+  if (req.files && req.files.attendance && req.query.spreadsheet) {
+    req.files.attendance.mv(req.files.attendance.name, function() {
+      var parsedIDs = xlsx.parseIDs(req.files.attendance.name);
+      fs.unlink(req.files.attendance.name, function(err){});
+      Member.find({}, function(err, members) {
+        parsedIDs.ids = new Set(parsedIDs.ids)
+        parsedIDs.ids.forEach(function(id) {
+          if (!members.find(member => member.id == id))
+            notMembers.push(id);
+          else {
+            Meeting.findByIdAndUpdate(meeting._id, {$addToSet: {"membersAttended": id}}).exec();
+            Member.findOneAndUpdate({id: id}, {$addToSet: {"meetingsAttended": meeting.date}}).exec();
+          }
+        });
+        flashMsg += (parsedIDs.ids.size-notMembers.length) + " members have attended the meeting from the spreadsheet.";
+        if (parsedIDs.warnings.length > 0)
+          flashMsg += "<br>WARNING: The IDs in rows " + utils.arrayToSentence(parsedIDs.warnings) + " of the uploaded Excel sheet are invalid and were ignored.";
+        if (notMembers.length > 0)
+          flashMsg += "<br>NOTICE: The students with IDs " + utils.arrayToSentence(notMembers) + " of the spreadsheet are not members.";
+        req.flash("info", flashMsg);
+        res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+      });
+    });
+  } else if (req.body.id) {
+    req.body.id = req.sanitize(req.body.id.trim());
+    Member.findOne({id: req.body.id}, function(err, member) {
+      if (err) {
+        console.error(err);
+        req.flash("error", "An unexpected error occurred.");
+      } else if (!member) {
+        req.flash("error", "That member does not exist. ID entered: " + req.body.id);
+      } else if (meeting.membersAttended.includes(member.id) && member.meetingsAttended.includes(meeting.date)) {
+        req.flash("info", member.id + " already attended the meeting.");
+      } else {
+        Meeting.findByIdAndUpdate(meeting._id, {$addToSet: {"membersAttended": member.id}}).exec();
+        Member.findOneAndUpdate({id: member.id}, {$addToSet: {"meetingsAttended": meeting.date}}).exec();
+        req.flash("success", member.id + " attended the meeting.");
+      } res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    });
+  } else res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
 });
 
 module.exports = router;

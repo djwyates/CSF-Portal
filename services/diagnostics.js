@@ -4,13 +4,21 @@ const utils = require("./utils"),
       Tutor = require("../models/tutor"),
       Tutee = require("../models/tutee");
 
-module.exports = function runDiagnosticsTest(meetings, members, tutors, tutees) {
-  result = testMeetings(meetings, members);
-  result += testMembers(meetings, members, tutors, tutees);
-  result += testTutors(members, tutors, tutees);
-  result += testTutees(members, tutors, tutees);
-  return result;
-};
+module.exports = new Promise(function(resolve, reject) {
+  Meeting.find({}, function(err, meetings) {
+    Member.find({}, function(err, members) {
+      Tutor.find({}, function(err, tutors) {
+        Tutee.find({}, function(err, tutees) {
+          result = testMeetings(meetings, members);
+          result += testMembers(meetings, members, tutors, tutees);
+          result += testTutors(members, tutors, tutees);
+          result += testTutees(members, tutors, tutees);
+          resolve(result);
+        });
+      });
+    });
+  });
+});
 
 function testMeetings(meetings, members) {
   var result = "", dupeRecords = null;

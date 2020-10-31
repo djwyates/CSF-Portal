@@ -24,7 +24,7 @@
     <div class="form__item">
       <label class="form__label" for="membersAttended">Attendance</label>
       <% if (meeting.membersAttended.length > 0) { %>
-        <input class="form__input" value="<%- meeting.membersAttended[0] %><% for (var i=1; i<meeting.membersAttended.length; i++) { %><%- ", " + meeting.membersAttended[i] %><% } %>" readonly/>
+        <input class="form__input" value="<%- meeting.membersAttended.length %> members attended this meeting" readonly/>
       <% } else { %>
         <input class="form__input" value="No members have attended this meeting" readonly/>
       <% } %>

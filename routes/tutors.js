@@ -27,18 +27,15 @@ router.get("/", auth.hasAccessLevel(2), function(req, res) {
 });
 
 router.get("/new", function(req, res) {
-  if (req.user && (req.user.accessLevel >= 2 || req.user.meetingsAttended && !req.user.tutorID)) {
+  if (req.user && (req.user.accessLevel >= 2 || req.user.meetingsAttended && !req.user.tutorID))
     res.render("tutors/new", {courses: courses});
-  } else if (req.user && req.user.tutorID) {
+  else if (req.user && req.user.tutorID)
     res.redirect("/tutors/" + req.user.tutorID);
-  } else if (!req.user || !req.user.meetingsAttended) {
-    req.flash("info", "You must login with your school email and be a member of CSF to sign up as a tutor.");
-    res.redirect("back");
-  }
+  else if (!req.user || !req.user.meetingsAttended)
+    res.render("tutors/not-logged-in");
 });
 
 router.post("/", function(req, res) {
-  req.body.tutor.id = req.user.accessLevel >= 2 ? req.sanitize(req.body.tutor.id) : req.user.id;
   Member.findOne({id: req.body.tutor.id}, function(err, foundMember) {
     if (err) {
       console.error(err);
@@ -49,7 +46,7 @@ router.post("/", function(req, res) {
       res.redirect("/tutors/new");
     } else {
       var newTutor = {
-        id: req.body.tutor.id,
+        id: req.user.accessLevel >= 2 ? req.sanitize(req.body.tutor.id) : req.user.id,
         name: foundMember.name,
         grade: foundMember.grade,
         gender: req.body.tutor.gender,
@@ -114,8 +111,7 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
       res.redirect("/tutors");
     } else {
       if (editedTutor.phoneNum && editedTutor.phoneNum != tutor.phoneNum) {
-        var verificationCode = shortid.generate(), currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
-        Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": verificationCode, "verification.lastSent": currentDate}).exec();
+        Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": shortid.generate(), "verification.lastSent": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}).exec();
         sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, req.body.tutor.phoneNum);
       } if (editedTutor.maxTutees != tutor.maxTutees && editedTutor.maxTutees < tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive").length) {
         req.flash("info", "NOTICE: The tutee limit you entered is lower than the amount of tutees you are currently paired with (but it was still saved).");
@@ -126,7 +122,7 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
 });
 
 router.put("/:id/verify", auth.hasAccessLevel(2), function(req, res) {
-  Tutor.findByIdAndUpdate(req.params.id, {verified: true, verifiedPhone: true/* <-- REMOVE THIS! */}, function(err, tutor) {
+  Tutor.findByIdAndUpdate(req.params.id, {verified: true}, function(err, tutor) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
@@ -193,8 +189,7 @@ router.put("/:id/notify/:tuteeID", auth.hasAccessLevel(2), search.tutor, functio
     + "\n*If this match does not work out, please contact us so you can be assigned to someone else!\n\nRemember to:\n1. Call the parent first, ASAP!\n2. Tell them what form of payment "
     + "you are asking for and make sure it matches what they have requested.\n3. Set up meeting times.\n4. Log your meetings.\n5. Contact us when the student no longer needs your services!";
     sns.sendSMS(message, tutor.phoneNum);
-    currentDate = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-");
-    Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].lastNotified": currentDate}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
+    Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].lastNotified": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
     req.flash("success", "The tutor was notified that they were paired with Tutee " + tutee.id);
   }
   res.redirect("back");

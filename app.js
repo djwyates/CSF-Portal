@@ -9,7 +9,8 @@ const express = require("express"),
       mongoose = require("mongoose"),
       passport = require("passport"),
       expressSession = require("express-session"),
-      keys = require("./config/keys");
+      keys = require("./config/keys"),
+      Meeting = require("./models/meeting");
 
 // requiring routes
 const indexRoutes = require("./routes/index"),
@@ -38,7 +39,15 @@ app.use(function(req, res, next) {
   res.locals.flash = {success: req.flash("success"), info: req.flash("info"), error: req.flash("error")};
   res.locals.query = req.query;
   res.locals.url = req.url;
-  next();
+  Meeting.find({}, function(err, meetings) {
+    var nextMeeting = null, currentDate = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}));
+    meetings.forEach(function(meeting) {
+      if (new Date(meeting.date) > currentDate && (!nextMeeting || new Date(meeting.date) < new Date(nextMeeting.date)))
+        nextMeeting = meeting;
+    });
+    res.locals.nextMeetingDate = nextMeeting ? nextMeeting.date : null;
+    next();
+  });
 });
 
 app.use("/tutees", tuteeRoutes);

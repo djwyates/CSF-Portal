@@ -39,7 +39,7 @@
 }
 
 .footer__icon {
-	position: absolute;
-	margin-top: -4px;
-	margin-left: 57px;
+	position: relative;
+  top: 6px;
+	margin-right: 3px;
 }
