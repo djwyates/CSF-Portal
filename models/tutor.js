@@ -14,7 +14,7 @@ var tutorSchema = new mongoose.Schema({
   verifiedPhone: {type: Boolean, required: true, default: false},
   paymentForm: {type: String, enum: ["Cash", "Both"], required: true},
   courses: {type: [String], required: true},
-  maxTutees: {type: Number, min: 1, max: 3, required: true},
+  maxTutees: {type: Number, min: 0, max: 3, required: true},
   tuteeSessions: {type: [{
     tuteeID: {type: String, ref: "Tutee", required: true},
     courses: {type: [String], required: true},
@@ -26,7 +26,8 @@ var tutorSchema = new mongoose.Schema({
   verification: {
     code: {type: String, required: false},
     lastSent: {type: String, required: false}
-  }
+  },
+  active: {type: Boolean, required: true, default: true}
 });
 
 module.exports = mongoose.model("Tutor", tutorSchema);

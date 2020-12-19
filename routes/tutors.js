@@ -36,7 +36,8 @@ router.get("/new", function(req, res) {
 });
 
 router.post("/", function(req, res) {
-  Member.findOne({id: req.body.tutor.id}, function(err, foundMember) {
+  req.body.tutor.id = req.sanitize(req.body.tutor.id);
+  Member.findOne({id: req.user.accessLevel >= 2 ? req.body.tutor.id : req.user.id}, function(err, foundMember) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
@@ -46,7 +47,7 @@ router.post("/", function(req, res) {
       res.redirect("/tutors/new");
     } else {
       var newTutor = {
-        id: req.user.accessLevel >= 2 ? req.sanitize(req.body.tutor.id) : req.user.id,
+        id: req.user.accessLevel >= 2 ? req.body.tutor.id : req.user.id,
         name: foundMember.name,
         grade: foundMember.grade,
         gender: req.body.tutor.gender,
@@ -114,7 +115,7 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
         Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": shortid.generate(), "verification.lastSent": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}).exec();
         sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, req.body.tutor.phoneNum);
       } if (editedTutor.maxTutees != tutor.maxTutees && editedTutor.maxTutees < tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive").length) {
-        req.flash("info", "NOTICE: The tutee limit you entered is lower than the amount of tutees you are currently paired with (but it was still saved).");
+        req.flash("info", "NOTICE: The tutee limit you entered is lower than the amount of tutees you are currently paired with, but it was still saved.");
       }
       res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
@@ -223,7 +224,7 @@ router.put("/:id/accept-pairing/:tuteeID", search.tutor, function(req, res) {
     Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Active"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
     req.flash("success", "You have accepted this tutoring request.");
   }
-  res.redirect("back");
+  res.redirect("/members/attendance");
 });
 
 router.put("/:id/unpair/:tuteeID", auth.hasAccessLevel(2), search.tutor, function(req, res) {
@@ -273,6 +274,24 @@ router.put("/:id/re-pair/:tuteeID", auth.hasAccessLevel(2), search.tutor, functi
     Tutor.findByIdAndUpdate(tutor._id, {"tuteeSessions.$[element].status": "Active"}, {arrayFilters: [{"element.tuteeID": tutee._id}]}).exec();
     Tutee.findByIdAndUpdate(tutee._id, {"tutorSessions.$[element].status": "Active"}, {arrayFilters: [{"element.tutorID": tutor._id}]}).exec();
     req.flash("success", "This tutor and tutee have been re-paired.");
+    res.redirect("back");
+  }
+});
+
+router.delete("/:id/delete-session/:tuteeID", auth.hasAccessLevel(2), search.tutor, function(req, res) {
+  var tutor = res.locals.tutor, tutee = res.locals.tutee;
+  var tuteeSession = tutor.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id);
+  var tutorSession = tutee.tutorSessions.find(tutorSession => tutorSession.tutorID == tutor._id);
+  if (!tuteeSession || !tutorSession) {
+    req.flash("error", "The tutor is not paired with this tutee.");
+    res.redirect("back");
+  } else if (tuteeSession.status != "Inactive" || tutorSession.status != "Inactive") {
+    req.flash("error", "You can only delete inactive tutoring sessions.");
+    res.redirect("back");
+  } else {
+    Tutor.findByIdAndUpdate(tutor._id, {$pull: {tuteeSessions: {tuteeID: tutee._id}}}).exec();
+    Tutee.findByIdAndUpdate(tutee._id, {$pull: {tutorSessions: {tutorID: tutor._id}}}).exec();
+    req.flash("success", "This tutoring session has been successfully deleted.");
     res.redirect("back");
   }
 });
@@ -332,12 +351,42 @@ router.put("/verify-phone/:code", function(req, res) {
   });
 });
 
+router.put("/:id/deactivate", auth.hasAccessLevel(2), function(req, res) {
+  Tutor.findByIdAndUpdate(req.params.id, {active: false}, function(err, tutor) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/tutors");
+    } else if (!tutor) {
+      res.redirect("/tutors");
+    } else {
+      req.flash("success", "Successfully deactivated Tutor " + tutor.name);
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    }
+  });
+});
+
+router.put("/:id/reactivate", auth.hasAccessLevel(2), function(req, res) {
+  Tutor.findByIdAndUpdate(req.params.id, {active: true}, function(err, tutor) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("/tutors");
+    } else if (!tutor) {
+      res.redirect("/tutors");
+    } else {
+      req.flash("success", "Successfully reactivated Tutor " + tutor.name);
+      res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    }
+  });
+});
+
 router.delete("/:id", auth.hasAccessLevel(2), search.tutor, function(req, res) {
   if (res.locals.tutor.tuteeSessions.length > 0) {
     req.flash("error", "You cannot delete tutors who are paired with tutees.");
     res.redirect("/tutors/" + res.locals.tutor._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
   } else {
-    Member.findByIdAndUpdate({tutorID: res.locals.tutor._id}, {$unset: {tutorID: ""}}).exec();
+    Member.findOneAndUpdate({tutorID: res.locals.tutor._id}, {$unset: {tutorID: ""}}).exec();
     Tutor.deleteOne({_id: res.locals.tutor._id}, function(err, tutor) {
       res.redirect("/tutors" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     });

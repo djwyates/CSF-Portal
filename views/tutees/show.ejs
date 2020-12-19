@@ -87,11 +87,21 @@
                   onsubmit="return confirm('Are you sure you want to re-pair this tutor and tutee? This will make the session active.')">
                   <button class="card__dropdown-button" type="submit">Re-pair</button>
                 </form>
+              <% } if (tutorSession.status == "Inactive") { %>
+                <form action="/tutors/<%- tutorSession.tutorID._id %>/delete-session/<%- tutee._id %>?_method=delete" method="post"
+                  onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in this subject again.')">
+                  <button class="card__dropdown-button" type="submit">Delete</button>
+                </form>
               <% } %>
             </div>
           <% } %>
         </div>
-        <span class="card__footnote">Status - <%- tutorSession.status %></span>
+        <span class="card__footnote">
+          Status - <%- tutorSession.status %>
+          <% if (tutorSession.status == "Pending") { %>
+            (Notified <%- tutorSession.tutorID.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id).lastNotified %>)
+          <% } %>
+        </span>
         <span class="card__footnote">
           Courses - <%- ejs.reformatCourse(tutorSession.courses[0]) %><% for (var i=1; i<tutorSession.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tutorSession.courses[i]) %><% } %>
         </span>

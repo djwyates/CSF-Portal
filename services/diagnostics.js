@@ -76,7 +76,7 @@ function testMembers(meetings, members, tutors, tutees) {
     if (member.tutorID) {
       linkedTutor = tutors.find(tutor => tutor._id == member.tutorID);
       if (!linkedTutor) {
-        result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> is linked to a tutor that does not exist.";
+        result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> is linked to a tutor that does not exist.<br>";
       } else if (linkedTutor.id != member.id) {
         result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id
         + "</a> is linked to a <a class='link--white' href='/tutors/'" + linkedTutor._id + ">tutor with a different ID of " + linkedTutor.id + "</a>";
@@ -84,7 +84,7 @@ function testMembers(meetings, members, tutors, tutees) {
     } if (member.tuteeID) {
       linkedTutee = tutees.find(tutee => tutee._id == member.tuteeID);
       if (!linkedTutee) {
-        result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> is linked to a tutee that does not exist.";
+        result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> is linked to a tutee that does not exist.<br>";
       } else if (linkedTutee.id != member.id) {
         result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id
         + "</a> is linked to a <a class='link--white' href='/tutors/'" + linkedTutee._id + ">tutee with a different ID of " + linkedTutee.id + "</a>";
@@ -116,10 +116,10 @@ function testTutors(members, tutors, tutees) {
         } else {
           if (tuteeSession.status != matchingTutorSession.status) {
             result += "The statuses of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "\'s</a> and "
-            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.";
+            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.<br>";
           } if (tuteeSession.courses.sort().join(",") != matchingTutorSession.courses.sort().join(",")) {
             result += "The courses of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "\'s</a> and "
-            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.";
+            + "<a class='link--white' href='/tutees/" + matchingTutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + matchingTutee.id + "\'s</a> tutoring sessions do not match.<br>";
           }
         }
       }
@@ -127,10 +127,10 @@ function testTutors(members, tutors, tutees) {
     /* checks if tutors are linked with an existing and accurate member */
     matchingMember = members.find(member => member.id == tutor.id);
     if (!matchingMember) {
-      result += "No members have the ID of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a>";
+      result += "No members have the ID of <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor._id + "</a><br>";
     } else if (!matchingMember.tutorID || matchingMember.tutorID != tutor._id) {
       result += "The <a class='link--white' href='/members/" + matchingMember._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + matchingMember.id
-      + "</a> is not linked with the correct <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "</a>";
+      + "</a> is not linked with the correct <a class='link--white' href='/tutors/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + tutor.id + "</a><br>";
     }
   });
   return result;
@@ -158,10 +158,10 @@ function testTutees(members, tutors, tutees) {
         } else {
           if (tutorSession.status != matchingTuteeSession.status) {
             result += "The statuses of <a class='link--white' href='/tutees/" + tutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "\'s</a> and "
-            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.";
+            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.<br>";
           } if (tutorSession.courses.sort().join(",") != matchingTuteeSession.courses.sort().join(",")) {
             result += "The courses of <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "\'s</a> and "
-            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.";
+            + "<a class='link--white' href='/tutors/" + matchingTutor._id + "?from=%2Fsettings%2Fdiagnostics'>Tutor " + matchingTutor.id + "\'s</a> tutoring sessions do not match.<br>";
           }
         }
       }
@@ -170,7 +170,7 @@ function testTutees(members, tutors, tutees) {
     matchingMember = members.find(member => member.id == tutee.id);
     if (matchingMember && (!matchingMember.tuteeID || matchingMember.tuteeID != tutee._id)) {
       result += "The <a class='link--white' href='/members/" + matchingMember._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + matchingMember.id
-      + "</a> is not linked with the correct <a class='link--white' href='/tutors/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a>";
+      + "</a> is not linked with the correct <a class='link--white' href='/tutors/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a><br>";
     }
   });
   return result;

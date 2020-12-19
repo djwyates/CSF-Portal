@@ -72,7 +72,7 @@ xlsx.writeMongooseModel = function(model, path, limit) {
     model.find({}).lean().exec(function(err, documents) {
       if (err || !documents) console.error(err ? err : "ERROR: The model you tried to back up does not exist.");
       else {
-        documents.forEach(doc => { delete doc.__v; delete doc._id; });
+        documents.forEach(doc => { delete doc.__v; delete doc._id; delete doc.tutorID; delete doc.tuteeID; });
         xlsxJS.utils.book_append_sheet(workbook, xlsxJS.utils.json_to_sheet(limit ? limit(documents) : documents));
         xlsxJS.writeFile(workbook, path);
       } resolve();

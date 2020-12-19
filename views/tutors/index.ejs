@@ -30,7 +30,10 @@
         <td class="table__cell table__cell--grade"><%- tutor.grade %></td>
         <td class="table__cell table__cell--email"><%- tutor.email %></td>
         <td class="table__cell table__cell--phoneNum"><%- tutor.phoneNum %></td>
-        <td class="table__cell"><% if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %></td>
+        <td class="table__cell">
+          <% if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %>
+          <% if (!tutor.active) { %> <span class="red">(Deactivated)</span><% } %>
+        </td>
         <td class="table__cell table__cell--maxTutees"><%- tutor.maxTutees %></td>
         <td class="table__cell table__cell--paymentForm"><%- tutor.paymentForm %></td>
       </tr>

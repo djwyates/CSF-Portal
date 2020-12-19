@@ -102,7 +102,7 @@ router.put("/:id", auth.hasTuteeAccess, function(req, res) {
 
 router.put("/:id/pair", auth.hasAccessLevel(2), search.tutee, function(req, res) {
   var tutee = res.locals.tutee;
-  Tutor.find({courses: {$in: tutee.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]}, verified: true, verifiedPhone: true}).lean().exec(function(err, tutors) {
+  Tutor.find({courses: {$in: tutee.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]}, verified: true, verifiedPhone: true, active: true}).lean().exec(function(err, tutors) {
     tutors = tutors.map(function(tutor) {
       Object.assign(tutor, {mutualCourses: tutor.courses.filter(course => tutee.courses.includes(course))});
       return Object.assign(tutor, {tuteeSessions: tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive")});
@@ -164,7 +164,7 @@ router.delete("/:id", auth.hasAccessLevel(2), search.tutee, function(req, res) {
     req.flash("error", "You cannot delete tutees who are paired with tutors.");
     res.redirect("/tutees/" + res.locals.tutee._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
   } else {
-    Member.findByIdAndUpdate({tuteeID: res.locals.tutee._id}, {$unset: {tuteeID: ""}}).exec();
+    Member.findOneAndUpdate({tuteeID: res.locals.tutee._id}, {$unset: {tuteeID: ""}}).exec();
     Tutee.deleteOne({_id: res.locals.tutee._id}, function(err, tutee) {
       res.redirect("/tutees" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     });

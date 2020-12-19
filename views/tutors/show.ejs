@@ -5,7 +5,12 @@
   <div class="form__title">View Tutor Profile</div>
   <% if (currentUser.accessLevel <= 1) { %>
     <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
-  <% } if (currentUser.id == tutor.id) { %>
+  <% } if (!tutor.active) { %>
+    <p class="form__description">
+      <span class="material-icons form__icon red">error</span>
+      <span class="red">Your tutor account is deactivated and will not be paired with tutees.</span>
+    </p>
+  <% } else if (currentUser.id == tutor.id) { %>
     <p class="form__description">
       <% if (tutor.verified && tutor.verifiedPhone) { %>
         <span class="material-icons form__icon green">done</span>
@@ -94,10 +99,18 @@
                 onsubmit="return confirm('Are you sure you want to re-pair this tutor and tutee? This will make the session active.')">
                 <button class="card__dropdown-button" type="submit">Re-pair</button>
               </form>
+            <% } if (currentUser.accessLevel >= 2 && tuteeSession.status == "Inactive") { %>
+              <form action="/tutors/<%- tutor._id %>/delete-session/<%- tuteeSession.tuteeID._id %>?_method=delete" method="post"
+                onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in this subject again.')">
+                <button class="card__dropdown-button" type="submit">Delete</button>
+              </form>
             <% } %>
           </div>
         </div>
-        <span class="card__footnote">Status - <%- tuteeSession.status %></span>
+        <span class="card__footnote">
+          Status - <%- tuteeSession.status %>
+          <% if (tuteeSession.status == "Pending") { %>(Notified <%- tuteeSession.lastNotified %>)<% } %>
+        </span>
         <span class="card__footnote">
           Courses - <%- ejs.reformatCourse(tuteeSession.courses[0]) %><% for (var i=1; i<tuteeSession.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tuteeSession.courses[i]) %><% } %>
         </span>
@@ -167,9 +180,15 @@
       <form action="/tutors/<%- tutor._id %>/warn?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to add a warning to this tutor?')">
         <input class="form__button form__button--orange" type="submit" value="Warn"/>
       </form>
-      <form action="/tutors/<%- tutor._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this tutor?')">
-        <button class="form__button form__button--red" type="submit">Delete</button>
-      </form>
+      <% if (tutor.active) { %>
+        <form action="/tutors/<%- tutor._id %>/deactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to deactivate this tutor\'s account? This will prevent them from being paired.')">
+          <button class="form__button form__button--red" type="submit">Deactivate</button>
+        </form>
+      <% } else if (!tutor.active) { %>
+        <form action="/tutors/<%- tutor._id %>/reactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to reactivate this tutor\'s account?')">
+          <button class="form__button form__button--green" type="submit">Reactivate</button>
+        </form>
+      <% } %>
     <% } %>
   </div>
 </div>
