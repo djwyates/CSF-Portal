@@ -4,7 +4,7 @@
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
   <div class="form__title">View Tutor Profile</div>
   <% if (currentUser.accessLevel <= 1) { %>
-    <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
+    <p class="form__description">If you wish to deactivate your tutor account, contact the tutoring coordinator.</p>
   <% } if (!tutor.active) { %>
     <p class="form__description">
       <span class="material-icons form__icon red">error</span>
@@ -101,7 +101,8 @@
               </form>
             <% } if (currentUser.accessLevel >= 2 && tuteeSession.status == "Inactive") { %>
               <form action="/tutors/<%- tutor._id %>/delete-session/<%- tuteeSession.tuteeID._id %>?_method=delete" method="post"
-                onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in this subject again.')">
+                onsubmit="return confirm('Are you sure you want to delete this tutoring session?
+                This should only be done if the tutee must be paired in this subject again.')">
                 <button class="card__dropdown-button" type="submit">Delete</button>
               </form>
             <% } %>
@@ -111,9 +112,7 @@
           Status - <%- tuteeSession.status %>
           <% if (tuteeSession.status == "Pending") { %>(Notified <%- tuteeSession.lastNotified %>)<% } %>
         </span>
-        <span class="card__footnote">
-          Courses - <%- ejs.reformatCourse(tuteeSession.courses[0]) %><% for (var i=1; i<tuteeSession.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tuteeSession.courses[i]) %><% } %>
-        </span>
+        <span class="card__footnote">Courses - <%- ejs.arrayToSentence(tuteeSession.courses.map(c => ejs.reformatCourse(c))) %></span>
         <div class="card__modal">
           <div class="card__modal-content">
             <span class="card__modal-close no-select material-icons">close</span>
@@ -156,7 +155,8 @@
     <input class="form__input" value="<% if (tutor.verified && tutor.verifiedPhone) { %>Verified<% } else { %>Unverified<% } %>" readonly/>
     <span class="form__input-footnote">
       CSF Verified: <% if (tutor.verified) { %>True<% } else { %>False<% } %>,&nbsp;&nbsp;&nbsp;
-      Phone Verified: <% if (tutor.verifiedPhone) { %>True<% } else { %>False - <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">Resend verification</a><% } %>
+      Phone Verified: <% if (tutor.verifiedPhone) { %>True
+      <% } else { %>False - <a class="link--gray" href="/tutors/<%- tutor._id %>/resend-verification">Resend verification</a><% } %>
     </span>
   </div>
   <% if (currentUser.accessLevel >= 2) { %>
@@ -169,23 +169,28 @@
     <a class="form__button no-drag" href="/tutors/<%- tutor._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
     <% if (currentUser.accessLevel >= 2) {
       if (tutor.verified) { %>
-        <form action="/tutors/<%- tutor._id %>/unverify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to unverify this tutor?')">
+        <form action="/tutors/<%- tutor._id %>/unverify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>"
+          method="post" onsubmit="return confirm('Are you sure you want to unverify this tutor?')">
           <input class="form__button" type="submit" value="Unverify"/>
         </form>
       <% } else if (!tutor.verified) { %>
-        <form action="/tutors/<%- tutor._id %>/verify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to verify this tutor?')">
+        <form action="/tutors/<%- tutor._id %>/verify?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>"
+          method="post" onsubmit="return confirm('Are you sure you want to verify this tutor?')">
           <input class="form__button" type="submit" value="Verify"/>
         </form>
       <% } %>
-      <form action="/tutors/<%- tutor._id %>/warn?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to add a warning to this tutor?')">
+      <form action="/tutors/<%- tutor._id %>/warn?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>"
+        method="post" onsubmit="return confirm('Are you sure you want to add a warning to this tutor?')">
         <input class="form__button form__button--orange" type="submit" value="Warn"/>
       </form>
       <% if (tutor.active) { %>
-        <form action="/tutors/<%- tutor._id %>/deactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to deactivate this tutor\'s account? This will prevent them from being paired.')">
+        <form action="/tutors/<%- tutor._id %>/deactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>"
+          method="post" onsubmit="return confirm('Are you sure you want to deactivate this tutor\'s account? They will not be paired until reactivation.')">
           <button class="form__button form__button--red" type="submit">Deactivate</button>
         </form>
       <% } else if (!tutor.active) { %>
-        <form action="/tutors/<%- tutor._id %>/reactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to reactivate this tutor\'s account?')">
+        <form action="/tutors/<%- tutor._id %>/reactivate?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>"
+          method="post" onsubmit="return confirm('Are you sure you want to reactivate this tutor\'s account?')">
           <button class="form__button form__button--green" type="submit">Reactivate</button>
         </form>
       <% } %>

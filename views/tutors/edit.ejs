@@ -2,9 +2,9 @@
 
 <form class="form" action="/tutors/<%- tutor._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <a class="form__link" href="/tutors/<%- tutor._id %><% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Back</a>
-  <div class="form__title">Edit <% if (currentUser.id == tutor.id) { %>Your <% } %>Tutor Profile</div>
+  <div class="form__title">Edit Tutor Profile</div>
   <% if (currentUser.accessLevel < 2) { %>
-    <p class="form__description">If you wish to delete your tutor profile, contact the tutoring coordinator.</p>
+    <p class="form__description">If you wish to deactivate your tutor account, contact the tutoring coordinator.</p>
   <% } %>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>

@@ -89,7 +89,7 @@
                 </form>
               <% } if (tutorSession.status == "Inactive") { %>
                 <form action="/tutors/<%- tutorSession.tutorID._id %>/delete-session/<%- tutee._id %>?_method=delete" method="post"
-                  onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in this subject again.')">
+                  onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in the subject(s) again.')">
                   <button class="card__dropdown-button" type="submit">Delete</button>
                 </form>
               <% } %>
@@ -102,9 +102,7 @@
             (Notified <%- tutorSession.tutorID.tuteeSessions.find(tuteeSession => tuteeSession.tuteeID == tutee._id).lastNotified %>)
           <% } %>
         </span>
-        <span class="card__footnote">
-          Courses - <%- ejs.reformatCourse(tutorSession.courses[0]) %><% for (var i=1; i<tutorSession.courses.length; i++) { %><%- ", " + ejs.reformatCourse(tutorSession.courses[i]) %><% } %>
-        </span>
+        <span class="card__footnote">Courses - <%- ejs.arrayToSentence(tutorSession.courses.map(c => ejs.reformatCourse(c))) %></span>
       </div>
       <% });
     } %>
@@ -116,14 +114,93 @@
   <div class="form__item form__item--row">
     <a class="form__button no-drag" href="/tutees/<%- tutee._id %>/edit<% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Edit</a>
     <% if (currentUser.accessLevel >= 2) { %>
-      <form action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post"
-        onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)? The tutors will be automatically notified of the pairings.')">
-        <input class="form__button" type="submit" value="Pair"/>
-      </form>
+      <button class="modal__button-activate form__button no-drag" type="button">Pair</button>
       <form action="/tutees/<%- tutee._id %>?_method=delete<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post" onsubmit="return confirm('Are you sure you want to delete this tutee?')">
         <button class="form__button form__button--red" type="submit">Delete</button>
       </form>
     <% } %>
+  </div>
+  <!-- Tutee Pairing Modal -->
+  <div class="modal">
+    <div class="modal__content">
+      <span class="modal__close no-select material-icons">close</span>
+      <!-- Pair for all Courses Form -->
+      <form class="modal__form modal__form--active" action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post"
+        onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)? The tutors will be automatically notified of the pairings.')">
+        <input type="hidden" name="pairMethod" value="forAllCourses"/>
+        <div class="form__item">
+          <label class="form__label" for="courses">Pair Tutee</label>
+          <label class="form__label--radio no-select" for="auto">
+            <input class="form__input--radio" id="auto" type="radio" name="pairType" value="auto" checked required/>
+            <div class="form__input--radiocircle"></div>
+            Auto Pair
+          </label>
+          <label class="form__label--radio no-select" for="manual">
+            <input class="form__input--radio" id="manual" type="radio" name="pairType" value="manual" required/>
+            <div class="form__input--radiocircle"></div>
+            Manual Pair&nbsp&nbsp
+            <input class="form__input form__input--small2" type="text" name="pairID" pattern="[0-9]{9}"
+            minlength="9" maxlength="9" placeholder="Student ID" />
+          </label>
+        </div>
+        <p class="modal__p">
+          *Will either automatically pair the tutee with ideal tutor(s) in as many courses as possible,
+          or pair them with a single specified tutor in as many courses as possible.
+        </p>
+        <input class="form__button" type="submit" value="Pair"/>
+        <button class="modal__button" type="button">Pair by Course&nbsp<span class="modal__icon material-icons">east</span></button>
+      </form>
+      <!-- Pair by Course Form -->
+      <form class="modal__form" action="/tutees/<%- tutee._id %>/pair?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post"
+        onsubmit="return confirm('Are you sure you want to attempt to pair this tutee with tutor(s)? The tutors will be automatically notified of the pairings.')">
+        <input type="hidden" name="pairMethod" value="byCourse"/>
+        <div class="form__item">
+          <label class="form__label" for="courses">Pair Tutee</label>
+          <% tutee.courses.sort((a, b) => tutee.tutorSessions.find(tutorSession => tutorSession.courses.includes(a)) ? 1 : -1);
+          tutee.courses.forEach(function(courseID) {
+            var alreadyPaired = tutee.tutorSessions.find(tutorSession => tutorSession.courses.includes(courseID)) %>
+            <div>
+              <label class="modal__checkbox <% if (alreadyPaired) { %>modal__checkbox--gray<% } %> form__label--checkbox no-select" for="<%- courseID %>">
+                <input class="form__input--checkbox" id="<%- courseID %>" type="checkbox" name="courses" value="<%- courseID %>"
+                <% if (alreadyPaired) { %>disabled<% } %> checked/>
+                <div class="form__input--checkboxsquare <% if (alreadyPaired) { %>modal__checkboxsquare--gray<% } %>"></div>
+                <div class="<% if (alreadyPaired) { %>modal__div--strikethrough<% } %>"><%- ejs.reformatCourse(courseID); %></div>
+              </label>
+              <span class="modal__dropdown-arrow <% if (alreadyPaired) { %>modal__dropdown-arrow--gray<% } %> no-select material-icons">
+                keyboard_arrow_down
+              </span>
+              <div class="modal__dropdown">
+                <% if (!alreadyPaired) { %>
+                  <label class="form__label--radio no-select" for="<%- courseID %>-auto">
+                    <input class="form__input--radio" id="<%- courseID %>-auto" type="radio" name="<%- courseID %>[pairType]" value="auto" checked required/>
+                    <div class="form__input--radiocircle"></div>
+                    Auto Pair
+                  </label>
+                  <br>
+                  <label class="form__label--radio no-select" for="<%- courseID %>-manual">
+                    <input class="form__input--radio" id="<%- courseID %>-manual" type="radio" name="<%- courseID %>[pairType]" value="manual" required/>
+                    <div class="form__input--radiocircle"></div>
+                    Manual Pair&nbsp&nbsp
+                    <input class="form__input form__input--small2" type="text" name="<%- courseID %>[pairID]" pattern="[0-9]{9}"
+                    minlength="9" maxlength="9" placeholder="Student ID" />
+                  </label>
+                <% } else if (alreadyPaired) { %>
+                  The tutee has already been paired in this subject. <br> Tutor:
+                  <a class="link--black" href="/tutors/<%- alreadyPaired.tutorID._id %>?from=%2Ftutees%2F<%- tutee._id %>">
+                    <%- alreadyPaired.tutorID.name %>,
+                  </a>
+                  &nbsp&nbsp&nbspStatus: <%- alreadyPaired.status %> <br> Delete the session to pair them again.
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+        <input class="form__button" type="submit" value="Pair"/>
+        <button class="modal__button modal__button--long" type="button">
+          <span class="modal__icon modal__icon--left material-icons">west</span>&nbsp&nbspPair for all Courses
+        </button>
+      </form>
+    </div>
   </div>
 </div>
 

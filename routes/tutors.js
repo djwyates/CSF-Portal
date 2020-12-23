@@ -112,10 +112,11 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
       res.redirect("/tutors");
     } else {
       if (editedTutor.phoneNum && editedTutor.phoneNum != tutor.phoneNum) {
-        Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": shortid.generate(), "verification.lastSent": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}).exec();
-        sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, req.body.tutor.phoneNum);
+        var verificationCode = shortid.generate();
+        Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": verificationCode, "verification.lastSent": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}).exec();
+        sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, editedTutor.phoneNum);
       } if (editedTutor.maxTutees != tutor.maxTutees && editedTutor.maxTutees < tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive").length) {
-        req.flash("info", "NOTICE: The tutee limit you entered is lower than the amount of tutees you are currently paired with, but it was still saved.");
+        req.flash("info", "The tutee limit you entered is lower than the amount of tutees you are currently paired with, but it was still saved.");
       }
       res.redirect("/tutors/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }

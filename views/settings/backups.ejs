@@ -138,7 +138,7 @@
       var deleteFormButtonContainer = document.createElement("div");
       deleteFormButtonContainer.classList.add("form__item");
       var deleteFormInput = document.createElement("input");
-      deleteFormInput.classList.add("form__input--invisible");
+      deleteFormInput.type = "hidden";
       deleteFormInput.name = "path";
       deleteFormInput.value = backupsFile.path;
       var deleteFormButton = document.createElement("button");

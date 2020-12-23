@@ -83,7 +83,7 @@ if (accordionHeaders) {
 }
 
 /* card scripts */
-var cardIconLinks = document.querySelectorAll(".card__icon--link"), cardDropdowns = document.querySelectorAll(".card__dropdown");
+const cardIconLinks = document.querySelectorAll(".card__icon--link"), cardDropdowns = document.querySelectorAll(".card__dropdown");
 if (cardIconLinks && cardDropdowns) {
   cardIconLinks.forEach(function(cardIconLink) {
     cardIconLink.addEventListener("click", function() {
@@ -95,8 +95,7 @@ if (cardIconLinks && cardDropdowns) {
     });
   });
 }
-
-var cardModalButtons = document.querySelectorAll(".card__dropdown-button--viewinfo"), cardModals = document.querySelectorAll(".card__modal");
+const cardModalButtons = document.querySelectorAll(".card__dropdown-button--viewinfo"), cardModals = document.querySelectorAll(".card__modal");
 if (cardModalButtons) {
   cardModalButtons.forEach(function(cardModalButton) {
     cardModalButton.addEventListener("click", function() {
@@ -104,7 +103,7 @@ if (cardModalButtons) {
     });
   });
 }
-var cardModalCloses = document.querySelectorAll(".card__modal-close");
+const cardModalCloses = document.querySelectorAll(".card__modal-close");
 if (cardModalCloses) {
   cardModalCloses.forEach(function(cardModalClose) {
     cardModalClose.addEventListener("click", function() {
@@ -113,7 +112,48 @@ if (cardModalCloses) {
   });
 }
 
+/* modal scripts - maximum of one modal per page */
+const modalActivateButtons = document.querySelectorAll(".modal__button-activate"), modal = document.querySelector(".modal");
+if (modalActivateButtons) {
+  modalActivateButtons.forEach(function(modalActivateButton) {
+    modalActivateButton.addEventListener("click", function() {
+      modal.classList.add("modal--active");
+    });
+  });
+}
+const modalDropdownArrows = document.querySelectorAll(".modal__dropdown-arrow");
+if (modalDropdownArrows) {
+  modalDropdownArrows.forEach(function(modalDropdownArrow) {
+    modalDropdownArrow.addEventListener("click", function() {
+      const modalDropdown = modalDropdownArrow.nextElementSibling;
+      modalDropdown.classList.toggle("modal__dropdown--active");
+      if (modalDropdown.classList.contains("modal__dropdown--active"))
+        modalDropdown.style.maxHeight = modalDropdown.scrollHeight + "px";
+      else
+        modalDropdown.style.maxHeight = 0;
+    });
+  });
+}
+const modalCloses = document.querySelectorAll(".modal__close");
+if (modalCloses) {
+  modalCloses.forEach(function(modalClose) {
+    modalClose.addEventListener("click", function() {
+      modal.classList.remove("modal--active");
+    });
+  });
+}
+/* for tutee pairing modal */
+const modalButtons = document.querySelectorAll(".modal__button"), modalForms = document.querySelectorAll(".modal__form");
+modalButtons.forEach(function(modalButton) {
+  modalButton.addEventListener("click", function() {
+    modalForms[0].classList.toggle("modal__form--active");
+    modalForms[1].classList.toggle("modal__form--active");
+  });
+});
+
+/* window.onclick function, used for various purposes */
 window.onclick = function(event) {
+  /* card scripts */
   if (cardIconLinks && cardDropdowns) {
     if (!event.target.matches(".card__icon--link")) {
       cardDropdowns.forEach(function(cardDropdown) {
@@ -123,6 +163,11 @@ window.onclick = function(event) {
       cardModals.forEach(function(cardModal) {
         cardModal.classList.remove("card__modal--visible");
       });
+    }
+    /* modal scripts */
+    if (modal && modalActivateButtons) {
+      if (event.target.matches(".modal"))
+        modal.classList.remove("modal--active");
     }
   }
 }

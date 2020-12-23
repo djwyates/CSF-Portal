@@ -1,22 +1,13 @@
-const courses = require("../config/courses");
+const utils = require("./utils"),
+      courses = require("../config/courses");
 
 var ejs = {};
 
-ejs.reformatCourse = function(thisCourseID) {
-  for (courseCategory in courses) {
-    for (courseID in courses[courseCategory]) {
-      if (courseID == thisCourseID)
-        return courses[courseCategory][courseID];
-    }
-  }
-  return thisCourseID;
-}
+ejs.arrayToSentence = utils.arrayToSentence;
 
-ejs.reformatDate = function(date) {
-  if (date.length <= 10) date += ", 12:00:00 AM";
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], date = new Date(date);
-  return(months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear());
-}
+ejs.reformatCourse = utils.reformatCourse;
+
+ejs.reformatDate = utils.reformatDate;
 
 ejs.reformatVar = function(variable) {
   var result = variable[0].toUpperCase();
