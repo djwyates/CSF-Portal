@@ -1,8 +1,7 @@
 .footer {
 	display: flex;
 	position: relative;
-	background: rgb(251,251,251);
-	color: rgb(0,0,0);
+	background: rgb(247,247,247);
 }
 
 .footer__section {
@@ -20,14 +19,8 @@
 	text-decoration: underline;
 }
 
-.footer__h2 {
-	color: white;
-}
-
 .footer__p {
-	display: block;
 	margin-top: 20px;
-	color: rgb(0,0,0);
 }
 
 .footer__hr {

@@ -16,10 +16,10 @@
       <th class="table__cell">Student ID</th>
       <th class="table__cell table__cell--grade">Grade</th>
       <th class="table__cell table__cell--email">Email</th>
-      <th class="table__cell table__cell--phoneNum">Phone Number</th>
+      <th class="table__cell table__cell--phone-num">Phone Number</th>
       <th class="table__cell">Verified</th>
-      <th class="table__cell table__cell--maxTutees">Max Tutees</th>
-      <th class="table__cell table__cell--paymentForm">Payment</th>
+      <th class="table__cell table__cell--max-tutees">Max Tutees</th>
+      <th class="table__cell table__cell--payment-form">Payment</th>
     </tr>
   </thead>
   <tbody>
@@ -29,13 +29,12 @@
         <td class="table__cell"><%- tutor.id %></td>
         <td class="table__cell table__cell--grade"><%- tutor.grade %></td>
         <td class="table__cell table__cell--email"><%- tutor.email %></td>
-        <td class="table__cell table__cell--phoneNum"><%- tutor.phoneNum %></td>
+        <td class="table__cell table__cell--phone-num"><%- tutor.phoneNum %></td>
         <td class="table__cell">
-          <% if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %>
-          <% if (!tutor.active) { %> <span class="red">(Deactivated)</span><% } %>
+          <% if (!tutor.active) { %>Deactivated<% } else if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %>
         </td>
-        <td class="table__cell table__cell--maxTutees"><%- tutor.maxTutees %></td>
-        <td class="table__cell table__cell--paymentForm"><%- tutor.paymentForm %></td>
+        <td class="table__cell table__cell--max-tutees"><%- tutor.maxTutees %></td>
+        <td class="table__cell table__cell--payment-form"><%- tutor.paymentForm %></td>
       </tr>
     <% }); %>
   </tbody>

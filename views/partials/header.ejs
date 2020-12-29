@@ -27,9 +27,11 @@
         <a href="/" class="nav__logo"><img src="/images/logo.png" alt="logo" width="60" height="60"/></a>
         <div class="nav__section">
       	  <a href="/members/attendance" class="nav__link<% if (location == "Attendance") { %> nav__link--active<% } %>">Check Attendance</a>
-      	  <a href="/meetings" class="nav__link<% if (location == "Meetings") { %> nav__link--active<% } %>">Meetings Overview</a>
+      	  <a href="/meetings" class="nav__link<% if (location == "Meetings") { %> nav__link--active<% } %>">Meetings
+            <span class="nav__link--excess"> Overview</span></a>
           <% if (currentUser && currentUser.accessLevel >= 1) { %>
-            <a href="/members" class="nav__link<% if (location == "Members") { %> nav__link--active<% } %>">Members Overview</a>
+            <a href="/members" class="nav__link<% if (location == "Members") { %> nav__link--active<% } %>">Members
+              <span class="nav__link--excess"> Overview</span></a>
           <% } %>
           <div class="nav__link nav__link--dropdown<% if (location == "Tutors" || location == "Tutees" || location == "Request a Tutor" || location == "Tutor Sign Up") { %> nav__link--active<% } %>">
             Tutoring

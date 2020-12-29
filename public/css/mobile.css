@@ -1,39 +1,21 @@
-@media screen and (max-width:556px) {
-	/* cards */
-	.card__dropdown {
-		top: 53px;
-		right: 0;
-		left: auto;
+@media screen and (max-width: 1050px) {
+	/* header */
+	.nav__link--excess {
+		display: none;
+	}
+
+	/* forms */
+	.form__input--responsive {
+		width: calc(100% - 94px);
+	}
+
+	/* tables */
+	.table__cell--email, .table__cell--max-tutees {
+		display: none;
 	}
 }
 
-@media screen and (max-width:610px) {
-	/* popups */
-	.popup {
-		top: calc(100% + 10px);
-		left: -70px;
-	}
-	.popup::after {
-		top: -18px;
-	  left: 33%;
-		border-right: 10px solid transparent;
-		border-left: 10px solid transparent;
-		border-bottom: 10px solid #fff;
-	}
-}
-
-@media screen and (max-width: 750px) {
-	/* tabs */
-	.tabs {
-		flex-direction: column;
-	}
-	.tabs__sidebar {
-		width: 100%;
-		margin-bottom: 10px;
-	}
-}
-
-@media screen and (max-width:1020px) {
+@media screen and (max-width: 843px) {
 	/* header */
 	.header {
 	  position: -webkit-sticky;
@@ -42,7 +24,7 @@
 		z-index: 4;
 	}
 
-  .nav__section {
+	.nav__section {
     display: none;
 		position: fixed;
 		z-index: 5;
@@ -65,6 +47,10 @@
 		margin-bottom: 50px;
 	}
 
+	.nav__link--excess {
+		display: block;
+	}
+
 	.nav__link--dropdown {
 		margin-left: auto;
 		margin-right: auto;
@@ -74,6 +60,8 @@
 		padding: 10px 0;
 		min-width: 150%;
 		background-color: rgba(0,0,0,0.85);
+		border: 1px solid black;
+		box-shadow: 0 16px 32px 0 rgba(0,0,0,0.85);
 	}
 
 	.nav__dropdown .nav__link {
@@ -97,24 +85,65 @@
     display: inline-block;
   }
 
-	/* directory */
-	.directory {
-		margin-bottom: 10px;
-	}
-
 	/* footer */
 	.footer {
 		flex-direction: column-reverse;
 	}
 
-	/* forms */
-	.form__input--responsive {
-		width: calc(100% - 94px);
-	}
-
 	/* tables */
-	.table__cell--grade, .table__cell--termCount, .table__cell--grade, .table__cell--email,
-	.table__cell--phoneNum, .table__cell--maxTutees, .table__cell--paymentForm {
+	.table__cell--grade, .table__cell--term-count, .table__cell--phone-num, .table__cell--payment-form {
 		display: none;
+	}
+}
+
+@media screen and (max-width: 780px) {
+	/* popups */
+	.popup {
+		top: calc(100% + 10px);
+		left: -70px;
+	}
+	.popup::before {
+		top: -16px;
+		left: 33%;
+	  border: 8px solid transparent;
+		border-bottom: 8px solid #dddddd;
+	}
+	.popup::after {
+		top: -14px;
+		left: calc(33% + 1px);
+	  border: 7px solid transparent;
+		border-bottom: 7px solid white;
+	}
+	.popup--2 {
+		top: 43px;
+	  left: -20px;
+	}
+	.popup--2::before {
+	  top: -16px;
+	  left: 88%;
+	}
+	.popup--2::after {
+	  top: -14px;
+	  left: calc(88% + 1px);
+	}
+}
+
+@media screen and (max-width: 750px) {
+	/* tabs */
+	.tabs {
+		flex-direction: column;
+	}
+	.tabs__sidebar {
+		width: 100%;
+		margin-bottom: 10px;
+	}
+}
+
+@media screen and (max-width: 556px) {
+	/* cards */
+	.card__dropdown {
+		top: 53px;
+		right: 0;
+		left: auto;
 	}
 }

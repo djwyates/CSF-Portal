@@ -17,7 +17,7 @@
       <th class="table__cell">Name</th>
       <th class="table__cell">Student ID</th>
       <th class="table__cell table__cell--grade">Grade</th>
-      <th class="table__cell table__cell--termCount">Terms</th>
+      <th class="table__cell table__cell--term-count">Terms</th>
       <th class="table__cell">Attendance</th>
     </tr>
   </thead>
@@ -27,7 +27,7 @@
         <td class="table__cell"><%- member.name %></td>
         <td class="table__cell"><%- member.id %></td>
         <td class="table__cell table__cell--grade"><%- member.grade %></td>
-        <td class="table__cell table__cell--termCount"><%- member.termCount %></td>
+        <td class="table__cell table__cell--term-count"><%- member.termCount %></td>
         <td class="table__cell table__cell--attendance"><%- member.meetingsAttended.length %> of <%- meetingsCount %> meetings</td>
       </tr>
     <% }); %>

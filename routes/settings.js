@@ -23,6 +23,20 @@ router.get("/permissions", auth.hasAccessLevel(3), function(req, res) {
   });
 });
 
+router.put("/permissions", auth.hasAccessLevel(3), function(req, res) {
+  Member.findOneAndUpdate({id: req.sanitize(req.body.id)}, {accessLevel: req.sanitize(req.body.accessLevel)}, function(err, member) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+    } else if (!member) {
+      req.flash("error", "No member exists with that ID.");
+    } else
+      req.flash("success", "Successfully granted <a class='link--white' href='/members/" + member._id
+      + "?from=%2Fsettings%2Fpermissions'>member " + member.id + "</a> permissions.");
+    res.redirect("back");
+  });
+});
+
 router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   res.render("settings/term-migration");
 });
@@ -38,11 +52,6 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/backups", auth.hasAccessLevel(3), function(req, res) {
-  //console.log("-----BACKUPS FILES-----");
-  //console.log(backup.getBackupFiles());
-  //console.log("-----DIR TREE-----");
-  //console.log(dirTree("./backups", {extensions: /\.txt/}));
-  //return res.redirect("back");
   res.render("settings/backups", {
     backupsDirTree: dirTree("./backups", {extensions: /\.txt/}),
     backupFiles: backup.getBackupFiles(),

@@ -116,25 +116,43 @@ backup.restoreFromBackup = function(reqBody) {
       /* if the backup is an array of tutees */
       } else if (reqBody.data[0].parentEmail) {
         backup.mongooseModel("./backups/replaced/tutees.txt", Tutee);
-        Tutee.deleteMany({}, function(err, deleteResult) {
-          Tutee.create(reqBody.data, function(err, newTutees) {
-            if (err) {
-              console.error(err);
-              resolve("An unexpected error occurred.");
-            } else
-              resolve("The selected backup was successfully restored: All previous tutees were backed up and replaced.");
+        Tutee.find({}, function(err, tutees) {
+          tutees.forEach(function(tutee) {
+            Member.findOneAndUpdate({id: tutee.id}, {$unset: {tuteeID: ""}}).exec();
+          });
+          Tutee.deleteMany({}, function(err, deleteResult) {
+            Tutee.create(reqBody.data, function(err, newTutees) {
+              if (err) {
+                console.error(err);
+                resolve("An unexpected error occurred.");
+              } else {
+                newTutees.forEach(function(newTutee) {
+                  Member.findOneAndUpdate({id: newTutee.id}, {tuteeID: newTutee._id}).exec();
+                });
+                resolve("The selected backup was successfully restored: All previous tutees were backed up and replaced.");
+              }
+            });
           });
         });
       /* if the backup is an array of tutors */
       } else if (reqBody.data[0].email) {
         backup.mongooseModel("./backups/replaced/tutors.txt", Tutor);
-        Tutor.deleteMany({}, function(err, deleteResult) {
-          Tutor.create(reqBody.data, function(err, newTutors) {
-            if (err) {
-              console.error(err);
-              resolve("An unexpected error occurred.");
-            } else
-              resolve("The selected backup was successfully restored: All previous tutors were backed up and replaced.");
+        Tutor.find({}, function(err, tutors) {
+          tutors.forEach(function(tutor) {
+            Member.findOneAndUpdate({id: tutor.id}, {$unset: {tutorID: ""}}).exec();
+          });
+          Tutor.deleteMany({}, function(err, deleteResult) {
+            Tutor.create(reqBody.data, function(err, newTutors) {
+              if (err) {
+                console.error(err);
+                resolve("An unexpected error occurred.");
+              } else {
+                newTutors.forEach(function(newTutor) {
+                  Member.findOneAndUpdate({id: newTutor.id}, {tutorID: newTutor._id}).exec();
+                });
+                resolve("The selected backup was successfully restored: All previous tutors were backed up and replaced.");
+              }
+            });
           });
         });
       /* if the backup is an array of members */

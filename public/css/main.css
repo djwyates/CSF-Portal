@@ -7,7 +7,7 @@
 
 .body-container {
 	min-height: 100vh;
-	margin: 0 2%;
+	padding: 10px 2% 0 2%;
 }
 
 .green {

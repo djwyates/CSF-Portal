@@ -45,6 +45,10 @@
 	display: flex;
 }
 
+.above-table__section {
+	position: relative;
+}
+
 .above-table__icon {
 	position: relative;
   top: 6px;
