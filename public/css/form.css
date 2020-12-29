@@ -229,8 +229,8 @@
 }
 
 .form__button {
-  font-weight: 600;
   font-size: 1.1em;
+  font-weight: 600;
   padding: 7px 16px;
   margin: 10px 10px 10px 0;
   color: rgb(255,255,255);
@@ -252,6 +252,13 @@
   margin: 0 0 0 5px;
   padding-top: 8px;
   padding-bottom: 8px;
+}
+
+.form__button--small {
+  font-size: 0.9em;
+  font-weight: 400;
+  border-radius: 4px;
+  padding: 3px 7px;
 }
 
 .form__button:hover {

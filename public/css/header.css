@@ -1,6 +1,7 @@
 .nav {
 	display: flex;
 	padding: 0.5% 2.5%;
+	margin-bottom: 7px;
 	background-color: rgb(251,251,251);
 }
 

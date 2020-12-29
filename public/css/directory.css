@@ -4,6 +4,8 @@
 }
 
 .directory__folder, .directory__file {
+  position: relative;
+  width: fit-content;
   list-style: none;
   color: #888;
   font-size: 17px;

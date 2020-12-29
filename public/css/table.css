@@ -6,7 +6,7 @@
 	border-radius: 5px 5px 0 0;
 	overflow: hidden;
 	box-shadow: 0 0 10px rgba(0,0,0,0.15);
-	table-layout: fixed;
+	table-layout: auto;
 }
 
 .table__head-row {
@@ -43,7 +43,6 @@
 
 .above-table {
 	display: flex;
-	margin-top: 7px;
 }
 
 .above-table__icon {

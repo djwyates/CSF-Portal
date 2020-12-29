@@ -7,7 +7,7 @@ const express = require("express"),
       Member = require("../models/member");
 
 router.get("/", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/index");
+  res.redirect("/settings/permissions");
 });
 
 router.get("/permissions", auth.hasAccessLevel(3), function(req, res) {
@@ -38,7 +38,16 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/backups", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/backups", {backupsDirTree: dirTree("./backups", {extensions: /\.txt/}), backupsData: backup.getBackupsData()});
+  //console.log("-----BACKUPS FILES-----");
+  //console.log(backup.getBackupFiles());
+  //console.log("-----DIR TREE-----");
+  //console.log(dirTree("./backups", {extensions: /\.txt/}));
+  //return res.redirect("back");
+  res.render("settings/backups", {
+    backupsDirTree: dirTree("./backups", {extensions: /\.txt/}),
+    backupFiles: backup.getBackupFiles(),
+    resolvePath: require("path").resolve
+  });
 });
 
 router.put("/backups", auth.hasAccessLevel(3), function(req, res) {

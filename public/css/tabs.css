@@ -1,0 +1,40 @@
+.tabs {
+  display: flex;
+  height: 100%;
+}
+
+.tabs__sidebar {
+  width: 155px;
+  height: 100%;
+  margin-right: 13px;
+  flex-shrink: 0;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.tabs__link {
+  display: block;
+  padding: 10px;
+  width: 100%;
+  text-decoration: none;
+  color: black;
+  background: #eeeeee;
+}
+
+.tabs__link--active {
+  font-weight: bold;
+  background: #dddddd;
+  border-right: 2px solid rgb(0,128,154);
+}
+
+.tabs__link:not(:last-of-type) {
+  border-bottom: 1px solid #cccccc;
+}
+
+.tabs__link:hover {
+  background: #dddddd;
+}
+
+.tabs__content {
+  width: 100%;
+}

@@ -16,8 +16,10 @@
 }
 
 .modal__content {
-  width: 470px;
-  margin: 150px auto;
+  position: relative;
+  width: 95%;
+  max-width: 470px;
+  margin: 15vh auto;
   padding: 20px;
   border-radius: 0.5rem;
   box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
@@ -25,13 +27,21 @@
 }
 
 .modal__close {
-  float: right;
+  position: absolute;
+  top: 20px;
+  right: 20px;
   cursor: pointer;
   transition: 0.1s;
 }
 
 .modal__close:hover, .modal__close:focus {
   color: rgb(0,136,154);
+}
+
+.modal__form-content {
+  width: 100%;
+  max-height: calc(100vh - 350px);
+  overflow-y: scroll;
 }
 
 .modal__form {
@@ -47,7 +57,7 @@
 }
 
 .modal__p {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .modal__icon {
@@ -60,9 +70,9 @@
 }
 
 .modal__button {
-  position: relative;
-  right: -217px;
-  bottom: -28px;
+  position: absolute;
+  right: 40px;
+  bottom: 8px;
   background: none;
   border: none;
   text-decoration: none;
@@ -74,7 +84,7 @@
 }
 
 .modal__button--long {
-  right: -202px;
+  right: 20px;
 }
 
 .modal__button:hover {
@@ -86,9 +96,14 @@
   text-decoration: underline;
 }
 
+.modal__checkbox-container {
+  position: relative;
+  width: 100%;
+}
+
 .modal__checkbox {
   margin-bottom: 8px;
-  min-width: 382px;
+  max-width: calc(100% - 24px);
 }
 
 .modal__checkbox--gray {
@@ -101,9 +116,9 @@
 }
 
 .modal__dropdown-arrow {
-  position: relative;
-  bottom: 5px;
-  float: right;
+  position: absolute;
+  top: -6px;
+  right: 0;
   cursor: pointer;
   transition: 0.1s;
 }

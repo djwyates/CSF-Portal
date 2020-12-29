@@ -1,8 +1,8 @@
 .card {
   position: relative;
+  max-width: 430px;
   min-height: 125px;
   width: 90%;
-  max-width: 430px;
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
@@ -12,6 +12,7 @@
 }
 
 .card__title {
+  position: relative;
   font-size: 20px;
   font-weight: 700;
   color: #0d0925;
@@ -39,26 +40,24 @@
 	margin-right: 3px;
 }
 
-.card__icon--link {
+.card__icon-link {
+  position: absolute;
+  top: 13px;
+  right: 17px;
   color: #7b7992;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.card__icon--link:hover {
+.card__icon-link:hover {
   color: rgb(0,136,154);
-}
-
-.card__icon--right {
-  float: right;
-  top: 3px;
 }
 
 .card__dropdown {
   display: none;
   position: absolute;
-  top: 0px;
-  left: 432px;
+  top: 0;
+  left: 431px;
   max-width: 132px;
   padding: 10px 0;
   z-index: 1;
@@ -110,9 +109,11 @@
   display: block;
 }
 
-.card__modal-content {
-  width: 400px;
-  margin: 150px auto;
+.card__modal-wrapper {
+  position: relative;
+  width: 95%;
+  max-width: 400px;
+  margin: 15vh auto;
   padding: 20px;
   border-radius: 0.5rem;
   box-shadow: 0 2px 5px 0 rgba(0,0,0,0.25);
@@ -127,4 +128,9 @@
 
 .card__modal-close:hover, .card__modal-close:focus {
   color: rgb(0,136,154);
+}
+
+.card__modal-content {
+  max-height: calc(100vh - 150px);
+  overflow-y: scroll;
 }

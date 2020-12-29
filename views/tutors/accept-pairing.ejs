@@ -13,6 +13,11 @@
     <input class="form__input" value="<%- tutee.phoneNum %>" readonly/>
   </div>
   <div class="form__item">
+    <label class="form__label" for="courses">Needs help with</label>
+    <input class="form__input" value="<%- ejs.arrayToSentence(tutor.tuteeSessions.find(s => s.tuteeID == tutee._id).courses.map(c => ejs.reformatCourse(c))) %>"
+    readonly>
+  </div>
+  <div class="form__item">
     <label class="form__label" for="parentName">Parent's Name</label>
     <input class="form__input" value="<%- tutee.parentName %>" readonly/>
   </div>
