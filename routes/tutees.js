@@ -47,17 +47,17 @@ router.post("/", function(req, res) {
     courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses],
     createdOn: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
   };
-  Tutee.create([newTutee], {new: true}, function(err, newTutee) {
+  Tutee.create(newTutee, {new: true}, function(err, tutee) {
     if (err) {
       console.error(err);
       if (err.code == 11000) req.flash("error", "A tutee already exists with that ID. Login with your school email to view or edit your request.");
       else req.flash("error", "An unexpected error occurred.");
       res.redirect("/tutees/new" + (req.query.from ? "?from=" + req.query.from : ""));
     } else {
-      Member.findOneAndUpdate({id: newTutee[0].id}, {tuteeID: newTutee[0]._id}).exec();
-      if (req.user && req.user.id == newTutee[0].id || req.user && req.user.accessLevel >= 2) {
+      Member.findOneAndUpdate({id: tutee.id}, {tuteeID: tutee._id}).exec();
+      if (req.user && req.user.id == tutee.id || req.user && req.user.accessLevel >= 2) {
         req.flash("success", "Your tutoring request has been successfully submitted.");
-        res.redirect("/tutees/" + newTutee[0]._id + (req.query.from ? "?from=" + req.query.from : ""));
+        res.redirect("/tutees/" + tutee._id + (req.query.from ? "?from=" + req.query.from : ""));
       } else {
         req.flash("success", "Your tutoring request has been successfully submitted. To view your request, login with your school email.");
         res.redirect(req.query.from ? req.query.from : "/");

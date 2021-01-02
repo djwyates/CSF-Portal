@@ -43,7 +43,6 @@
 }
 
 .nav__link--dropdown {
-	z-index: 1;
 	padding-right: 40px;
 }
 
@@ -60,6 +59,7 @@
 	border-radius: 6px;
 	box-shadow: 0 8px 24px 0 rgba(150,155,165,0.2);
 	transform: translateY(7px);
+	z-index: 2;
 }
 
 .nav__link--dropdown:hover .nav__dropdown {
@@ -77,7 +77,7 @@
 
 .nav__icon {
 	position: absolute;
-	top: 7px;
+	top: 8px;
 }
 
 .nav__icon--right-arrow {

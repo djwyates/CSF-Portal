@@ -61,17 +61,17 @@ router.get("/new", auth.hasAccessLevel(3), function(req, res) {
 router.post("/", auth.hasAccessLevel(3), function(req, res) {
   req.body.member.id = req.sanitize(req.body.member.id);
   req.body.member.name = req.sanitize(req.body.member.name);
-  Member.create([req.body.member], function(err, newMember) {
+  Member.create(req.body.member, function(err, newMember) {
     if (err) {
       console.error(err);
       if (err.code == 11000)
         req.flash("error", "More than one member cannot have the same ID.");
       res.redirect("members/new");
     } else {
-      Tutor.findOne({id: newMember[0].id}, function(err, tutor) {
-        if (tutor) Member.findByIdAndUpdate(newMember[0]._id, {tutorID: tutor._id}).exec();
-        Tutee.findOne({id: newMember[0].id}, function(err, tutee) {
-          if (tutee) Member.findByIdAndUpdate(newMember[0]._id, {tuteeID: tutee._id}).exec();
+      Tutor.findOne({id: newMember.id}, function(err, tutor) {
+        if (tutor) Member.findByIdAndUpdate(newMember._id, {tutorID: tutor._id}).exec();
+        Tutee.findOne({id: newMember.id}, function(err, tutee) {
+          if (tutee) Member.findByIdAndUpdate(newMember._id, {tuteeID: tutee._id}).exec();
           res.redirect("/members");
         });
       });

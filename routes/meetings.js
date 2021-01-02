@@ -25,7 +25,7 @@ router.get("/new", auth.hasAccessLevel(1), function(req, res) {
 });
 
 router.post("/", auth.hasAccessLevel(1), function(req, res) {
-  Meeting.create([{date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}], function(err, newMeeting) {
+  Meeting.create({date: req.body.meeting.date, description: req.sanitize(req.body.meeting.description)}, function(err, newMeeting) {
     if (err) {
       console.error(err);
       if (err.code == 11000) req.flash("error", "More than one meeting cannot have the same date.");

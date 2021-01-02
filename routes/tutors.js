@@ -61,21 +61,21 @@ router.post("/", function(req, res) {
           lastSent: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
         }
       };
-      Tutor.create([newTutor], function(err, newTutor) {
+      Tutor.create(newTutor, function(err, tutor) {
         if (err) {
           console.error(err);
           if (err.code == 11000) req.flash("error", "A tutor already exists with that ID.");
           else req.flash("error", "An unexpected error occurred.");
           res.redirect("/tutors/new");
         } else {
-          sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + newTutor[0].verification.code, newTutor[0].phoneNum);
-          Member.findByIdAndUpdate(foundMember._id, {tutorID: newTutor[0]._id}).exec();
-          if (req.user && req.user.id == newTutor[0].id) {
+          sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + tutor.verification.code, tutor.phoneNum);
+          Member.findByIdAndUpdate(foundMember._id, {tutorID: tutor._id}).exec();
+          if (req.user && req.user.id == tutor.id) {
             req.flash("success", "You have successfully signed up as a tutor! Please click the verification link sent to your phone.");
-            res.redirect("/tutors/" + newTutor[0]._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+            res.redirect("/tutors/" + tutor._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
           } else {
-            req.flash("success", "You have successfully signed up the member with ID " + newTutor[0].id + " as a tutor.");
-            res.redirect("/tutors/" + newTutor[0]._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+            req.flash("success", "You have successfully signed up the member with ID " + tutor.id + " as a tutor.");
+            res.redirect("/tutors/" + tutor._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
           }
         }
       });

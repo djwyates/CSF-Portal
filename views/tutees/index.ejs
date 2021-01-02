@@ -16,8 +16,8 @@
       <th class="table__cell">Student ID</th>
       <th class="table__cell table__cell--grade">Grade</th>
       <th class="table__cell table__cell--email">Email</th>
-      <th class="table__cell table__cell--phoneNum">Phone Number</th>
-      <th class="table__cell table__cell--paymentForm">Payment</th>
+      <th class="table__cell table__cell--phone-num">Phone Number</th>
+      <th class="table__cell table__cell--payment-form">Payment</th>
       <th class="table__cell">Date Created</th>
     </tr>
   </thead>
@@ -28,8 +28,8 @@
         <td class="table__cell"><%- tutee.id %></td>
         <td class="table__cell table__cell--grade"><%- tutee.grade %></td>
         <td class="table__cell table__cell--email"><%- tutee.email %></td>
-        <td class="table__cell table__cell--phoneNum"><%- tutee.phoneNum %></td>
-        <td class="table__cell table__cell--paymentForm"><%- tutee.paymentForm %></td>
+        <td class="table__cell table__cell--phone-num"><%- tutee.phoneNum %></td>
+        <td class="table__cell table__cell--payment-form"><%- tutee.paymentForm %></td>
         <td class="table__cell"><%- ejs.reformatDate(tutee.createdOn) %></td>
       </tr>
     <% }); %>
