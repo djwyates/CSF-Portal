@@ -9,35 +9,37 @@
     <a class="above-table__button no-drag" href="/tutors/new?from=%2Ftutors"><span class="material-icons above-table__icon">person_add</span>New Tutor</a>
   </div>
 </div>
-<table class="table">
-  <thead>
-    <tr class="table__head-row">
-      <th class="table__cell">Name</th>
-      <th class="table__cell">Student ID</th>
-      <th class="table__cell table__cell--grade">Grade</th>
-      <th class="table__cell table__cell--email">Email</th>
-      <th class="table__cell table__cell--phone-num">Phone Number</th>
-      <th class="table__cell">Verified</th>
-      <th class="table__cell table__cell--max-tutees">Max Tutees</th>
-      <th class="table__cell table__cell--payment-form">Payment</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% tutors.forEach(function(tutor) { %>
-      <tr class="table__body-row" data-href="/tutors/<%- tutor._id %>?from=%2Ftutors">
-        <td class="table__cell"><%- tutor.name %></td>
-        <td class="table__cell"><%- tutor.id %></td>
-        <td class="table__cell table__cell--grade"><%- tutor.grade %></td>
-        <td class="table__cell table__cell--email"><%- tutor.email %></td>
-        <td class="table__cell table__cell--phone-num"><%- tutor.phoneNum %></td>
-        <td class="table__cell">
-          <% if (!tutor.active) { %>Deactivated<% } else if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %>
-        </td>
-        <td class="table__cell table__cell--max-tutees"><%- tutor.maxTutees %></td>
-        <td class="table__cell table__cell--payment-form"><%- tutor.paymentForm %></td>
+<div class="table__wrapper">
+  <table class="table">
+    <thead>
+      <tr class="table__head-row">
+        <th class="table__cell">Name</th>
+        <th class="table__cell">Student ID</th>
+        <th class="table__cell table__cell--grade">Grade</th>
+        <th class="table__cell table__cell--email">Email</th>
+        <th class="table__cell table__cell--phone-num">Phone Number</th>
+        <th class="table__cell">Verified</th>
+        <th class="table__cell table__cell--max-tutees">Max Tutees</th>
+        <th class="table__cell table__cell--payment-form">Payment</th>
       </tr>
-    <% }); %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% tutors.forEach(function(tutor) { %>
+        <tr class="table__body-row" data-href="/tutors/<%- tutor._id %>?from=%2Ftutors">
+          <td class="table__cell"><%- tutor.name %></td>
+          <td class="table__cell"><%- tutor.id %></td>
+          <td class="table__cell table__cell--grade"><%- tutor.grade %></td>
+          <td class="table__cell table__cell--email"><%- tutor.email %></td>
+          <td class="table__cell table__cell--phone-num"><%- tutor.phoneNum %></td>
+          <td class="table__cell">
+            <% if (!tutor.active) { %>Deactivated<% } else if (tutor.verified && tutor.verifiedPhone) { %>True<% } else { %>False<% } %>
+          </td>
+          <td class="table__cell table__cell--max-tutees"><%- tutor.maxTutees %></td>
+          <td class="table__cell table__cell--payment-form"><%- tutor.paymentForm %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
 
 <%- include("../partials/footer") %>

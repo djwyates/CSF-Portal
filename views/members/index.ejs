@@ -1,7 +1,7 @@
 <%- include("../partials/header") %>
 
 <div class="above-table">
-  <div class="above-table__section search search__input-container" id="filterTable">
+  <div class="above-table__section table__filter search search__input-container">
     <input class="search__input" type="text" spellcheck="false" placeholder="Filter members"/>
     <span class="material-icons search__icon">search</span>
   </div>
@@ -11,27 +11,29 @@
     </div>
   <% } %>
 </div>
-<table class="table">
-  <thead>
-    <tr class="table__head-row">
-      <th class="table__cell">Name</th>
-      <th class="table__cell">Student ID</th>
-      <th class="table__cell table__cell--grade">Grade</th>
-      <th class="table__cell table__cell--term-count">Terms</th>
-      <th class="table__cell">Attendance</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% members.forEach(function(member) { %>
-      <tr class="table__body-row" data-href="/members/<%- member._id %>">
-        <td class="table__cell"><%- member.name %></td>
-        <td class="table__cell"><%- member.id %></td>
-        <td class="table__cell table__cell--grade"><%- member.grade %></td>
-        <td class="table__cell table__cell--term-count"><%- member.termCount %></td>
-        <td class="table__cell table__cell--attendance"><%- member.meetingsAttended.length %> of <%- meetingsCount %> meetings</td>
+<div class="table__wrapper">
+  <table class="table">
+    <thead>
+      <tr class="table__head-row">
+        <th class="table__cell">Name</th>
+        <th class="table__cell">Student ID</th>
+        <th class="table__cell table__cell--grade">Grade</th>
+        <th class="table__cell table__cell--term-count">Terms</th>
+        <th class="table__cell">Attendance</th>
       </tr>
-    <% }); %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% members.forEach(function(member) { %>
+        <tr class="table__body-row" data-href="/members/<%- member._id %>">
+          <td class="table__cell"><%- member.name %></td>
+          <td class="table__cell"><%- member.id %></td>
+          <td class="table__cell table__cell--grade"><%- member.grade %></td>
+          <td class="table__cell table__cell--term-count"><%- member.termCount %></td>
+          <td class="table__cell table__cell--attendance"><%- member.meetingsAttended.length %> of <%- meetingsCount %> meetings</td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
 
 <%- include("../partials/footer") %>

@@ -7,34 +7,6 @@ if (burger) {
   });
 }
 
-/* table scripts */
-const rows = document.querySelectorAll(".table__body-row[data-href]");
-rows.forEach(function(row) {
-  row.addEventListener("click", function() {
-    window.location.href = row.dataset.href;
-  });
-});
-
-/* table filter scripts */
-const filterTable = document.querySelector("#filterTable");
-if (filterTable) {
-  filterTable.addEventListener("keyup", function(query) {
-    const queryRegExp = new RegExp(query.target.value.toLowerCase().trim(), "i");
-    const rows = document.querySelectorAll(".table__body-row");
-    rows:
-    for (var row of rows) {
-      for (var cell of row.cells) {
-        if (!cell.classList.contains("table__cell--attendance") && queryRegExp.test(cell.innerText.toLowerCase())) {
-          row.style.display = "table-row";
-          continue rows;
-        } else {
-          row.style.display = "none";
-        }
-      }
-    }
-  });
-}
-
 /* upload file form scripts */
 const realFileButton = document.querySelector(".form__input--file");
 const customButton = document.querySelector(".form__input--filebutton");

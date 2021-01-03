@@ -9,31 +9,33 @@
     <a class="above-table__button no-drag" href="/tutees/new?from=%2Ftutees"><span class="material-icons above-table__icon">post_add</span>New Request</a>
   </div>
 </div>
-<table class="table">
-  <thead>
-    <tr class="table__head-row">
-      <th class="table__cell">Name</th>
-      <th class="table__cell">Student ID</th>
-      <th class="table__cell table__cell--grade">Grade</th>
-      <th class="table__cell table__cell--email">Email</th>
-      <th class="table__cell table__cell--phone-num">Phone Number</th>
-      <th class="table__cell table__cell--payment-form">Payment</th>
-      <th class="table__cell">Date Created</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% tutees.forEach(function(tutee) { %>
-      <tr class="table__body-row" data-href="/tutees/<%- tutee._id %>?from=%2Ftutees">
-        <td class="table__cell"><%- tutee.name %></td>
-        <td class="table__cell"><%- tutee.id %></td>
-        <td class="table__cell table__cell--grade"><%- tutee.grade %></td>
-        <td class="table__cell table__cell--email"><%- tutee.email %></td>
-        <td class="table__cell table__cell--phone-num"><%- tutee.phoneNum %></td>
-        <td class="table__cell table__cell--payment-form"><%- tutee.paymentForm %></td>
-        <td class="table__cell"><%- ejs.reformatDate(tutee.createdOn) %></td>
+<div class="table__wrapper">
+  <table class="table">
+    <thead>
+      <tr class="table__head-row">
+        <th class="table__cell">Name</th>
+        <th class="table__cell">Student ID</th>
+        <th class="table__cell table__cell--grade">Grade</th>
+        <th class="table__cell table__cell--email">Email</th>
+        <th class="table__cell table__cell--phone-num">Phone Number</th>
+        <th class="table__cell table__cell--payment-form">Payment</th>
+        <th class="table__cell">Date Created</th>
       </tr>
-    <% }); %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% tutees.forEach(function(tutee) { %>
+        <tr class="table__body-row" data-href="/tutees/<%- tutee._id %>?from=%2Ftutees">
+          <td class="table__cell"><%- tutee.name %></td>
+          <td class="table__cell"><%- tutee.id %></td>
+          <td class="table__cell table__cell--grade"><%- tutee.grade %></td>
+          <td class="table__cell table__cell--email"><%- tutee.email %></td>
+          <td class="table__cell table__cell--phone-num"><%- tutee.phoneNum %></td>
+          <td class="table__cell table__cell--payment-form"><%- tutee.paymentForm %></td>
+          <td class="table__cell"><%- ejs.reformatDate(tutee.createdOn) %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
 
 <%- include("../partials/footer") %>

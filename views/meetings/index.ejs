@@ -11,23 +11,25 @@
     </div>
   <% } %>
 </div>
-<table class="table">
-  <thead>
-    <tr class="table__head-row">
-      <th class="table__cell">Meeting</th>
-      <th class="table__cell">Date</th>
-      <th class="table__cell">Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% i=1; meetings.forEach(function(meeting) { %>
-      <tr class="table__body-row" data-href="/meetings/<%- meeting._id %>">
-        <td class="table__cell"><%- i %></td>
-        <td class="table__cell"><%- ejs.reformatDate(meeting.date) %></td>
-        <td class="table__cell"><%- meeting.description %></td>
+<div class="table__wrapper">
+  <table class="table">
+    <thead>
+      <tr class="table__head-row">
+        <th class="table__cell">Meeting</th>
+        <th class="table__cell">Date</th>
+        <th class="table__cell">Description</th>
       </tr>
-    <% i++; }); %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% i=1; meetings.forEach(function(meeting) { %>
+        <tr class="table__body-row" data-href="/meetings/<%- meeting._id %>">
+          <td class="table__cell"><%- i %></td>
+          <td class="table__cell"><%- ejs.reformatDate(meeting.date) %></td>
+          <td class="table__cell"><%- meeting.description %></td>
+        </tr>
+      <% i++; }); %>
+    </tbody>
+  </table>
+</div>
 
 <%- include("../partials/footer") %>

@@ -1,3 +1,7 @@
+.table__wrapper {
+	position: relative;
+}
+
 .table {
 	border-collapse: collapse;
 	margin: 10px 0;
@@ -7,6 +11,23 @@
 	overflow: hidden;
 	box-shadow: 0 0 10px rgba(0,0,0,0.15);
 	table-layout: auto;
+}
+
+.table::after {
+	content: "";
+	display: block;
+	position: relative;
+	width: 1000%;
+	height: 2px;
+	background-color: rgb(40,40,40);
+}
+
+.table--large {
+	border-radius: 5px;
+}
+
+.table--large::after {
+	height: 28px;
 }
 
 .table__head-row {
@@ -37,8 +58,107 @@
 	padding: 12px 15px;
 }
 
-.table__body-row:last-of-type {
-  border-bottom: 2px solid rgb(40,40,40);
+.table__footnote {
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 28px;
+	bottom: 0;
+	left: 0;
+	font-size: 12px;
+	font-weight: 100;
+	color: white;
+	cursor: default;
+}
+
+.table__footnote-section--left {
+	position: absolute;
+	bottom: 6px;
+	left: 7px;
+}
+
+.table__footnote-section--right {
+	position: absolute;
+	bottom: 6px;
+	right: 7px;
+	padding: 0 24px;
+}
+
+.table__footnote-selector {
+	position: relative;
+	cursor: pointer;
+}
+
+.table__footnote-selector:hover, .table__footnote-selector--active {
+	text-decoration: underline;
+}
+
+.table__footnote-triangle {
+	content: "";
+	display: inline-block;
+	vertical-align: middle;
+  border-top: 5px solid white;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+}
+
+.table__footnote-dropdown {
+	display: none;
+	position: absolute;
+	padding: 3px 0;
+	top: 20px;
+	left: -3px;
+	color: black;
+	font-weight: normal;
+	background-color: white;
+	border: 1px solid #dddddd;
+	border-radius: 3px 3px 0 0;
+	box-shadow: 0 8px 24px 0 rgba(150,155,165,0.2);
+	z-index: 2;
+}
+
+.table__footnote-dropdown--active {
+	display: block;
+}
+
+.table__footnote-dropdown::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	height: 2px;
+	background-color: rgb(40,40,40);
+}
+
+.table__footnote-link {
+	padding: 0 4px;
+}
+
+.table__footnote-link--inactive {
+	display: none;
+}
+
+.table__footnote-link:hover {
+	background-color: rgb(235,235,235);
+}
+
+.table__icon {
+	position: absolute;
+	top: -5px;
+	color: white;
+	cursor: pointer;
+	transition: 0.15s;
+}
+
+.table__icon--left-arrow {
+	left: 0;
+	transform: rotate(180deg);
+}
+
+.table__icon:hover {
+	color: lightgray;
 }
 
 .above-table {
