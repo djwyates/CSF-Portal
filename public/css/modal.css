@@ -120,7 +120,7 @@
   top: -6px;
   right: 0;
   cursor: pointer;
-  transition: 0.1s;
+  transition: color 100ms, transform 165ms linear;
 }
 
 .modal__dropdown-arrow:hover {
@@ -129,6 +129,10 @@
 
 .modal__dropdown-arrow--gray:hover {
   color: rgb(100,100,100);
+}
+
+.modal__dropdown-arrow--active {
+  -webkit-transform: rotate(180deg);
 }
 
 .modal__dropdown {

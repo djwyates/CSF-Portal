@@ -1,6 +1,7 @@
 const express = require("express"),
       router = express.Router(),
       passport = require("passport"),
+      utils = require("../services/utils"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
       Tutor = require("../models/tutor"),
@@ -13,7 +14,7 @@ router.get("/", function(req, res) {
 router.get("/login/google", passport.authenticate("google", {scope: ["email"]}));
 
 router.get("/login/google/callback", passport.authenticate("google"), function(req, res) {
-  req.flash("success", "You have successfully logged in.");
+  req.flash("success", "You have successfully logged in as " + req.user.email + ".");
   res.redirect("/members/attendance");
 });
 
@@ -25,9 +26,10 @@ router.get("/logout", function(req, res) {
 
 router.get("/search", function(req, res) {
   var queryRegExp = new RegExp(req.query.q.trim(), "i"), result = [];
-  Meeting.find(queryRegExp.test("meetings") ? {} : {$or: [{date: queryRegExp}, {description: queryRegExp}]}, function(err, meetings) {
+  Meeting.find({}, function(err, meetings) {
     meetings.forEach(function(meeting) {
-      result.push({type: "Meeting", date: meeting.date, description: meeting.description ? meeting.description : "No meeting description", href: "/meetings/" + meeting._id});
+      if (queryRegExp.test("meetings") || queryRegExp.test(meeting.date) || queryRegExp.test(utils.reformatDate(meeting.date)) || queryRegExp.test(meeting.description))
+        result.push({type: "Meeting", date: meeting.date, description: meeting.description ? meeting.description : "No meeting description", href: "/meetings/" + meeting._id});
     });
     if (!req.user || req.user.accessLevel <= 0) {
       Member.findOne({id: req.query.q.trim()}, function(err, member) {

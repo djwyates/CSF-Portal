@@ -3,6 +3,19 @@
 <div class="form">
   <a class="form__link" href="<% if (query.from) { %><%- query.from %><% } else { %>/members<% } %>">Back</a>
   <div class="form__title">View Member</div>
+  <% if (currentUser.accessLevel >= 2 && member.tutorID) { %>
+    <p class="form__description">
+      <a class="link link--no-underline" href="/tutors/<%- member.tutorID %>?from=%2Fmembers%2F<%- member._id %>">
+        Tutor Account <span class="form__icon form__icon--pos3 material-icons">link</span>
+      </a>
+    </p>
+  <% } if (currentUser.accessLevel >= 2 && member.tuteeID) { %>
+    <p class="form__description">
+      <a class="link link--no-underline" href="/tutees/<%- member.tuteeID %>?from=%2Fmembers%2F<%- member._id %>">
+        Tutee Account <span class="form__icon form__icon--pos3 material-icons">link</span>
+      </a>
+    </p>
+  <% } %>
   <div class="form__item">
     <label class="form__label" for="id">Student ID</label>
     <input class="form__input" value="<%- member.id %>" readonly/>

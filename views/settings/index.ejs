@@ -1,0 +1,36 @@
+<%- include("../partials/header") %>
+
+<div class="tabs">
+  <div class="tabs__sidebar">
+    <div class="tabs__links-container">
+      <a class="tabs__link<% if (settingsLocation == "permissions") { %> tabs__link--active<% } %>" href="/settings/permissions">Permissions</a>
+      <a class="tabs__link<% if (settingsLocation == "term-migration") { %> tabs__link--active<% } %>" href="/settings/term-migration">Term Migration</a>
+      <a class="tabs__link<% if (settingsLocation == "backups") { %> tabs__link--active<% } %>" href="/settings/backups">Backups</a>
+      <a class="tabs__link<% if (settingsLocation == "diagnostics") { %> tabs__link--active<% } %>" href="/settings/diagnostics">Diagnostics</a>
+    </div>
+    <button class="tabs__button popup__button-activate">Download Database</button>
+    <div class="popup popup--3">
+      <form class="popup__form" action="/settings/download-database?_method=get" method="post">
+        <label class="form__label" for="ext">
+          File Type
+        </label>
+        <label class="form__label--radio" for="xlsb">
+          <input class="form__input--radio" id="xlsb" type="radio" name="ext" value="xlsb" checked required/>
+          <div class="form__input--radiocircle"></div>
+          Microsoft Excel
+        </label>
+        <label class="form__label--radio" for="pdf">
+          <input class="form__input--radio" id="pdf" type="radio" name="ext" value="pdf" required/>
+          <div class="form__input--radiocircle"></div>
+          PDF
+        </label>
+        <button class="form__button form__button--small popup__position-1" type="submit">Download</button>
+      </form>
+    </div>
+  </div>
+  <div class="tabs__content">
+    <%- include("./" + settingsLocation) %>
+  </div>
+</div>
+
+<%- include("../partials/footer") %>

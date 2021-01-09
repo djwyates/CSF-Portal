@@ -100,6 +100,7 @@ const modalDropdownArrows = document.querySelectorAll(".modal__dropdown-arrow");
 if (modalDropdownArrows) {
   modalDropdownArrows.forEach(function(modalDropdownArrow) {
     modalDropdownArrow.addEventListener("click", function() {
+      modalDropdownArrow.classList.toggle("modal__dropdown-arrow--active");
       const modalDropdown = modalDropdownArrow.nextElementSibling;
       modalDropdown.classList.toggle("modal__dropdown--active");
       if (modalDropdown.classList.contains("modal__dropdown--active"))

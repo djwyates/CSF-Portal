@@ -12,10 +12,31 @@
   font-weight: 600;
 }
 
-.form__icon {
+.form__description {
   position: relative;
-  top: 6px;
-	margin-right: 3px;
+}
+
+.form__description--icon {
+  margin-top: 5px;
+  margin-left: 27px;
+}
+
+.form__icon {
+  position: absolute;
+}
+
+.form__icon--pos1 {
+  top: 4px;
+}
+
+.form__icon--pos2 {
+  top: -6px;
+  right: calc(100% + 3px);
+}
+
+.form__icon--pos3 {
+  top: -9px;
+  left: calc(100% + 2px);
 }
 
 .form__icon--link {

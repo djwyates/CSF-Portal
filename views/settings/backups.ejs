@@ -1,18 +1,6 @@
-<%- include("../partials/header") %>
-
-<div class="tabs">
-  <div class="tabs__sidebar">
-    <a class="tabs__link" href="/settings/permissions">Permissions</a>
-    <a class="tabs__link" href="/settings/term-migration">Term Migration</a>
-    <a class="tabs__link tabs__link--active" href="/settings/backups">Backups</a>
-    <a class="tabs__link" href="/settings/diagnostics">Diagnostics</a>
-  </div>
-  <div class="tabs__content">
-    <ul class="directory">
-      <%- getDirTreeHTML(backupsDirTree) %>
-    </ul>
-  </div>
-</div>
+<ul class="directory">
+  <%- getDirTreeHTML(backupsDirTree) %>
+</ul>
 
 <% function getDirTreeHTML(dirTree) {
   if (!dirTree)
@@ -73,5 +61,3 @@ function getObjectPopupHTML(file) {
     + "<input type='hidden' name='path' value='" + file.path + "'/>"
     + "<button class='form__button form__button--red form__button--small popup__position-2' type='submit'>Delete</button></form></div>";
 } %>
-
-<%- include("../partials/footer") %>

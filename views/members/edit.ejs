@@ -57,7 +57,7 @@
         <% } else { %>
           <div class="form__item--row">
             <input class="form__input form__input--small no-select red" name="member[attendance][<%- meeting.date %>]" value="<%- ejs.reformatDate(meeting.date) + " - Not attended" %>" readonly/>
-            <span class="form__icon form__icon--link no-select material-icons">add_circle</span>
+            <span class="form__icon form__icon--pos1 form__icon--link no-select material-icons">add_circle</span>
           </div>
         <% }
       });

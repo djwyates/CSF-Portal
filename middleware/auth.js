@@ -12,7 +12,7 @@ auth.hasTutorAccess = function(req, res, next) {
       if (err || !tutor) {
         req.flash("error", "That tutor does not exist.");
         res.redirect("back");
-      } else if (req.user.id == tutor.id || req.user.accessLevel >= 2) {
+      } else if (req.user.id == tutor.id || req.user.accessLevel >= 2 || req.user.email == tutor.email) {
         res.locals.tutor = tutor;
         next();
       } else {
@@ -32,7 +32,7 @@ auth.hasTuteeAccess = function(req, res, next) {
       if (err || !tutee) {
         req.flash("error", "That tutee does not exist.");
         res.redirect("back");
-      } else if (req.user.id == tutee.id || req.user.accessLevel >= 2) {
+      } else if (req.user.id == tutee.id || req.user.accessLevel >= 2 || req.user.email == tutee.email || req.user.email == tutee.parentEmail) {
         res.locals.tutee = tutee;
         next();
       } else {

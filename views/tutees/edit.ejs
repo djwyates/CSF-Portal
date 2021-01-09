@@ -2,7 +2,7 @@
 
 <form class="form" action="/tutees/<%- tutee._id %>?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <a class="form__link" href="/tutees/<%- tutee._id %><% if (query.from) { %>?from=<%- query.from.replace(/\//g, "%2F") %><% } %>">Back</a>
-  <div class="form__title">Edit <% if (currentUser.id == tutee.id) { %>Your <% } %>Tutoring Request</div>
+  <div class="form__title">Edit Tutoring Request</div>
   <% if (currentUser.accessLevel < 2) { %>
     <p class="form__description">If you wish to delete your tutoring request, contact the tutoring coordinator.</p>
   <% } %>
@@ -33,8 +33,8 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="email">Email</label>
-    <input class="form__input" id="email" type="email" name="tutee[email]" value="<%- tutee.email %>" placeholder="Only used to contact you as a last resort" required/>
-    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+    <input class="form__input" id="email" type="email" name="tutee[email]" value="<%- tutee.email %>" placeholder="Used in Google login and to contact you as a last resort" required/>
+    <span class="form__input-footnote">Used in Google login and to contact you as a last resort</span>
   </div>
   <div class="form__item">
     <label class="form__label" for="phoneNum">Phone Number</label>
@@ -48,8 +48,8 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="parentEmail">Parent's Email</label>
-    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" value="<%- tutee.parentEmail %>" placeholder="Only used to contact you as a last resort" required/>
-    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" value="<%- tutee.parentEmail %>" placeholder="Used in Google login and to contact you as a last resort" required/>
+    <span class="form__input-footnote">Used in Google login and to contact you as a last resort</span>
   </div>
   <div class="form__item">
     <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>

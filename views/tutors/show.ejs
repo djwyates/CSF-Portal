@@ -6,17 +6,17 @@
   <% if (currentUser.accessLevel <= 1) { %>
     <p class="form__description">If you wish to deactivate your tutor account, contact the tutoring coordinator.</p>
   <% } if (!tutor.active) { %>
-    <p class="form__description">
-      <span class="material-icons form__icon red">error</span>
+    <p class="form__description form__description--icon">
+      <span class="form__icon form__icon--pos2 red material-icons">error</span>
       <span class="red">Your tutor account is deactivated and will not be paired with tutees.</span>
     </p>
-  <% } else if (currentUser.id == tutor.id) { %>
-    <p class="form__description">
+  <% } else { %>
+    <p class="form__description form__description--icon">
       <% if (tutor.verified && tutor.verifiedPhone) { %>
-        <span class="material-icons form__icon green">done</span>
+        <span class="form__icon form__icon--pos2 green material-icons">done</span>
         <span class="green">You are verified and will be paired with tutees if found a match.</span>
       <% } else { %>
-        <span class="material-icons form__icon orange">warning</span>
+        <span class="form__icon form__icon--pos2 orange material-icons">warning</span>
         <span class="orange">You will not be paired with tutees until you are verified. To be verified, you must
           <% if (!tutor.verified && !tutor.verifiedPhone) { %>
             attend one of the training sessions, turn in the tutoring permission form, and click the verification link sent to your phone.
@@ -48,7 +48,7 @@
   <div class="form__item">
     <label class="form__label" for="email">Email</label>
     <input class="form__input" value="<%- tutor.email %>" readonly/>
-    <span class="form__input-footnote">Only used to contact you as a last resort</span>
+    <span class="form__input-footnote">Used in Google login and to contact you as a last resort</span>
   </div>
   <div class="form__item">
     <label class="form__label" for="phoneNum">Phone Number</label>
@@ -85,11 +85,11 @@
               onsubmit="return confirm('Are you sure you want to notify the tutor about this pairing?')">
               <button class="card__dropdown-button" type="submit">Notify Tutor</button>
             </form>
-          <% } if (currentUser.id == tutor.id && tuteeSession.status == "Pending") { %>
+          <% } if (currentUser.tutorID && currentUser.tutorID == tutor._id && tuteeSession.status == "Pending") { %>
             <form action="/tutors/<%- tutor._id %>/accept-pairing/<%- tuteeSession.tuteeID._id %>?from=%2Ftutors%2F<%- tutor._id %>" method="get">
               <button class="card__dropdown-button" type="submit">Accept Pairing</button>
             </form>
-          <% } if (currentUser.id == tutor.id && tuteeSession.status != "Inactive") { %>
+          <% } if (currentUser.tutorID && currentUser.tutorID == tutor._id && tuteeSession.status != "Inactive") { %>
             <button class="card__dropdown-button card__dropdown-button--viewinfo" type="button">View Info</button>
           <% } if (currentUser.accessLevel >= 2 && tuteeSession.status != "Inactive") { %>
             <form action="/tutors/<%- tutor._id %>/unpair/<%- tuteeSession.tuteeID._id %>?_method=put" method="post"

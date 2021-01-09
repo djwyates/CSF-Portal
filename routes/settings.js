@@ -18,7 +18,7 @@ router.get("/permissions", auth.hasAccessLevel(3), function(req, res) {
         var aLastName = a.name.split(" ")[a.name.split(" ").length-1], bLastName = b.name.split(" ")[b.name.split(" ").length-1];
         return (aLastName < bLastName) ? -1 : (aLastName > bLastName) ? 1 : 0;
       });
-      res.render("settings/permissions", {members: members});
+      res.render("settings/index", {settingsLocation: "permissions", members: members});
     }
   });
 });
@@ -39,7 +39,7 @@ router.put("/permissions", auth.hasAccessLevel(3), function(req, res) {
 
 router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   Meeting.countDocuments({}, function(err, numMeetings) {
-    res.render("settings/term-migration", {numMeetings: numMeetings});
+    res.render("settings/index", {settingsLocation: "term-migration", numMeetings: numMeetings});
   });
 });
 
@@ -65,7 +65,8 @@ router.get("/download-database", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/backups", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/backups", {
+  res.render("settings/index", {
+    settingsLocation: "backups",
     backupsDirTree: dirTree("./backups", {extensions: /\.txt/}),
     backupFiles: backup.getBackupFiles(),
     resolvePath: require("path").resolve
@@ -91,7 +92,7 @@ router.delete("/backups", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/diagnostics", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/diagnostics");
+  res.render("settings/index", {settingsLocation: "diagnostics"});
 });
 
 router.get("/diagnostics/run-test", auth.hasAccessLevel(3), function(req, res) {

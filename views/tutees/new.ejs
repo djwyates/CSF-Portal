@@ -4,7 +4,7 @@
   <% if (query.from) { %><a class="form__link" href="<%- query.from %>">Back</a><% } %>
   <div class="form__title">Request a Tutor</div>
   <p class="form__description">
-    To view the status of your tutoring request after you submit it, login with your school email. You will be paired with multiple tutors if necessary.
+    To view the status of your tutoring request after you submit it, login with your email via Google. You will be paired with multiple tutors if necessary.
   </p>
   <p class="form__description">If you want to sign up as a tutor, go <a class="link--underlined" href="/tutors/new">here</a>.</p>
   <div class="form__item">
@@ -35,7 +35,7 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="email">Email</label>
-    <input class="form__input" id="email" type="email" name="tutee[email]" placeholder="Only used to contact you as a last resort" required/>
+    <input class="form__input" id="email" type="email" name="tutee[email]" placeholder="Used in Google login and to contact you as a last resort" required/>
   </div>
   <div class="form__item">
     <label class="form__label" for="phoneNum">Phone Number</label>
@@ -47,7 +47,7 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="parentEmail">Parent's Email</label>
-    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" placeholder="Only used to contact you as a last resort" required/>
+    <input class="form__input" id="parentEmail" type="email" name="tutee[parentEmail]" placeholder="Used in Google login and to contact you as a last resort" required/>
   </div>
   <div class="form__item">
     <label class="form__label" for="parentPhoneNum">Parent's Phone Number</label>

@@ -1,74 +1,58 @@
-<%- include("../partials/header") %>
-
-<div class="tabs">
-  <div class="tabs__sidebar">
-    <a class="tabs__link" href="/settings/permissions">Permissions</a>
-    <a class="tabs__link tabs__link--active" href="/settings/term-migration">Term Migration</a>
-    <a class="tabs__link" href="/settings/backups">Backups</a>
-    <a class="tabs__link" href="/settings/diagnostics">Diagnostics</a>
+<form class="form" action="/settings/term-migration?_method=put" method="post" enctype="multipart/form-data"
+onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
+  <div class="form__title">Term Migration</div>
+  <p class="form__description">
+    Term Migration backs up and deletes all meetings, members, tutors, and tutees.
+    Upload an Excel file with the correct columns ("student_id" "name" "grade" "terms") to seed the database for the next term.
+    If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
+    You will download a zip file of the database after the process of term migration.
+  </p>
+  <div class="form__item">
+    <label class="form__label" for="ext">Save current database files as</label>
+    <label class="form__label--radio" for="xlsb2">
+      <input class="form__input--radio" id="xlsb2" type="radio" name="ext" value="xlsb" checked required/>
+      <div class="form__input--radiocircle"></div>
+      Microsoft Excel
+    </label>
+    <label class="form__label--radio" for="pdf2">
+      <input class="form__input--radio" id="pdf2" type="radio" name="ext" value="pdf" required/>
+      <div class="form__input--radiocircle"></div>
+      PDF
+    </label>
   </div>
-  <div class="tabs__content">
-    <form class="form" action="/settings/term-migration?_method=put" method="post" enctype="multipart/form-data"
-    onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
-      <div class="form__title">Term Migration</div>
-      <p class="form__description">
-        Term Migration backs up and deletes all meetings, members, tutors, and tutees.
-        Upload an Excel file with the correct columns ("student_id" "name" "grade" "terms") to seed the database for the next term.
-        If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
-        You will download a zip file of the database after the process of term migration.
-      </p>
-      <div class="form__item">
-        <label class="form__label" for="ext">
-          Save current database files as
-        </label>
-        <label class="form__label--radio" for="xlsb">
-          <input class="form__input--radio" id="xlsb" type="radio" name="ext" value="xlsb" checked required/>
-          <div class="form__input--radiocircle"></div>
-          Microsoft Excel
-        </label>
-        <label class="form__label--radio" for="pdf">
-          <input class="form__input--radio" id="pdf" type="radio" name="ext" value="pdf" required/>
-          <div class="form__input--radiocircle"></div>
-          PDF
-        </label>
-      </div>
-      <div class="form__item">
-        <label class="form__label" for="preserve">Do not delete</label>
-        <label class="form__label--checkbox" for="preserveMeetings">
-          <input class="form__input--checkbox" id="preserveMeetings" type="checkbox" name="preserveMeetings" value="true"/>
-          <div class="form__input--checkboxsquare"></div>
-          Meetings
-        </label>
-        <label class="form__label--checkbox" for="preserveTutors">
-          <input class="form__input--checkbox" id="preserveTutors" type="checkbox" name="preserveTutors" value="true"/>
-          <div class="form__input--checkboxsquare"></div>
-          Tutors
-        </label>
-        <label class="form__label--checkbox" for="preserveTutees">
-          <input class="form__input--checkbox" id="preserveTutees" type="checkbox" name="preserveTutees" value="true"/>
-          <div class="form__input--checkboxsquare"></div>
-          Tutees
-        </label>
-      </div>
-      <div class="form__item">
-        <label class="form__label form__label--pointer" for="newMembers">New Members</label>
-        <div>
-          <input class="form__input--file" id="newMembers" type="file" name="newMembers"
-          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>
-          <button class="form__input--filebutton" type="button" name="button">Choose an Excel file</button>
-          <span class="form__input--filetext">No file chosen</span>
-        </div>
-      </div>
-      <div class="form__item">
-        <label class="form__label" for="minMeetings">Minimum Meetings to Qualify</label>
-        <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="<%- numMeetings %>"
-        placeholder="Max. <%- numMeetings %>" required/>
-      </div>
-      <div class="form__item">
-        <button class="form__button" type="submit">MIGRATE TERMS</button>
-      </div>
-    </form>
+  <div class="form__item">
+    <label class="form__label" for="preserve">Do not delete</label>
+    <label class="form__label--checkbox" for="preserveMeetings">
+      <input class="form__input--checkbox" id="preserveMeetings" type="checkbox" name="preserveMeetings" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Meetings
+    </label>
+    <label class="form__label--checkbox" for="preserveTutors">
+      <input class="form__input--checkbox" id="preserveTutors" type="checkbox" name="preserveTutors" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Tutors
+    </label>
+    <label class="form__label--checkbox" for="preserveTutees">
+      <input class="form__input--checkbox" id="preserveTutees" type="checkbox" name="preserveTutees" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Tutees
+    </label>
   </div>
-</div>
-
-<%- include("../partials/footer") %>
+  <div class="form__item">
+    <label class="form__label form__label--pointer" for="newMembers">New Members</label>
+    <div>
+      <input class="form__input--file" id="newMembers" type="file" name="newMembers"
+      accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .csv" hidden/>
+      <button class="form__input--filebutton" type="button" name="button">Choose an Excel file</button>
+      <span class="form__input--filetext">No file chosen</span>
+    </div>
+  </div>
+  <div class="form__item">
+    <label class="form__label" for="minMeetings">Minimum Meetings to Qualify</label>
+    <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="<%- numMeetings %>"
+    placeholder="Max. <%- numMeetings %>" required/>
+  </div>
+  <div class="form__item">
+    <button class="form__button" type="submit">MIGRATE TERMS</button>
+  </div>
+</form>
