@@ -126,6 +126,18 @@
 	  top: -14px;
 	  left: calc(88% + 1px);
 	}
+	.popup--3 {
+		top: 104%;
+	  left: 10px;
+	}
+	.popup--3::before {
+		top: -16px;
+	  left: 16%;
+	}
+	.popup--3::after {
+		top: -14px;
+	  left: calc(16% + 1px);
+	}
 }
 
 @media screen and (max-width: 750px) {

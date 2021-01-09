@@ -4,10 +4,16 @@
 }
 
 .tabs__sidebar {
+  position: relative;
   width: 155px;
   height: 100%;
   margin-right: 13px;
   flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.tabs__links-container {
+  margin-bottom: -3px;
   border: 1px solid #cccccc;
   border-radius: 4px;
 }
@@ -33,6 +39,23 @@
 
 .tabs__link:hover {
   background: #dddddd;
+}
+
+.tabs__button {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 0;
+  margin-top: 9px;
+  color: rgb(255,255,255);
+  background: rgb(0,136,154);
+  border: 2px solid rgb(0,130,147);
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  outline: none;
+  transition: all 0.3s ease 0s;
 }
 
 .tabs__content {

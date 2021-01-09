@@ -144,7 +144,29 @@
 	background-color: rgb(235,235,235);
 }
 
-.table__icon {
+.table__footnote-filter {
+	padding: 2px 16px 2px 2px;
+	margin-left: 5px;
+	color: lightgray;
+	border: 1px solid lightgray;
+	border-radius: 5px;
+}
+
+.table__footnote-close {
+	position: absolute;
+	top: 0px;
+	right: 3px;
+	font-size: 14px;
+	color: white;
+	cursor: pointer;
+	transition: 0.15s;
+}
+
+.table__footnote-close:hover {
+	color: #cf6679;
+}
+
+.table__footnote-arrow {
 	position: absolute;
 	top: -5px;
 	color: white;
@@ -152,12 +174,12 @@
 	transition: 0.15s;
 }
 
-.table__icon--left-arrow {
+.table__footnote-arrow--left {
 	left: 0;
 	transform: rotate(180deg);
 }
 
-.table__icon:hover {
+.table__footnote-arrow:hover {
 	color: lightgray;
 }
 

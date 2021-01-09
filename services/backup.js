@@ -1,5 +1,8 @@
-const fs = require("fs"),
+const archiver = require("archiver"),
+      fs = require("fs"),
       pathJS = require("path"),
+      pdf = require("./pdf"),
+      xlsx = require("./xlsx"),
       Meeting = require("../models/meeting"),
       Member = require("../models/member"),
       Tutor = require("../models/tutor"),
@@ -43,6 +46,63 @@ backup.mongooseModel = function(path, model, limit) {
   model.find({}).lean().exec(function(err, documents) {
     if (err || !documents) console.error(err ? err : "ERROR: The model you tried to back up does not exist.");
     else writeFileSync(path, limit ? limit(documents) : documents);
+  });
+}
+
+backup.createZipOfDatabase = function(zipName, format, minMeetings) {
+  return new Promise(function(resolve, reject) {
+    writeDatabaseFilesToZip(format, minMeetings).then(function() {
+      var output = fs.createWriteStream(zipName)
+      var archive = archiver("zip", {zlib: {level: 9}});
+      output.on("finish", function() {
+        fs.unlink("meetings." + format, function(err){});
+        fs.unlink("members." + format, function(err){});
+        if (minMeetings) fs.unlink("membersQualifying." + format, function(err){});
+        fs.unlink("tutors." + format, function(err){});
+        fs.unlink("tutees." + format, function(err){});
+        resolve();
+      });
+      archive.pipe(output);
+      archive.append(fs.createReadStream("meetings." + format), {name: "meetings." + format});
+      archive.append(fs.createReadStream("members." + format), {name: "members." + format});
+      if (minMeetings) archive.append(fs.createReadStream("membersQualifying." + format), {name: "membersQualifying." + format});
+      archive.append(fs.createReadStream("tutors." + format), {name: "tutors." + format});
+      archive.append(fs.createReadStream("tutees." + format), {name: "tutees." + format});
+      archive.finalize();
+    });
+  });
+}
+
+function writeDatabaseFilesToZip(format, minMeetings) {
+  return new Promise(function(resolve, reject) {
+    var formatServices = format == "pdf" ? pdf : xlsx;
+    var meetingsLimit = function(meetings) {
+      return meetings.map(function(meeting) {
+        return Object.assign(meeting, {membersAttended: meeting.membersAttended.length})
+      });
+    };
+    var membersLimit = function(members) {
+      return members.map(function(member) {
+        return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+      });
+    };
+    formatServices.writeMongooseModel(Meeting, "meetings." + format, meetingsLimit).then(function() {
+      formatServices.writeMongooseModel(Member, "members." + format, membersLimit).then(function() {
+        formatServices.writeMongooseModel(Tutor, "tutors." + format).then(function() {
+          formatServices.writeMongooseModel(Tutee, "tutees." + format).then(function() {
+            if (!minMeetings) return resolve();
+            var membersQualifyingLimit = function(members) {
+              return members.filter(member => member.meetingsAttended.length >= minMeetings).map(function(member) {
+                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+              });
+            };
+            formatServices.writeMongooseModel(Member, "membersQualifying." + format, membersQualifyingLimit).then(function() {
+              resolve();
+            });
+          });
+        });
+      });
+    });
   });
 }
 

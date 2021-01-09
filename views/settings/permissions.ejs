@@ -9,7 +9,7 @@
   </div>
   <div class="tabs__content">
     <div class="above-table">
-      <div class="search search__input-container" id="filterTable">
+      <div class="table__filter search search__input-container">
         <input class="search__input" type="text" spellcheck="false" placeholder="Filter officers"/>
         <span class="material-icons search__icon">search</span>
       </div>
@@ -29,24 +29,31 @@
         </div>
       </div>
     </div>
-    <table class="table">
-      <thead>
-        <tr class="table__head-row">
-          <th class="table__cell">Name</th>
-          <th class="table__cell">Student ID</th>
-          <th class="table__cell">Position</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% members.forEach(function(member) { %>
-          <tr class="table__body-row" data-href="/members/<%- member._id %>?from=%2Fsettings%2Fpermissions">
-            <td class="table__cell"><%- member.name %></td>
-            <td class="table__cell"><%- member.id %></td>
-            <td class="table__cell"><% if (member.accessLevel == 0) { %>Member<% } else if (member.accessLevel == 1) { %>Officer<% } else if (member.accessLevel == 2) { %>Tutoring Coordinator<% } else if (member.accessLevel == 3) { %>Developer<% } %></td>
+    <div class="table__wrapper">
+      <table class="table">
+        <thead>
+          <tr class="table__head-row">
+            <th class="table__cell">Name</th>
+            <th class="table__cell">Student ID</th>
+            <th class="table__cell">Position</th>
           </tr>
-        <% }); %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% members.forEach(function(member) { %>
+            <tr class="table__body-row" data-href="/members/<%- member._id %>?from=%2Fsettings%2Fpermissions">
+              <td class="table__cell"><%- member.name %></td>
+              <td class="table__cell"><%- member.id %></td>
+              <td class="table__cell">
+                <% if (member.accessLevel == 0) { %>Member
+                <% } else if (member.accessLevel == 1) { %>Officer
+                <% } else if (member.accessLevel == 2) { %>Tutoring Coordinator
+                <% } else if (member.accessLevel == 3) { %>Developer<% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

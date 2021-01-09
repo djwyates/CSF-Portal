@@ -9,17 +9,7 @@ ejs.reformatCourse = utils.reformatCourse;
 
 ejs.reformatDate = utils.reformatDate;
 
-ejs.reformatVar = function(variable) {
-  var result = variable[0].toUpperCase();
-  for (var i = 0; i < variable.length-1; i++) {
-    if (i != 0)
-      result += variable[i];
-    if (variable[i+1] === variable[i+1].toUpperCase())
-      result += " ";
-  }
-  result += variable[variable.length-1];
-  return result;
-}
+ejs.reformatVar = utils.reformatVar;
 
 ejs.getURLLocation = function(url, fromQuery, currentUser) {
   if (fromQuery && fromQuery.substring(0,9) == "/settings" || url.substring(0,9) == "/settings")

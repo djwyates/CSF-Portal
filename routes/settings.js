@@ -38,15 +38,28 @@ router.put("/permissions", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/term-migration");
+  Meeting.countDocuments({}, function(err, numMeetings) {
+    res.render("settings/term-migration", {numMeetings: numMeetings});
+  });
 });
 
 router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
-  require("../services/term-migration")(req.body, req.files ? req.files.newMembers : null, req.user.meetingsAttended ? req.user : null).then(function(result) {
+  var zipName = "./term_migration_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip";
+  require("../services/term-migration")(req.body, req.files ? req.files.newMembers : null, req.user.meetingsAttended ? req.user : null, zipName)
+  .then(function(result) {
     req.flash("info", result); // fix: can't redirect?
     res.location("/settings/permissions");
-    res.download("./term_migration_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip", function(err) {
-      fs.unlink("./term_migration_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip", function(err){});
+    res.download(zipName, function(err) {
+      fs.unlink(zipName, function(err){});
+    });
+  });
+});
+
+router.get("/download-database", auth.hasAccessLevel(3), function(req, res) {
+  var zipName = "csf_portal_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip";
+  backup.createZipOfDatabase(zipName, req.body.ext).then(function(result) {
+    res.download(zipName, function(err) {
+      fs.unlink(zipName, function(err){});
     });
   });
 });

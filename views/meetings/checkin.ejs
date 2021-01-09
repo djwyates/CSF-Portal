@@ -4,7 +4,7 @@
 <form class="form" action="/meetings/<%- meeting._id %>/checkin?_method=put<% if (query.from) { %>&from=<%- query.from %><% } %>" method="post">
   <div class="form__title">Record Attendance for Meeting on <%- ejs.reformatDate(meeting.date) %></div>
   <div class="form__item--row">
-    <input class="form__input" type="text" name="id" placeholder="9-digit student ID" required/>
+    <input id="checkinInput" class="form__input" type="text" name="id" placeholder="9-digit student ID" required/>
     <button class="form__button form__button--tall" type="submit">Check-In</button>
   </div>
 </form>
@@ -22,5 +22,13 @@
     <button class="form__button" type="submit">Submit Spreadsheet</button>
   </div>
 </form>
+
+<script type="text/javascript">
+  window.onload = function() {
+    var checkIn = document.getElementById("checkinInput");
+    checkIn.focus();
+    checkIn.select();
+  };
+</script>
 
 <%- include("../partials/footer") %>

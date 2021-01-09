@@ -7,7 +7,7 @@ rows.forEach(function(row) {
 });
 
 /* prevent tables from extending beyond maxRows, adds table pages if so */
-var maxRows = 30, currentPos = 1;
+var maxRows = 30, currentPos = 1, rowsToDisplay = [];
 const initialTables = document.querySelectorAll(".table");
 if (initialTables) {
   initialTables.forEach(function(table) {
@@ -22,22 +22,24 @@ if (initialTables) {
       fnLeft.innerHTML = "Showing <span class='table__footnote-selector'><span class='table__footnote-rows'>" + maxRows + "</span>" +
         "<span class='table__footnote-triangle'></span><div class='table__footnote-dropdown'>" +
         "<span class='table__footnote-link table__footnote-link'>20</span> <span class='table__footnote-link table__footnote-link--inactive'>30</span>" +
-        " <span class='table__footnote-link'>50</span> <span class='table__footnote-link'>All</span></div></span> of " + (table.rows.length-1);
+        " <span class='table__footnote-link'>50</span> <span class='table__footnote-link'>All</span></div></span> of " +
+        "<span class='table__footnote--total-rows'>" + (table.rows.length-1) + "</span><span class='table__footnote-filter invisible'>" +
+        "Filter: \"<span class='table__footnote-filter--text'></span>\"<span class='table__footnote-close no-select material-icons'>close</span></span>";
       fn.appendChild(fnLeft);
       var fnRight = document.createElement("div");
       fnRight.classList.add("table__footnote-section--right");
-      fnRight.innerHTML = "<span class='table__icon table__icon--left-arrow no-select material-icons'>forward</span>" +
-        "<span class='table__footnote--current-pos'></span> of " + (table.rows.length-1) +
-        "<span class='table__icon table__icon--right-arrow no-select material-icons'>forward</span>";
+      fnRight.innerHTML = "<span class='table__footnote-arrow table__footnote-arrow--left no-select material-icons'>forward</span>" +
+        "<span class='table__footnote--current-pos'></span> of <span class='table__footnote--total-rows'>" + (table.rows.length-1) +
+        "</span><span class='table__footnote-arrow table__footnote-arrow--right no-select material-icons'>forward</span>";
       fn.appendChild(fnRight);
       tableWrapper.appendChild(fn);
-      loadTable(table, currentPos);
+      loadTable(table, currentPos, maxRows);
     }
   });
 }
 
 /* when the left arrow is clicked */
-const fnLeftArrows = document.querySelectorAll(".table__icon--left-arrow");
+const fnLeftArrows = document.querySelectorAll(".table__footnote-arrow--left");
 if (fnLeftArrows) {
   fnLeftArrows.forEach(function(fnLeftArrow) {
     fnLeftArrow.addEventListener("click", function() {
@@ -45,21 +47,21 @@ if (fnLeftArrows) {
       if (table && currentPos != 1) {
         currentPos -= maxRows;
         if (currentPos < 1) currentPos = 1;
-        loadTable(table, currentPos, true);
+        loadTable(table, currentPos, maxRows, {resetScroll: true, rowsToDisplay: rowsToDisplay});
       }
     });
   });
 }
 
 /* when the right arrow is clicked */
-const fnRightArrows = document.querySelectorAll(".table__icon--right-arrow");
+const fnRightArrows = document.querySelectorAll(".table__footnote-arrow--right");
 if (fnRightArrows) {
   fnRightArrows.forEach(function(fnRightArrow) {
     fnRightArrow.addEventListener("click", function() {
       var table = fnRightArrow.closest(".table__wrapper").firstElementChild;
-      if (table && currentPos + maxRows <= table.rows.length) {
+      if (table && currentPos+maxRows < table.rows.length) {
         currentPos += maxRows;
-        loadTable(table, currentPos, true);
+        loadTable(table, currentPos, maxRows, {resetScroll: true, rowsToDisplay: rowsToDisplay});
       }
     });
   });
@@ -98,7 +100,24 @@ if (fnLinks) {
         if (newMaxRows == "All") maxRows = table.rows.length;
         else maxRows = parseInt(newMaxRows);
         currentPos = 1;
-        loadTable(table, currentPos, true);
+        loadTable(table, currentPos, maxRows, {rowsToDisplay: rowsToDisplay});
+      }
+    });
+  });
+}
+
+/* when the filter is deleted from the footnotes */
+const tableFilterCloses = document.querySelectorAll(".table__footnote-close");
+if (tableFilterCloses) {
+  tableFilterCloses.forEach(function(tableFilterClose) {
+    tableFilterClose.addEventListener("click", function() {
+      var table = tableFilterClose.closest(".table__wrapper").firstElementChild;
+      var tableFilterInput = tableFilterClose.closest(".table__wrapper").previousElementSibling.childNodes[1].childNodes[1];
+      if (table && table.matches(".table") && tableFilterInput && tableFilterInput.matches(".search__input")) {
+        tableFilterInput.value = "";
+        rowsToDisplay = [];
+        currentPos = 1;
+        loadTable(table, currentPos, maxRows, {rowsToDisplay: rowsToDisplay});
       }
     });
   });
@@ -109,52 +128,86 @@ const tableFilters = document.querySelectorAll(".table__filter");
 if (tableFilters) {
   tableFilters.forEach(function(tableFilter) {
     tableFilter.addEventListener("keyup", function(query) {
-      var queryRegExp = new RegExp(query.target.value.toLowerCase().trim(), "i");
       var table = tableFilter.closest(".above-table").nextElementSibling.firstElementChild;
+      var queryRegExp = new RegExp(query.target.value.toLowerCase().trim(), "i");
+      rowsToDisplay = [0];
       if (table && table.matches(".table")) {
         rows:
-        for (var i = 0; i < table.rows.length; i++) {
-          console.log(table.rows[i]);
-          for (var j = 0; j < table.rows[i].cells.length; i++) {
-            if (table.rows[i].classList.contains("table__head-row") || (!table.rows[i].cells[j].classList.contains("table__cell--attendance")
-            && queryRegExp.test(table.rows[i].cells[j].innerText.toLowerCase()))) {
+        for (var i = 1; i < table.rows.length; i++) {
+          for (var j = 0; j < table.rows[i].cells.length; j++) {
+            if (!table.rows[i].cells[j].classList.contains("table__cell--attendance")
+            && queryRegExp.test(table.rows[i].cells[j].innerText.toLowerCase())) {
+              rowsToDisplay.push(i);
               continue rows;
-            } else if (j == table.rows[i].cells.length-1) {
-              table.deleteRow(i);
-              i--;
             }
           }
+        }
+        if (table.matches(".table--large")) {
+          currentPos = 1;
+          loadTable(table, currentPos, maxRows, {rowsToDisplay: rowsToDisplay});
+        } else {
+          for (var i = 1; i < table.rows.length; i++)
+            table.rows[i].classList.add("invisible");
+          for (var i = 1; i < rowsToDisplay.length; i++)
+            table.rows[rowsToDisplay[i]].classList.remove("invisible");
         }
       }
     });
   });
 }
 
-function loadTable(table, pos, resetScroll) {
-  if (pos <= 0) pos = 1;
+function loadTable(table, pos, maxRows, options) {
+  if (!pos || pos <= 0) pos = 1;
   else if (pos > table.rows.length-1) pos = table.rows.length-1;
-  /* display rows */
+  maxRows = maxRows || table.rows.length;
+  options = options || {};
   for (var i = 1; i < table.rows.length; i++)
-    table.rows[i].style.display = "none";
-  for (var i = pos; i < pos+maxRows; i++) {
-    if (table.rows[i])
-      table.rows[i].style.display = "table-row";
+    table.rows[i].classList.add("invisible");
+  var totalRows = table.rows.length;
+  /* loads table from a select set of rows */
+  if (options.rowsToDisplay && Array.isArray(options.rowsToDisplay)
+  && options.rowsToDisplay.length > 0 && options.rowsToDisplay.length < table.rows.length) {
+    totalRows = options.rowsToDisplay.length;
+    for (var i = pos; i < pos+maxRows; i++) {
+      if (options.rowsToDisplay[i])
+        table.rows[options.rowsToDisplay[i]].classList.remove("invisible");
+    }
+    var fnFilter = table.nextElementSibling.childNodes[0].childNodes[4];
+    if (fnFilter && fnFilter.matches(".table__footnote-filter")) {
+      fnFilter.classList.remove("invisible");
+      var fnFilterText = fnFilter.childNodes[1];
+      if (fnFilterText && fnFilterText.matches(".table__footnote-filter--text")) {
+        var tableFilterInput = fnFilterText.closest(".table__wrapper").previousElementSibling.childNodes[1].childNodes[1];
+        if (tableFilterInput && tableFilterInput.matches(".search__input"))
+          fnFilterText.innerText = tableFilterInput.value.trim();
+      }
+    }
+  /* loads table from all rows */
+  } else {
+    for (var i = pos; i < pos+maxRows; i++) {
+      if (table.rows[i])
+        table.rows[i].classList.remove("invisible");
+    }
+    var fnFilter = table.nextElementSibling.childNodes[0].childNodes[4];
+    if (fnFilter && fnFilter.matches(".table__footnote-filter"))
+      fnFilter.classList.add("invisible");
   }
-  /* change footnotes */
+  /* changes footnotes */
   var fnLeftArrow = table.nextElementSibling.childNodes[1].childNodes[0];
-  if (fnLeftArrow && fnLeftArrow.matches(".table__icon--left-arrow") && pos == 1)
-    fnLeftArrow.style.visibility = "hidden";
-  else
-    fnLeftArrow.style.visibility = "visible";
-  var fnRightArrow = table.nextElementSibling.childNodes[1].childNodes[3];
-  if (fnRightArrow && fnRightArrow.matches(".table__icon--right-arrow") && pos+maxRows > table.rows.length)
-    fnRightArrow.style.visibility = "hidden";
-  else
-    fnRightArrow.style.visibility = "visible";
+  var fnRightArrow = table.nextElementSibling.childNodes[1].childNodes[4];
   var fnPos = table.nextElementSibling.childNodes[1].childNodes[1];
+  var fnRowsLeft = table.nextElementSibling.childNodes[0].childNodes[3];
+  var fnRowsRight = table.nextElementSibling.childNodes[1].childNodes[3];
+  if (fnLeftArrow && fnLeftArrow.matches(".table__footnote-arrow--left"))
+    fnLeftArrow.style.visibility = (pos == 1) ? "hidden" : "visible";
+  if (fnRightArrow && fnRightArrow.matches(".table__footnote-arrow--right"))
+    fnRightArrow.style.visibility = (pos+maxRows >= totalRows) ? "hidden" : "visible";
   if (fnPos && fnPos.matches(".table__footnote--current-pos"))
-    fnPos.innerText = pos + "-" + ((pos+maxRows-1) > table.rows.length-1 ? table.rows.length-1 : (pos+maxRows-1));
+    fnPos.innerText = (totalRows-1 == 0 ? 0 : pos) + "-" + ((pos+maxRows) >= totalRows ? totalRows-1 : pos+maxRows-1);
+  if (fnRowsLeft && fnRowsLeft.matches(".table__footnote--total-rows"))
+    fnRowsLeft.innerText = totalRows-1;
+  if (fnRowsRight && fnRowsRight.matches(".table__footnote--total-rows"))
+    fnRowsRight.innerText = totalRows-1;
   /* sets scroll position to top if instructed */
-  resetScroll = resetScroll || false;
-  if (resetScroll) window.scroll(0, 0);
+  if (options.resetScroll) window.scroll(0, 0);
 }

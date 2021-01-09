@@ -15,14 +15,21 @@
         Term Migration backs up and deletes all meetings, members, tutors, and tutees.
         Upload an Excel file with the correct columns ("student_id" "name" "grade" "terms") to seed the database for the next term.
         If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
-        You will be logged out after the process of term migration if you are not in the uploaded file of new members.
+        You will download a zip file of the database after the process of term migration.
       </p>
       <div class="form__item">
-        <label class="form__label" for="ext">Save current database files as</label>
+        <label class="form__label" for="ext">
+          Save current database files as
+        </label>
         <label class="form__label--radio" for="xlsb">
           <input class="form__input--radio" id="xlsb" type="radio" name="ext" value="xlsb" checked required/>
           <div class="form__input--radiocircle"></div>
           Microsoft Excel
+        </label>
+        <label class="form__label--radio" for="pdf">
+          <input class="form__input--radio" id="pdf" type="radio" name="ext" value="pdf" required/>
+          <div class="form__input--radiocircle"></div>
+          PDF
         </label>
       </div>
       <div class="form__item">
@@ -54,7 +61,8 @@
       </div>
       <div class="form__item">
         <label class="form__label" for="minMeetings">Minimum Meetings to Qualify</label>
-        <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="8" placeholder="Max. 8" required/>
+        <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="<%- numMeetings %>"
+        placeholder="Max. <%- numMeetings %>" required/>
       </div>
       <div class="form__item">
         <button class="form__button" type="submit">MIGRATE TERMS</button>

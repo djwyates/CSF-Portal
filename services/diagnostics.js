@@ -170,7 +170,7 @@ function testTutees(members, tutors, tutees) {
     matchingMember = members.find(member => member.id == tutee.id);
     if (matchingMember && (!matchingMember.tuteeID || matchingMember.tuteeID != tutee._id)) {
       result += "The <a class='link--white' href='/members/" + matchingMember._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + matchingMember.id
-      + "</a> is not linked with the correct <a class='link--white' href='/tutors/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a><br>";
+      + "</a> is not linked with the correct <a class='link--white' href='/tutees/" + tutee._id + "?from=%2Fsettings%2Fdiagnostics'>Tutee " + tutee.id + "</a><br>";
     }
   });
   return result;

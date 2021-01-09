@@ -1,6 +1,5 @@
-const archiver = require("archiver"),
-      fs = require("fs"),
-      xlsx = require("../services/xlsx"),
+const fs = require("fs"),
+      xlsx = require("./xlsx"),
       backup = require("./backup"),
       utils = require("./utils"),
       Meeting = require("../models/meeting"),
@@ -8,10 +7,10 @@ const archiver = require("archiver"),
       Tutor = require("../models/tutor"),
       Tutee = require("../models/tutee");
 
-module.exports = function(reqBody, newMembers, currentUserIfMember) {
+module.exports = function(reqBody, newMembers, currentUserIfMember, zipName) {
   return new Promise(function(resolve, reject) {
     backupDatabase(reqBody.minMeetings).then(function() {
-      createZip(reqBody.ext, reqBody.minMeetings).then(function() {
+      backup.createZipOfDatabase(zipName, reqBody.ext, reqBody.minMeetings).then(function() {
         deleteDatabase(reqBody.preserveMeetings, newMembers ? true : false, reqBody.preserveTutors, reqBody.preserveTutees);
         if (!newMembers) return resolve("Successfully backed up and deleted the database. No new members were uploaded.");
         Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
@@ -44,52 +43,6 @@ function backupDatabase(minMeetings) {
     backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutors.txt", Tutor);
     backup.mongooseModel("./backups/term-migration/" + currentDate + "/tutees.txt", Tutee);
     resolve();
-  });
-}
-
-function createZip(format, minMeetings) {
-  return new Promise(function(resolve, reject) {
-    writeZipFiles(format, minMeetings).then(function() {
-      var output = fs.createWriteStream("./term_migration_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip")
-      var archive = archiver("zip", {zlib: {level: 9}});
-      output.on("finish", function() {
-        fs.unlink("meetings." + format, function(err){});
-        fs.unlink("members." + format, function(err){});
-        fs.unlink("membersQualifying." + format, function(err){});
-        fs.unlink("tutors." + format, function(err){});
-        fs.unlink("tutees." + format, function(err){});
-        resolve();
-      });
-      archive.pipe(output);
-      archive.append(fs.createReadStream("meetings." + format), {name: "meetings." + format});
-      archive.append(fs.createReadStream("members." + format), {name: "members." + format});
-      archive.append(fs.createReadStream("membersQualifying." + format), {name: "membersQualifying." + format});
-      archive.append(fs.createReadStream("tutors." + format), {name: "tutors." + format});
-      archive.append(fs.createReadStream("tutees." + format), {name: "tutees." + format});
-      archive.finalize();
-    });
-  });
-}
-
-function writeZipFiles(format, minMeetings) {
-  return new Promise(function(resolve, reject) {
-    var meetingsLimit = function(meetings) {return meetings.map(meeting => Object.assign(meeting, {numMembersAttended: meeting.membersAttended.length}));};
-    var membersLimit = function(members) {return members.map(member => Object.assign(member, {numMeetingsAttended: member.meetingsAttended.length}));};
-    var membersQualifyingLimit = function(members) {
-      return members.filter(member => member.meetingsAttended.length >= minMeetings)
-      .map(member => Object.assign(member, {numMeetingsAttended: member.meetingsAttended.length}));
-    };
-    xlsx.writeMongooseModel(Meeting, "meetings.xlsb", meetingsLimit).then(function() {
-      xlsx.writeMongooseModel(Member, "members.xlsb", membersLimit).then(function() {
-        xlsx.writeMongooseModel(Member, "membersQualifying.xlsb", membersQualifyingLimit).then(function() {
-          xlsx.writeMongooseModel(Tutor, "tutors.xlsb").then(function() {
-            xlsx.writeMongooseModel(Tutee, "tutees.xlsb").then(function() {
-              resolve();
-            });
-          });
-        });
-      });
-    });
   });
 }
 

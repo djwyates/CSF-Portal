@@ -21,7 +21,7 @@ class InstantSearch {
       resultsContainer: document.createElement("div")
     };
     this.elements.resultsContainer.classList.add("search__results-container");
-    this.elements.main.appendChild(this.elements.resultsContainer);
+    this.elements.main.prepend(this.elements.resultsContainer);
     this.addListeners();
   }
 
@@ -34,6 +34,10 @@ class InstantSearch {
       clearTimeout(delay);
       const query = this.elements.input.value;
       delay = setTimeout(() => {
+        if (query.trim().length <= 0) {
+          this.populateResults([]);
+          return;
+        }
         this.performSearch(query).then((results) => {
           this.populateResults(results);
         });
@@ -54,13 +58,11 @@ class InstantSearch {
    */
   populateResults(results) {
     // Clear all existing results
-    while (this.elements.resultsContainer.firstChild) {
+    while (this.elements.resultsContainer.firstChild)
       this.elements.resultsContainer.removeChild(this.elements.resultsContainer.firstChild);
-    }
     // Update list of results under the search bar
-    for (const result of results) {
+    for (const result of results)
       this.elements.resultsContainer.appendChild(this.createResultElement(result));
-    }
   }
 
   /**

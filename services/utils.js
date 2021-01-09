@@ -43,4 +43,16 @@ utils.reformatDate = function(date) {
   return(months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear());
 }
 
+utils.reformatVar = function(variable) {
+  var result = variable[0].toUpperCase();
+  for (var i = 0; i < variable.length-1; i++) {
+    if (i != 0)
+      result += variable[i];
+    if (variable[i+1] === variable[i+1].toUpperCase())
+      result += " ";
+  }
+  result += variable[variable.length-1];
+  return result;
+}
+
 module.exports = utils;

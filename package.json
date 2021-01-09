@@ -18,22 +18,24 @@
   },
   "homepage": "https://github.com/djwyates/CSF-Portal#readme",
   "dependencies": {
-    "archiver": "^5.0.2",
-    "aws-sdk": "^2.739.0",
+    "archiver": "^5.1.0",
+    "aws-sdk": "^2.823.0",
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
-    "directory-tree": "^2.2.4",
+    "directory-tree": "^2.2.5",
     "ejs": "^3.1.2",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.7-alpha.3",
     "express-sanitizer": "^1.0.5",
     "express-session": "^1.17.1",
     "method-override": "^3.0.0",
-    "mongoose": "^5.9.14",
+    "mongoose": "^5.11.10",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0",
+    "pdfmake": "^0.1.69",
+    "roboto-font": "^0.1.0",
     "serve-favicon": "^2.5.0",
-    "shortid": "^2.2.15",
-    "xlsx": "^0.16.2"
+    "shortid": "^2.2.16",
+    "xlsx": "^0.16.9"
   }
 }

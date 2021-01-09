@@ -171,5 +171,21 @@ window.onclick = function(event) {
           popup.classList.remove("popup--active");
       });
     }
+    /* table scripts */
+    var fnDropdowns = document.querySelectorAll(".table__footnote-dropdown--active");
+    if (fnDropdowns) {
+      fnDropdowns.forEach(function(fnDropdown) {
+        if (!event.target.matches(".table__footnote-rows") && !event.target.matches(".table__footnote-triangle")
+        && !event.target.matches(".table__footnote-link")) {
+          fnDropdown.classList.remove("table__footnote-dropdown--active");
+          var fnSelectors = document.querySelectorAll(".table__footnote-selector--active");
+          if (fnSelectors) {
+            fnSelectors.forEach(function(fnSelector) {
+              fnSelector.classList.remove("table__footnote-selector--active");
+            });
+          }
+        }
+      });
+    }
   }
 }
