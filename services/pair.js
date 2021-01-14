@@ -17,6 +17,10 @@ module.exports = function(reqBody, tutee) {
         verified: true, verifiedPhone: true, active: true}).lean().exec(function(err, tutors) {
           /* pairs the tutee with matching tutor(s), with priority given to:
              1) tutors who already tutor this tutee, 2) who share the most courses with this tutee, and 3) who are tutoring the least tutees */
+          tutors = tutors.map(function(tutor) {
+            Object.assign(tutor, {mutualCourses: tutor.courses.filter(c => tutee.courses.includes(c))});
+            return Object.assign(tutor, {tuteeSessions: tutor.tuteeSessions.filter(s => s.status != "Inactive")});
+          });
           tutee.courses.forEach(function(course) {
             tutors.forEach(function(tutor) {
               alreadyTutorsThisTutee = tutor.tuteeSessions.find(s => s.tuteeID == tutee._id) || pairedTutors.find(t => t._id == tutor._id) ? true : false;
@@ -93,15 +97,18 @@ module.exports = function(reqBody, tutee) {
       if (reqBody.courses.length == 0 || !reqBody.courses.every(c => reqBody[c] ? true : false))
         return resolve({type: "error", msg: "An unexpected error occurred."});
       var matchingTutor = null, pairedTutors = [];
-      Tutor.find({}, function(err, tutors) {
+      Tutor.find({courses: {$in: reqBody.courses}, paymentForm: {$in: tutee.paymentForm == ["Both"] ? ["Cash", "Both"] : ["Both"]},
+      verified: true, verifiedPhone: true, active: true}, function(err, tutors) {
+        tutors = tutors.map(function(tutor) {
+          Object.assign(tutor, {mutualCourses: tutor.courses.filter(c => tutee.courses.includes(c))});
+          return Object.assign(tutor, {tuteeSessions: tutor.tuteeSessions.filter(s => s.status != "Inactive")});
+        });
         reqBody.courses.forEach(function(course) {
           /* if pairing is manual for the course */
           if (reqBody[course].pairType == "manual" && reqBody[course].pairID) {
             matchingTutor = tutors.find(t => t.id == reqBody[course].pairID);
-            if (matchingTutor && matchingTutor.active && matchingTutor.verified && matchingTutor.verifiedPhone && matchingTutor.courses.includes(course)
-            && matchingTutor.id != tutee.id && (matchingTutor.paymentForm == "Both" || tutee.paymentForm == "Both")
-            && (!matchingTutor.tuteeSessions.filter(s => s.status != "Inactive").length >= matchingTutor.maxTutees
-            || matchingTutor.tuteeSessions.filter(s => s.status != "Inactive").find(s => s.tuteeID == tutee._id))) {
+            if (matchingTutor && matchingTutor.courses.includes(course) && matchingTutor.id != tutee.id
+            && (matchingTutor.tuteeSessions.length < matchingTutor.maxTutees || matchingTutor.tuteeSessions.find(s => s.tuteeID == tutee._id))) {
               if (!pairedTutors.find(t => t._id == matchingTutor._id)) {
                 matchingTutor.pairedCourses = [course];
                 pairedTutors.push(matchingTutor);
@@ -116,10 +123,10 @@ module.exports = function(reqBody, tutee) {
               if (matchingTutor)
                 matchingTutorAlreadyTutorsThisTutee = matchingTutor.tuteeSessions.find(s => s.tuteeID == tutee._id)
                 || pairedTutors.find(t => t._id == matchingTutor._id) ? true : false;
-              if (tutor.courses.includes(course) && tutor.id != tutee.id && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee)
-              && (!matchingTutor || alreadyTutorsThisTutee || (!matchingTutorAlreadyTutorsThisTutee
-              && (tutor.mutualCourses.length > matchingTutor.mutualCourses.length || (tutor.mutualCourses.length == matchingTutor.mutualCourses.length
-              && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))))
+              if (tutor.courses.includes(course) && tutor.id != tutee.id
+              && (tutor.tuteeSessions.length < tutor.maxTutees || alreadyTutorsThisTutee) && (!matchingTutor || alreadyTutorsThisTutee
+              || (!matchingTutorAlreadyTutorsThisTutee && (tutor.mutualCourses.length > matchingTutor.mutualCourses.length
+              || (tutor.mutualCourses.length == matchingTutor.mutualCourses.length && tutor.tuteeSessions.length < matchingTutor.tuteeSessions.length)))))
                     matchingTutor = tutor;
             });
             if (matchingTutor) {

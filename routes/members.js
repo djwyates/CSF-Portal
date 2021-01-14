@@ -69,7 +69,10 @@ router.post("/", auth.hasAccessLevel(3), function(req, res) {
       res.redirect("members/new");
     } else {
       Tutor.findOne({id: newMember.id}, function(err, tutor) {
-        if (tutor) Member.findByIdAndUpdate(newMember._id, {tutorID: tutor._id}).exec();
+        if (tutor) {
+          Tutor.findByIdAndUpdate(tutor._id, {name: newMember.name, grade: newMember.grade}).exec();
+          Member.findByIdAndUpdate(newMember._id, {tutorID: tutor._id}).exec();
+        }
         Tutee.findOne({id: newMember.id}, function(err, tutee) {
           if (tutee) Member.findByIdAndUpdate(newMember._id, {tuteeID: tutee._id}).exec();
           res.redirect("/members");

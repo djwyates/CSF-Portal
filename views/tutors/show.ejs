@@ -15,16 +15,13 @@
       <% if (tutor.verified && tutor.verifiedPhone) { %>
         <span class="form__icon form__icon--pos2 green material-icons">done</span>
         <span class="green">You are verified and will be paired with tutees if found a match.</span>
-      <% } else { %>
+      <% } else {
+        var verificationSteps = [];
+        if (!tutor.verified) verificationSteps.push("attend one of the training sessions", "turn in the tutoring permission form");
+        if (!tutor.verifiedPhone) verificationSteps.push("click the verification link sent to your phone"); %>
         <span class="form__icon form__icon--pos2 orange material-icons">warning</span>
-        <span class="orange">You will not be paired with tutees until you are verified. To be verified, you must
-          <% if (!tutor.verified && !tutor.verifiedPhone) { %>
-            attend one of the training sessions, turn in the tutoring permission form, and click the verification link sent to your phone.
-          <% } else if (!tutor.verified) { %>
-            attend one of the training sessions and turn in the tutoring permission form. If you have done this, allow some time for CSF to verify you.
-          <% } else if (!tutor.verifiedPhone) { %>
-            click the verification link sent to your phone.
-          <% } %>
+        <span class="orange">
+          You will not be paired with tutees until you are verified. To be verified, you must <%- ejs.arrayToSentence(verificationSteps) %>.
         </span>
       <% } %>
     </p>
@@ -103,8 +100,7 @@
             </form>
           <% } if (currentUser.accessLevel >= 2 && tuteeSession.status == "Inactive") { %>
             <form action="/tutors/<%- tutor._id %>/delete-session/<%- tuteeSession.tuteeID._id %>?_method=delete" method="post"
-              onsubmit="return confirm('Are you sure you want to delete this tutoring session?
-              This should only be done if the tutee must be paired in this subject again.')">
+              onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in this subject again.')">
               <button class="card__dropdown-button" type="submit">Delete</button>
             </form>
           <% } %>
@@ -148,11 +144,15 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="courses">Courses to Tutor</label>
-    <ul class="form__input form__list">
-      <% tutor.courses.forEach(function(courseID) { %>
-        <li><%- ejs.reformatCourse(courseID); %></li>
-      <% }); %>
-    </ul>
+    <% if (tutor.courses.length == 0) { %>
+      <input class="form__input" value="None chosen" readonly/>
+    <% } else { %>
+      <ul class="form__input form__list">
+        <% tutor.courses.forEach(function(courseID) { %>
+          <li><%- ejs.reformatCourse(courseID); %></li>
+        <% }); %>
+      </ul>
+    <% } %>
   </div>
   <div class="form__item">
     <label class="form__label" for="verified">Verification Status</label>

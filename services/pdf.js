@@ -20,7 +20,7 @@ pdf.writeMongooseModel = function(model, path, limit) {
           delete doc.verification; delete doc.tutorSessions; delete doc.tuteeSessions; delete doc.gender;
           delete doc.grade; delete doc.parentName; delete doc.parentEmail; delete doc.parentPhoneNum;
           delete doc.paymentForm; delete doc.courses; delete doc.active; delete doc.warnings;
-          delete doc.maxTutees;
+          delete doc.maxTutees; delete doc.verifiedPhone;
         });
         var docDefinition = {
           content: [

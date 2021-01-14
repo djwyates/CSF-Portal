@@ -50,11 +50,15 @@
   </div>
   <div class="form__item">
     <label class="form__label" for="courses">Requested Courses</label>
-    <ul class="form__input form__list">
-      <% tutee.courses.forEach(function(courseID) { %>
-        <li><%- ejs.reformatCourse(courseID); %></li>
-      <% }); %>
-    </ul>
+    <% if (tutee.courses.length == 0) { %>
+      <input class="form__input" value="None chosen" readonly/>
+    <% } else { %>
+      <ul class="form__input form__list">
+        <% tutee.courses.forEach(function(courseID) { %>
+          <li><%- ejs.reformatCourse(courseID); %></li>
+        <% }); %>
+      </ul>
+    <% } %>
   </div>
   <div class="form__item">
     <label class="form__label" for="tutorSessions">Current Tutors</label>
@@ -92,8 +96,7 @@
               </form>
             <% } if (tutorSession.status == "Inactive") { %>
               <form action="/tutors/<%- tutorSession.tutorID._id %>/delete-session/<%- tutee._id %>?_method=delete" method="post"
-                onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must
-                be paired in the subject(s) again.')">
+                onsubmit="return confirm('Are you sure you want to delete this tutoring session? This should only be done if the tutee must be paired in the subject(s) again.')">
                 <button class="card__dropdown-button" type="submit">Delete</button>
               </form>
             <% } %>

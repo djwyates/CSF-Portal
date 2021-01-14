@@ -58,6 +58,7 @@ backup.createZipOfDatabase = function(zipName, format, minMeetings) {
         fs.unlink("meetings." + format, function(err){});
         fs.unlink("members." + format, function(err){});
         if (minMeetings) fs.unlink("membersQualifying." + format, function(err){});
+        if (minMeetings) fs.unlink("membersNotQualifying." + format, function(err){});
         fs.unlink("tutors." + format, function(err){});
         fs.unlink("tutees." + format, function(err){});
         resolve();
@@ -66,6 +67,7 @@ backup.createZipOfDatabase = function(zipName, format, minMeetings) {
       archive.append(fs.createReadStream("meetings." + format), {name: "meetings." + format});
       archive.append(fs.createReadStream("members." + format), {name: "members." + format});
       if (minMeetings) archive.append(fs.createReadStream("membersQualifying." + format), {name: "membersQualifying." + format});
+      if (minMeetings) archive.append(fs.createReadStream("membersNotQualifying." + format), {name: "membersNotQualifying." + format});
       archive.append(fs.createReadStream("tutors." + format), {name: "tutors." + format});
       archive.append(fs.createReadStream("tutees." + format), {name: "tutees." + format});
       archive.finalize();
@@ -96,8 +98,15 @@ function writeDatabaseFilesToZip(format, minMeetings) {
                 return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
               });
             };
+            var membersNotQualifyingLimit = function(members) {
+              return members.filter(member => member.meetingsAttended.length < minMeetings).map(function(member) {
+                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+              });
+            };
             formatServices.writeMongooseModel(Member, "membersQualifying." + format, membersQualifyingLimit).then(function() {
-              resolve();
+              formatServices.writeMongooseModel(Member, "membersNotQualifying." + format, membersNotQualifyingLimit).then(function() {
+                resolve();
+              });
             });
           });
         });
