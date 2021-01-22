@@ -15,12 +15,11 @@ pdf.writeMongooseModel = function(model, path, limit) {
         /* initialization of documents & PDF document definition */
         documents = limit ? limit(documents) : documents;
         documents.forEach(doc => {
-          delete doc.__v; delete doc._id; delete doc.tutorID; delete doc.tuteeID;
+          delete doc.__v; delete doc._id; delete doc.tutorID; delete doc.tuteeID; delete doc.verification;
           /* removes certain properties of each document so the table width will not exceed the total page width */
-          delete doc.verification; delete doc.tutorSessions; delete doc.tuteeSessions; delete doc.gender;
-          delete doc.grade; delete doc.parentName; delete doc.parentEmail; delete doc.parentPhoneNum;
-          delete doc.paymentForm; delete doc.courses; delete doc.active; delete doc.warnings;
-          delete doc.maxTutees; delete doc.verifiedPhone;
+          delete doc.tutorSessions; delete doc.tuteeSessions; delete doc.gender; delete doc.grade;
+          delete doc.parentName; delete doc.parentEmail; delete doc.parentPhoneNum; delete doc.paymentForm;
+          delete doc.courses; delete doc.active; delete doc.warnings; delete doc.maxTutees; delete doc.verifiedPhone;
         });
         var docDefinition = {
           content: [

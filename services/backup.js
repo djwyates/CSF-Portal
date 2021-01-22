@@ -52,7 +52,8 @@ backup.mongooseModel = function(path, model, limit) {
 backup.createZipOfDatabase = function(zipName, format, minMeetings) {
   return new Promise(function(resolve, reject) {
     writeDatabaseFilesToZip(format, minMeetings).then(function() {
-      var output = fs.createWriteStream(zipName)
+      if (fs.existsSync(zipName)) fs.unlinkSync(zipName);
+      var output = fs.createWriteStream(zipName);
       var archive = archiver("zip", {zlib: {level: 9}});
       output.on("finish", function() {
         fs.unlink("meetings." + format, function(err){});
@@ -80,30 +81,56 @@ function writeDatabaseFilesToZip(format, minMeetings) {
     var formatServices = format == "pdf" ? pdf : xlsx;
     var meetingsLimit = function(meetings) {
       return meetings.map(function(meeting) {
-        return Object.assign(meeting, {membersAttended: meeting.membersAttended.length})
+        if (format == "pdf") return Object.assign(meeting, {membersAttended: meeting.membersAttended.length});
+        Object.assign(meeting, {numMembersAttended: meeting.membersAttended.length});
+        return Object.assign(meeting, {membersAttended: meeting.membersAttended.length > 0 ? meeting.membersAttended.join(", ") : "none"});
       });
     };
     var membersLimit = function(members) {
       return members.map(function(member) {
-        return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+        if (format == "pdf") return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+        Object.assign(member, {numMeetingsAttended: member.meetingsAttended.length});
+        return Object.assign(member, {meetingsAttended: member.meetingsAttended.length > 0 ? member.meetingsAttended.join(", ") : "none"});
       });
     };
+    var tutorsLimit = function(tutors) {
+      return tutors.map(function(tutor) {
+        Object.assign(tutor, {tuteeSessions: JSON.stringify(tutor.tuteeSessions)});
+        return Object.assign(tutor, {courses: tutor.courses.length > 0 ? tutor.courses.join(", ") : "none"});
+      });
+    };
+    var tuteesLimit = function(tutees) {
+      return tutees.map(function(tutee) {
+        Object.assign(tutee, {tutorSessions: JSON.stringify(tutee.tutorSessions)});
+        return Object.assign(tutee, {courses: tutee.courses.length > 0 ? tutee.courses.join(", ") : "none"});
+      });
+    };
+    if (fs.existsSync("meetings." + format)) fs.unlinkSync("meetings." + format);
     formatServices.writeMongooseModel(Meeting, "meetings." + format, meetingsLimit).then(function() {
+      if (fs.existsSync("members." + format)) fs.unlinkSync("members." + format);
       formatServices.writeMongooseModel(Member, "members." + format, membersLimit).then(function() {
-        formatServices.writeMongooseModel(Tutor, "tutors." + format).then(function() {
-          formatServices.writeMongooseModel(Tutee, "tutees." + format).then(function() {
+        if (fs.existsSync("tutors." + format)) fs.unlinkSync("tutors." + format);
+        formatServices.writeMongooseModel(Tutor, "tutors." + format, tutorsLimit).then(function() {
+          if (fs.existsSync("tutees." + format)) fs.unlinkSync("tutees." + format);
+          formatServices.writeMongooseModel(Tutee, "tutees." + format, tuteesLimit).then(function() {
             if (!minMeetings) return resolve();
             var membersQualifyingLimit = function(members) {
               return members.filter(member => member.meetingsAttended.length >= minMeetings).map(function(member) {
-                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+                if (format == "pdf") return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+                Object.assign(member, {numMeetingsAttended: member.meetingsAttended.length});
+                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length > 0 ? member.meetingsAttended.join(", ") : "none"});
               });
             };
             var membersNotQualifyingLimit = function(members) {
               return members.filter(member => member.meetingsAttended.length < minMeetings).map(function(member) {
-                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+                if (format == "pdf") return Object.assign(member, {meetingsAttended: member.meetingsAttended.length});
+                Object.assign(member, {numMeetingsAttended: member.meetingsAttended.length});
+                return Object.assign(member, {meetingsAttended: member.meetingsAttended.length > 0 ? member.meetingsAttended.join(", ") : "none"});
               });
             };
+            if (fs.existsSync("membersQualifying." + format)) fs.unlinkSync("membersQualifying." + format);
             formatServices.writeMongooseModel(Member, "membersQualifying." + format, membersQualifyingLimit).then(function() {
+              if (fs.existsSync("membersNotQualifying." + format)) fs.unlinkSync("membersNotQualifying." + format);
               formatServices.writeMongooseModel(Member, "membersNotQualifying." + format, membersNotQualifyingLimit).then(function() {
                 resolve();
               });
