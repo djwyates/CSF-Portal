@@ -7,7 +7,7 @@ var memberSchema = new mongoose.Schema({
   name: {type: String, trim: true, required: true},
   grade: {type: Number, min: 9, max: 12, required: true},
   termCount: {type: Number, min: 0, max: 7, required: true},
-  meetingsAttended: {type: [String], required: true, default: []},
+  attendance: {type: [{type: String, ref: "AttendanceRecord"}], required: true, default: []},
   accessLevel: {type: Number, min: 0, max: 3, required: true, default: 0},
   tutorID: {type: String, ref: "Tutor", required: false},
   tuteeID: {type: String, ref: "Tutee", required: false}

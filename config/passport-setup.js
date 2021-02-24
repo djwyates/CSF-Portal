@@ -14,7 +14,7 @@ passport.deserializeUser(function(id, done) {
   Member.findById(id, function(err, member) {
     Tutee.findById(id, function(err, tutee) {
       if (keys.accounts.admins.includes(id)) isAdmin = true;
-      if (member) return done(null, {_id: id, email: member.id + keys.accounts.domain, accessLevel: isAdmin ? 3 : member.accessLevel, id: member.id, meetingsAttended: member.meetingsAttended, tutorID: member.tutorID, tuteeID: member.tuteeID});
+      if (member) return done(null, {_id: id, email: member.id + keys.accounts.domain, accessLevel: isAdmin ? 3 : member.accessLevel, id: member.id, attendance: member.attendance, tutorID: member.tutorID, tuteeID: member.tuteeID});
       else if (tutee) return done(null, {_id: id, email: tutee.id + keys.accounts.domain, accessLevel: isAdmin ? 3 : 0, id: tutee.id, tuteeID: tutee._id});
       else if (isAdmin) return done(null, {_id: id, email: id, accessLevel: 3});
       else {
@@ -43,7 +43,7 @@ passport.use(new GoogleStrategy({
       Tutee.findOne({id: email.substring(0, 9)}, function(err, tutee) {
         if (keys.accounts.admins.includes(email)) isAdmin = true;
         if (member && isAdmin && member.accessLevel < 3) Member.findByIdAndUpdate(member._id, {accessLevel: 3}).exec();
-        if (member)  return done(null, {_id: member._id, email: email, accessLevel: isAdmin ? 3 : member.accessLevel, id: member.id, meetingsAttended: member.meetingsAttended, tutorID: member.tutorID, tuteeID: member.tuteeID});
+        if (member)  return done(null, {_id: member._id, email: email, accessLevel: isAdmin ? 3 : member.accessLevel, id: member.id, attendance: member.attendance, tutorID: member.tutorID, tuteeID: member.tuteeID});
         else if (tutee) return done(null, {_id: tutee._id, email: email, accessLevel: isAdmin ? 3 : 0, id: tutee.id, tuteeID: tutee._id});
         else if (isAdmin) return done(null, {_id: email, email: email, accessLevel: 3});
         else {

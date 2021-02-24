@@ -3,11 +3,13 @@ const express = require("express"),
       fs = require("fs");
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
+      attendance = require("../services/attendance"),
       backup = require("../services/backup"),
       utils = require("../services/utils"),
       xlsx = require("../services/xlsx"),
       Meeting = require("../models/meeting"),
-      Member = require("../models/member");
+      Member = require("../models/member"),
+      AttendanceRecord = require("../models/attendance-record");
 
 router.get("/", function(req, res) {
   Meeting.find({}, function(err, meetings) {
@@ -51,26 +53,22 @@ router.put("/:id", auth.hasAccessLevel(1), function(req, res) {
       else req.flash("error", "An unexpected error occurred.");
       res.redirect("/meetings/" + req.params.id + "/edit");
     } else {
-      if (req.body.meeting.date != foundMeeting.date) {
-        foundMeeting.membersAttended.forEach(function(memberID) {
-          Member.findOneAndUpdate({id: memberID}, {$pull: {"meetingsAttended": foundMeeting.date}}).exec();
-          Member.findOneAndUpdate({id: memberID}, {$push: {"meetingsAttended": req.body.meeting.date}}).exec();
-        });
-      }
+      if (req.body.meeting.date != foundMeeting.date)
+        AttendanceRecord.updateMany({date: foundMeeting.date}, {date: req.body.meeting.date}).exec();
       res.redirect("/meetings/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
     }
   });
 });
 
-router.delete("/:id", auth.hasAccessLevel(1), function(req, res) {
+router.delete("/:id", auth.hasAccessLevel(1), search.meeting, function(req, res) {
   Meeting.findByIdAndDelete(req.params.id, function(err, deletedMeeting) {
     if (err) {
       console.error(err);
       res.redirect("/meetings");
     } else {
-      backup.object("./backups/deleted/meetings/" + deletedMeeting.date + ".txt", deletedMeeting.toObject());
-      deletedMeeting.membersAttended.forEach(function(memberID) {
-        Member.findOneAndUpdate({id: memberID}, {$pull: {"meetingsAttended": deletedMeeting.date}}, function(err, member) { if (err) console.error(err); });
+      backup.create(res.locals.meeting.date, "Meeting", "deleted", res.locals.meeting.toObject());
+      deletedMeeting.attendance.forEach(function(recordID) {
+        attendance.removeById(recordID);
       });
       res.redirect(req.query.from ? req.query.from : "/meetings");
     }
@@ -82,45 +80,58 @@ router.get("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req,
 });
 
 router.put("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req, res) {
-  var meeting = res.locals.meeting, flashMsg = "", notMembers = [];
+  var meeting = res.locals.meeting, flashMsg = "", attended = [], alreadyAttended = [], cantAttend = [];
+  /* if an attendance spreadsheet was submitted */
   if (req.files && req.files.attendance && req.query.spreadsheet) {
     req.files.attendance.mv(req.files.attendance.name, function() {
       var parsedIDs = xlsx.parseIDs(req.files.attendance.name);
       fs.unlink(req.files.attendance.name, function(err){});
       Member.find({}, function(err, members) {
-        parsedIDs.ids = new Set(parsedIDs.ids)
-        parsedIDs.ids.forEach(function(id) {
-          if (!members.find(member => member.id == id))
-            notMembers.push(id);
-          else {
-            Meeting.findByIdAndUpdate(meeting._id, {$addToSet: {"membersAttended": id}}).exec();
-            Member.findOneAndUpdate({id: id}, {$addToSet: {"meetingsAttended": meeting.date}}).exec();
-          }
+        AttendanceRecord.find({}, function(err, records) {
+          parsedIDs.ids = new Set(parsedIDs.ids)
+          parsedIDs.ids.forEach(function(id) {
+            if (!members.find(m => m.id == id)) {
+              cantAttend.push(id);
+            } else if (!records.find(r => r.meetingDate == meeting.date && r.memberID == id)) {
+              attendance.add(meeting.date, id);
+              attended.push(id);
+            } else {
+              alreadyAttended.push(id);
+            }
+          });
+          flashMsg += attended.length + " members from the spreadsheet attended the meeting.";
+          if (alreadyAttended.length > 0)
+            flashMsg += "<br>" + alreadyAttended.length + " members from the spreadsheet already attended the meeting.";
+          if (cantAttend.length > 0)
+            flashMsg += "<br>Students " + utils.arrayToSentence(cantAttend) + " from the spreadsheet are not members.";
+          if (parsedIDs.warnings.length > 0)
+            flashMsg += "<br>[!] The IDs in rows " + utils.arrayToSentence(parsedIDs.warnings) + " of the uploaded Excel sheet are invalid and were ignored.";
+          req.flash("info", flashMsg);
+          res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
         });
-        flashMsg += (parsedIDs.ids.size-notMembers.length) + " members have attended the meeting from the spreadsheet.";
-        if (parsedIDs.warnings.length > 0)
-          flashMsg += "<br>WARNING: The IDs in rows " + utils.arrayToSentence(parsedIDs.warnings) + " of the uploaded Excel sheet are invalid and were ignored.";
-        if (notMembers.length > 0)
-          flashMsg += "<br>NOTICE: The students with IDs " + utils.arrayToSentence(notMembers) + " of the spreadsheet are not members.";
-        req.flash("info", flashMsg);
-        res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
       });
     });
+  /* if a single ID was submitted */
   } else if (req.body.id) {
     req.body.id = req.sanitize(req.body.id.trim());
     Member.findOne({id: req.body.id}, function(err, member) {
       if (err) {
         console.error(err);
         req.flash("error", "An unexpected error occurred.");
+        res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
       } else if (!member) {
         req.flash("error", "That member does not exist. ID entered: " + req.body.id);
-      } else if (meeting.membersAttended.includes(member.id) && member.meetingsAttended.includes(meeting.date)) {
-        req.flash("info", member.id + " already attended the meeting.");
+        res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
       } else {
-        Meeting.findByIdAndUpdate(meeting._id, {$addToSet: {"membersAttended": member.id}}).exec();
-        Member.findOneAndUpdate({id: member.id}, {$addToSet: {"meetingsAttended": meeting.date}}).exec();
-        req.flash("success", member.id + " attended the meeting.");
-      } res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+        AttendanceRecord.exists({meetingDate: meeting.date, memberID: member.id}, function(err, recordExists) {
+          if (!recordExists) {
+            attendance.add(meeting.date, member.id);
+            req.flash("success", member.id + " attended the meeting.");
+          } else
+            req.flash("info", member.id + " already attended the meeting.");
+          res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+        });
+      }
     });
   } else res.redirect("/meetings/" + meeting._id + "/checkin" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
 });

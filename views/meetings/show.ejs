@@ -3,8 +3,8 @@
 <div class="form">
   <a class="form__link" href="<% if (query.from) { %><%- query.from %><% } else { %>/meetings<% } %>">Back</a>
   <div class="form__title">View Meeting</div>
-  <% if (currentUser && currentUser.meetingsAttended) {
-    if (currentUser.meetingsAttended.includes(meeting.date)) { %>
+  <% if (currentUser && currentUser.attendance) {
+    if (currentUser.attendance.find(r => r.meetingDate == meeting.date)) { %>
       <p class="form__description"><span class="green">You attended this meeting</span></p>
     <% } else if (new Date(meeting.date) > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
       <p class="form__description"><span class="blue">This meeting is upcoming</span></p>
@@ -22,9 +22,9 @@
   </div>
   <% if (currentUser && currentUser.accessLevel >= 1) { %>
     <div class="form__item">
-      <label class="form__label" for="membersAttended">Attendance</label>
-      <% if (meeting.membersAttended.length > 0) { %>
-        <input class="form__input" value="<%- meeting.membersAttended.length %> members attended this meeting" readonly/>
+      <label class="form__label" for="attendance">Attendance</label>
+      <% if (meeting.attendance.length > 0) { %>
+        <input class="form__input" value="<%- meeting.attendance.length %> members attended this meeting" readonly/>
       <% } else { %>
         <input class="form__input" value="No members have attended this meeting" readonly/>
       <% } %>

@@ -7,7 +7,7 @@ var search = {};
 
 search.meeting = function(req, res, next) {
   if (!req.params.id) return next();
-  Meeting.findById(req.params.id, function(err, meeting) {
+  Meeting.findById(req.params.id).populate("attendance").exec(function(err, meeting) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
@@ -23,7 +23,7 @@ search.meeting = function(req, res, next) {
 
 search.member = function(req, res, next) {
   if (!req.params.id) return next();
-  Member.findById(req.params.id, function(err, member) {
+  Member.findById(req.params.id).populate("attendance").exec(function(err, member) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");

@@ -2,15 +2,15 @@
 onsubmit="return confirm('Are you sure you are ready to migrate terms? This will wipe the database!')">
   <div class="form__title">Term Migration</div>
   <p class="form__description">
-    Term Migration backs up and deletes all meetings, members, tutors, and tutees.
+    Term Migration backs up and deletes all meetings, members, attendance records, tutors, and tutees.
     Upload an Excel file with the correct columns ("student_id" "name" "grade" "terms") to seed the database for the next term.
-    If you seed the database, officers' permissions will be conserved as long as they are in the uploaded file of new members.
+    Officers' permissions will be conserved as long as they are in the uploaded file of new members or you specify to not delete them.
     You will download a zip file of the database after the process of term migration.
   </p>
   <div class="form__item">
     <label class="form__label" for="ext">Save current database files as</label>
-    <label class="form__label--radio" for="xlsb2">
-      <input class="form__input--radio" id="xlsb2" type="radio" name="ext" value="xlsb" checked required/>
+    <label class="form__label--radio" for="xlsx2">
+      <input class="form__input--radio" id="xlsx2" type="radio" name="ext" value="xlsx" checked required/>
       <div class="form__input--radiocircle"></div>
       Microsoft Excel
     </label>
@@ -22,6 +22,11 @@ onsubmit="return confirm('Are you sure you are ready to migrate terms? This will
   </div>
   <div class="form__item">
     <label class="form__label" for="preserve">Do not delete</label>
+    <label class="form__label--checkbox" for="preserveOfficers">
+      <input class="form__input--checkbox" id="preserveOfficers" type="checkbox" name="preserveOfficers" value="true"/>
+      <div class="form__input--checkboxsquare"></div>
+      Officers
+    </label>
     <label class="form__label--checkbox" for="preserveMeetings">
       <input class="form__input--checkbox" id="preserveMeetings" type="checkbox" name="preserveMeetings" value="true"/>
       <div class="form__input--checkboxsquare"></div>
@@ -50,7 +55,7 @@ onsubmit="return confirm('Are you sure you are ready to migrate terms? This will
   <div class="form__item">
     <label class="form__label" for="minMeetings">Minimum Meetings to Qualify</label>
     <input class="form__input form__input--small" id="minMeetings" type="number" name="minMeetings" min="0" max="<%- numMeetings %>"
-    placeholder="Max. <%- numMeetings %>" required/>
+    placeholder="Max. <%- numMeetings %>"/>
   </div>
   <div class="form__item">
     <button class="form__button" type="submit">MIGRATE TERMS</button>

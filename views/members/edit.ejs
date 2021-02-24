@@ -42,12 +42,12 @@
     </div>
   <% } %>
   <div class="form__item">
-    <label class="form__label" for="meetingsAttended">Attendance</label>
+    <label class="form__label" for="attendance">Attendance</label>
     <% if (meetings.length == 0) { %>
       <input class="form__input" value="No meetings currently exist" %>" readonly/>
     <% } else {
       meetings.forEach(function(meeting) {
-        if (member.meetingsAttended.includes(meeting.date)) { %>
+        if (member.attendance.find(r => r.meetingDate == meeting.date)) { %>
           <div class="form__item--row">
             <input class="form__input form__input--small green" name="member[attendance][<%- meeting.date %>]" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
             <span class="form__icon form__icon--link no-select material-icons">remove_circle</span>

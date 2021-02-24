@@ -11,36 +11,36 @@ xlsx.parseMembers = function(file) {
       switch(column.trim().toLowerCase()) {
         case "student_id":
           if (!fileData[row][column].toString() || isNaN(fileData[row][column]) || fileData[row][column].toString().length != 9)
-            console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
+            console.warn("[!] The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid ID.");
           else
             members[members.length-1].id = fileData[row][column].toString();
           break;
         case "name":
           if (!fileData[row][column].toString())
-            console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid name.");
+            console.warn("[!] The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid name.");
           else
             members[members.length-1].name = fileData[row][column].toString();
           break;
         case "grade":
           if (isNaN(fileData[row][column]) || parseInt(fileData[row][column]) < 9 || parseInt(fileData[row][column]) > 12)
-            console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid grade.");
+            console.warn("[!] The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid grade.");
           else
             members[members.length-1].grade = parseInt(fileData[row][column]);
           break;
         case "terms":
           if (isNaN(fileData[row][column]) || parseInt(fileData[row][column]) < 0 || parseInt(fileData[row][column]) > 7)
-            console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid term count.");
+            console.warn("[!] The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet has an invalid term count.");
           else
             members[members.length-1].termCount = parseInt(fileData[row][column]);
           break;
         default:
           if (row == 0)
-            console.warn("WARNING: The column \"" + column.trim() + "\" of the uploaded Excel sheet cannot be parsed.");
+            console.warn("[!] The column \"" + column.trim() + "\" of the uploaded Excel sheet cannot be parsed.");
           break;
       }
     }
     if (!members[members.length-1].id || !members[members.length-1].name || isNaN(members[members.length-1].grade) || isNaN(members[members.length-1].termCount)) {
-      console.warn("WARNING: The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet cannot be parsed.");
+      console.warn("[!] The member in row " + (parseInt(row)+2) + " of the uploaded Excel sheet cannot be parsed.");
       warnings.push(parseInt(row)+2);
       members.splice(-1, 1);
     }
@@ -57,7 +57,7 @@ xlsx.parseIDs = function(file) {
         if (fileData[row][column].toString().match(new RegExp("^\\d{9}$")))
           ids.push(fileData[row][column].toString());
         else {
-          console.warn("WARNING: The ID in row " + (parseInt(row)+2) + " of the uploaded attendance sheet is invalid.");
+          console.warn("[!] The ID in row " + (parseInt(row)+2) + " of the uploaded attendance sheet is invalid.");
           warnings.push(parseInt(row)+2);
         }
       }

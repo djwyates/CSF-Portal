@@ -58,5 +58,5 @@ app.use("/settings", settingsRoutes);
 app.use("/", indexRoutes);
 
 app.listen(process.env.PORT || 3000, process.env.IP, function() {
-  console.log("The CSF Portal server has started.");
+  console.info("The CSF Portal server has started.");
 });

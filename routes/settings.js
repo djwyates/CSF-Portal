@@ -1,10 +1,10 @@
 const express = require("express"),
       router = express.Router(),
-      dirTree = require("directory-tree"),
       fs = require("fs"),
       auth = require("../middleware/auth"),
       backup = require("../services/backup"),
-      Member = require("../models/member");
+      Member = require("../models/member"),
+      Backup = require("../models/backup");
 
 router.get("/", auth.hasAccessLevel(3), function(req, res) {
   res.redirect("/settings/permissions");
@@ -45,7 +45,7 @@ router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 
 router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
   var zipName = "./term_migration_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip";
-  require("../services/term-migration")(req.body, req.files ? req.files.newMembers : null, req.user.meetingsAttended ? req.user : null, zipName)
+  require("../services/term-migration")(req.body, req.files ? req.files.newMembers : null, req.user.attendance ? req.user : null, zipName)
   .then(function(result) {
     req.flash("info", result); // fix: can't redirect?
     res.location("/settings/permissions");
@@ -65,26 +65,25 @@ router.get("/download-database", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/backups", auth.hasAccessLevel(3), function(req, res) {
-  res.render("settings/index", {
-    settingsLocation: "backups",
-    backupsDirTree: dirTree("./backups", {extensions: /\.txt/}),
-    backupFiles: backup.getBackupFiles(),
-    resolvePath: require("path").resolve
+  Backup.find({}, function(err, backups) {
+    res.render("settings/index", {settingsLocation: "backups", backups: backups});
   });
 });
 
 router.put("/backups", auth.hasAccessLevel(3), function(req, res) {
-  backup.restoreFromBackup(req.body).then(function(result) {
+  backup.restore(req.body.backupID).then(function(result) {
     req.flash("info", result);
     res.redirect("/settings/backups");
   });
 });
 
 router.delete("/backups", auth.hasAccessLevel(3), function(req, res) {
-  fs.unlink(req.body.path, function(err) {
+  Backup.findByIdAndDelete(req.body.backupID, function(err, deletedBackup) {
     if (err) {
       console.error(err);
       req.flash("error", "An unexpected error occurred.");
+    } else if (!deletedBackup) {
+      req.flash("error", "No backup found.");
     } else
       req.flash("success", "The selected backup was successfully deleted.");
     res.redirect("/settings/backups");

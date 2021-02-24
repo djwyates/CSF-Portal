@@ -15,7 +15,7 @@ pdf.writeMongooseModel = function(model, path, limit) {
         /* initialization of documents & PDF document definition */
         documents = limit ? limit(documents) : documents;
         documents.forEach(doc => {
-          delete doc.__v; delete doc._id; delete doc.tutorID; delete doc.tuteeID; delete doc.verification;
+          delete doc.__v; delete doc._id; delete doc.attendance; delete doc.tutorID; delete doc.tuteeID; delete doc.verification;
           /* removes certain properties of each document so the table width will not exceed the total page width */
           delete doc.tutorSessions; delete doc.tuteeSessions; delete doc.gender; delete doc.grade;
           delete doc.parentName; delete doc.parentEmail; delete doc.parentPhoneNum; delete doc.paymentForm;

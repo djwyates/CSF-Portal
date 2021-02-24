@@ -2,11 +2,13 @@ const express = require("express"),
       router = express.Router(),
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
+      attendance = require("../services/attendance"),
       backup = require("../services/backup"),
       Member = require("../models/member"),
       Meeting = require("../models/meeting"),
       Tutor = require("../models/tutor"),
-      Tutee = require("../models/tutee");
+      Tutee = require("../models/tutee"),
+      AttendanceRecord = require("../models/attendance-record");
 
 router.get("/attendance", function(req, res) {
   Meeting.find({}, function(err, meetings) {
@@ -19,7 +21,7 @@ router.get("/attendance", function(req, res) {
       if (!req.query.id)
         return res.render("members/attendance", {member: null, meetings: meetings});
       req.query.id = req.sanitize(req.query.id.trim());
-      Member.findOne({id: req.query.id}, function(err, foundMember) {
+      Member.findOne({id: req.query.id}).populate("attendance").exec(function(err, foundMember) {
         if (err) {
           console.error(err);
           req.flash("error", "An unexpected error occurred.");
@@ -96,55 +98,61 @@ router.get("/:id/edit", auth.hasAccessLevel(1), search.member, function(req, res
   });
 });
 
-router.put("/:id", auth.hasAccessLevel(1), function(req, res) {
-  var editedMember = [{$addToSet: {meetingsAttended: {$each: []}}}, {$pull: {meetingsAttended: {$in: []}}}];
+router.put("/:id", auth.hasAccessLevel(1), search.member, function(req, res) {
+  var oldMemberID = res.locals.member.id;
+  var memberID = (req.user.accessLevel >= 3 && /^\d{9}$/.test(req.sanitize(req.body.member.id))) ? req.sanitize(req.body.member.id) : res.locals.member.id;
+  /* updates the member's attendance */
   if (req.body.member.attendance) {
+    /* finds all attended & unattended meetings */
+    var notAttended = [], attended = [];
     for (var meetingDate in req.body.member.attendance) {
       if (req.body.member.attendance[meetingDate].includes("Not attended"))
-        editedMember[1].$pull.meetingsAttended.$in.push(meetingDate);
+        notAttended.push(meetingDate);
       else if (req.body.member.attendance[meetingDate].includes("Attended"))
-        editedMember[0].$addToSet.meetingsAttended.$each.push(meetingDate);
+        attended.push(meetingDate);
     }
-  } if (req.user.accessLevel >= 3) {
-    editedMember[0].id = req.sanitize(req.body.member.id);
-    editedMember[0].name = req.sanitize(req.body.member.name);
-    editedMember[0].grade = req.body.member.grade;
-    editedMember[0].termCount = req.body.member.termCount;
-    editedMember[0].accessLevel = req.body.member.accessLevel;
-  }
-  Member.findByIdAndUpdate(req.params.id, editedMember[1], function(err, foundMember1) {
-    Member.findByIdAndUpdate(req.params.id, editedMember[0], function(err, foundMember) {
-      if (err) {
-        console.error(err);
-        if (err.code == 11000)
-          req.flash("error", "More than one member cannot have the same ID.");
-        res.redirect("/members/" + req.params.id + "/edit");
-      } else {
-        var pulledFromMeetingsAttended = editedMember[1].$pull.meetingsAttended.$in;
-        var allMeetingsAttended = foundMember.meetingsAttended.filter(date => !pulledFromMeetingsAttended.includes(date)).concat(editedMember[0].$addToSet.meetingsAttended.$each);
-        pulledFromMeetingsAttended.forEach(function(meetingDate) {
-          Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {membersAttended: foundMember.id}}).exec();
-        });
-        allMeetingsAttended.forEach(function(meetingDate) {
-          if (editedMember[0].id != foundMember.id) Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": foundMember.id}}).exec();
-          Meeting.findOneAndUpdate({date: meetingDate}, {$addToSet: {"membersAttended": editedMember[0].id}}).exec();
-        });
-        Tutor.findOneAndUpdate({id: foundMember.id}, {id: editedMember[0].id, name: editedMember[0].name, grade: editedMember[0].grade}).exec();
-        res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
-      }
+    /* removes/adds attendance records of unattended/attended meetings */
+    notAttended.forEach(function(meetingDate) {
+      attendance.remove(meetingDate, oldMemberID);
     });
+    attended.forEach(function(meetingDate) {
+      AttendanceRecord.exists({meetingDate: meetingDate, memberID: memberID}, function(err, recordExists) {
+        if (!recordExists) attendance.add(meetingDate, memberID);
+        else if (memberID != oldMemberID) AttendanceRecord.findByIdAndUpdate(record._id, {memberID: memberID}).exec();
+      });
+    });
+  }
+  if (req.user.accessLevel < 3) return res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+  /* updates the member's other attributes if user is an admin */
+  var editedMember = {
+    id: memberID,
+    name: req.sanitize(req.body.member.name),
+    grade: req.body.member.grade,
+    termCount: req.body.member.termCount,
+    accessLevel: req.body.member.accessLevel
+  }
+  Member.findByIdAndUpdate(req.params.id, editedMember, function(err, foundMember) {
+    if (err) {
+      console.error(err);
+      if (err.code == 11000)
+        req.flash("error", "More than one member cannot have the same ID.");
+      res.redirect("/members/" + req.params.id + "/edit");
+    } else {
+      Tutor.findOneAndUpdate({id: foundMember.id}, {id: editedMember.id, name: editedMember.name, grade: editedMember.grade}).exec();
+      res.redirect("/members/" + req.params.id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
+    }
   });
 });
 
-router.delete("/:id", auth.hasAccessLevel(3), function(req, res) {
+router.delete("/:id", auth.hasAccessLevel(3), search.member, function(req, res) {
   Member.findByIdAndDelete(req.params.id, function(err, deletedMember) {
     if (err) {
       console.error(err);
       res.redirect("/members");
     } else {
-      backup.object("./backups/deleted/members/" + deletedMember.id + ".txt", deletedMember.toObject());
-      deletedMember.meetingsAttended.forEach(function(meetingDate) {
-        Meeting.findOneAndUpdate({date: meetingDate}, {$pull: {"membersAttended": deletedMember.id}}, function(err, foundMeeting){});
+      backup.create(res.locals.member.id, "Member", "deleted", res.locals.member.toObject());
+      deletedMember.attendance.forEach(function(recordID) {
+        attendance.removeById(recordID);
       });
       res.redirect(req.query.from ? req.query.from : "/members");
     }

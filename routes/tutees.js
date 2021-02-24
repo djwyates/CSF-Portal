@@ -109,7 +109,7 @@ router.delete("/:id", auth.hasAccessLevel(2), search.tutee, function(req, res) {
     req.flash("error", "You cannot delete tutees who have been paired with tutors.");
     res.redirect("/tutees/" + tutee._id + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));
   } else {
-    backup.object("./backups/deleted/tutees/" + tutee.id + ".txt", tutee);
+    backup.create(tutee.id, "Tutee", "deleted", tutee);
     Member.findOneAndUpdate({tuteeID: tutee._id}, {$unset: {tuteeID: ""}}).exec();
     Tutee.deleteOne({_id: tutee._id}, function(err, tutee) {
       res.redirect("/tutees" + (req.query.from ? "?from=" + req.query.from.replace(/\//g, "%2F") : ""));

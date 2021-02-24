@@ -1,33 +1,51 @@
 <ul class="directory">
-  <%- getDirTreeHTML(backupsDirTree) %>
+  <%- getDirHTML(backups) %>
 </ul>
 
-<% function getDirTreeHTML(dirTree) {
-  if (!dirTree)
-    return "<li class='directory__folder'><a class='directory__folder-link' href='#'>backups</a><ul class='directory__folder-contents'></ul></li>";
-  if (dirTree.type === "directory") {
-    html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + dirTree.name + "</a><ul class='directory__folder-contents'>";
-    if (dirTree.children.length > 0) {
-      dirTree.children.forEach(function(childFile) {
-        html += getDirTreeHTML(childFile);
-      });
-    }
-    return html + "</ul></li>";
-  } else {
-    var file = backupFiles.find(f => resolvePath(f.path) == resolvePath(dirTree.path));
-    if (!file) return "<li class='directory__file'><a class='directory__file-link' href='#'>" + dirTree.name + "</a></li>";
-    file.data = JSON.parse(file.data);
-    var popup = Array.isArray(file.data) ? getArrayPopupHTML(file) : getObjectPopupHTML(file);
-    return "<li class='directory__file'><a class='directory__file-link popup__button-activate' href='#'>" + dirTree.name + "</a>" + popup + "</li>";
+<% function getDirHTML(backups) {
+  var html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>backups</a><ul class='directory__folder-contents'>";
+  var deletedMeetings = backups.filter(b => (b.type == "Meeting" || b.type == "Meetings") && b.category == "deleted");
+  var deletedMembers = backups.filter(b => (b.type == "Member" || b.type == "Members") && b.category == "deleted");
+  var deletedTutees = backups.filter(b => (b.type == "Tutee" || b.type == "Tutees") && b.category == "deleted");
+  var replaced = backups.filter(b => b.category == "replaced");
+  var termMigration = backups.filter(b => b.category == "term-migration").sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+  var termMigrationDates = new Set();
+  termMigration.forEach(function(backup) {
+    termMigrationDates.add(backup.createdOn.split(" ")[0]);
+  });
+  if (backups.filter(b => b.category == "deleted").length > 0) {
+    html += "<li class='directory__folder'><a class='directory__folder-link' href='#'>deleted</a><ul class='directory__folder-contents'>";
+    html += getSubDirHTML("meetings", deletedMeetings);
+    html += getSubDirHTML("members", deletedMembers);
+    html += getSubDirHTML("tutees", deletedTutees);
+    html += "</ul></li>";
   }
+  html += getSubDirHTML("replaced", replaced);
+  if (termMigration.length > 0) {
+    html += "<li class='directory__folder'><a class='directory__folder-link' href='#'>term-migration</a><ul class='directory__folder-contents'>";
+    termMigrationDates.forEach(function(date) {
+      html += getSubDirHTML(date.substring(0, date.length-1), termMigration.filter(b => b.createdOn.split(" ")[0] == date));
+    });
+    html += "</ul></li>";
+  }
+  return html += "</ul></li>";
+}
+function getSubDirHTML(name, backups) {
+  if (backups.length == 0) return "";
+  var html = "<li class='directory__folder'><a class='directory__folder-link' href='#'>" + name + "</a><ul class='directory__folder-contents'>";
+  backups.forEach(function(backup) {
+    var popup = Array.isArray(backup.data) ? getArrayPopupHTML(backup) : getObjectPopupHTML(backup);
+    html += "<li class='directory__file'><a class='directory__file-link popup__button-activate' href='#'>" + backup.name + "</a>" + popup + "</li>";
+  });
+  return html += "</ul></li>";
 }
 function getArrayPopupHTML(file) {
   return "<div class='popup'><form class='popup__form' action='/settings/backups?_method=put' method='post'"
     + "onsubmit='return confirm(\"Are you sure you want to restore from this backup? It will backup and replace ALL current data of this type!\")'>"
-    + "<p class='popup__p'><b>Quantity:</b> " + file.data.length + "</p><input type='hidden' name='data' value='" + JSON.stringify(file.data) + "'/>"
+    + "<p class='popup__p'><b>Quantity:</b> " + file.data.length + "</p><input type='hidden' name='backupID' value='" + file._id + "'/>"
     + "<button class='form__button form__button--small popup__position-1' type='submit'>Restore</button></form>"
     + "<form action='/settings/backups?_method=delete' method='post' onsubmit='return confirm(\"Are you sure you want to permanently delete this backup?\")'>"
-    + "<input type='hidden' name='path' value='" + file.path + "'/>"
+    + "<input type='hidden' name='backupID' value='" + file._id + "'/>"
     + "<button class='form__button form__button--red form__button--small popup__position-2' type='submit'>Delete</button></form></div>";
 }
 function getObjectPopupHTML(file) {
@@ -35,8 +53,7 @@ function getObjectPopupHTML(file) {
     + "onsubmit='return confirm(\"Are you sure you want to restore from this backup? It will not overwrite current data.\")'>";
   for (key in file.data) {
     var label = ejs.reformatVar(key);
-    if (key == "meetingsAttended" || key == "membersAttended") label = "Attendance";
-    else if (key == "id") label = "Student ID";
+    if (key == "id") label = "Student ID";
     else if (key == "termCount") label = "Terms";
     else if (key == "tutorID") label = "Tutor ID";
     else if (key == "tuteeID") label = "Tutee ID";
@@ -47,17 +64,18 @@ function getObjectPopupHTML(file) {
       if (dataToDisplay.length == 0) {
         dataToDisplay = "None";
       } else {
-        dataToDisplay = JSON.stringify(dataToDisplay).replace(/"|\[|\]/g, "").split(",");
         if (key == "courses") dataToDisplay = dataToDisplay.map(c => ejs.reformatCourse(c));
+        else if (key == "attendance") dataToDisplay = dataToDisplay.length + " total";
+        else dataToDisplay = JSON.stringify(dataToDisplay).replace(/"|\[|\]/g, "").split(",");
         dataToDisplay = ejs.arrayToSentence(dataToDisplay);
       }
     }
     if (key != "_id" && key != "__v" && key != "tutorSessions")
       popup += "<p class='popup__p'><b>" + label + ":</b> " + dataToDisplay + "</p>";
-    popup += "<input type='hidden' name='" + key + "' value='" + file.data[key] + "'/>";
   }
-  return popup += "<button class='form__button form__button--small popup__position-1' type='submit'>Restore</button></form>"
+  return popup += "<input type='hidden' name='backupID' value='" + file._id + "'/>"
+    + "<button class='form__button form__button--small popup__position-1' type='submit'>Restore</button></form>"
     + "<form action='/settings/backups?_method=delete' method='post' onsubmit='return confirm(\"Are you sure you want to permanently delete this backup?\")'>"
-    + "<input type='hidden' name='path' value='" + file.path + "'/>"
+    + "<input type='hidden' name='backupID' value='" + file._id + "'/>"
     + "<button class='form__button form__button--red form__button--small popup__position-2' type='submit'>Delete</button></form></div>";
 } %>

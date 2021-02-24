@@ -25,7 +25,6 @@ const formIconLinks = document.querySelectorAll(".form__icon--link");
 if (formIconLinks) {
   formIconLinks.forEach(function(formIconLink) {
     formIconLink.addEventListener("click", function() {
-      console.log(formIconLink.closest(".form__item--row"));
       var attendance = formIconLink.closest(".form__item--row").querySelector(".form__input").value;
       if (attendance.includes("Not attended")) {
         formIconLink.closest(".form__item--row").querySelector(".form__input").value = attendance.substring(0, attendance.length-12) + "Attended";

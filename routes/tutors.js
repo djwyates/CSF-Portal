@@ -27,11 +27,11 @@ router.get("/", auth.hasAccessLevel(2), function(req, res) {
 });
 
 router.get("/new", function(req, res) {
-  if (req.user && (req.user.accessLevel >= 2 || req.user.meetingsAttended && !req.user.tutorID))
+  if (req.user && (req.user.accessLevel >= 2 || req.user.attendance && !req.user.tutorID))
     res.render("tutors/new", {courses: courses});
   else if (req.user && req.user.tutorID)
     res.redirect("/tutors/" + req.user.tutorID);
-  else if (!req.user || !req.user.meetingsAttended)
+  else if (!req.user || !req.user.attendance)
     res.render("tutors/not-logged-in");
 });
 

@@ -34,7 +34,7 @@ router.get("/search", function(req, res) {
     if (!req.user || req.user.accessLevel <= 0) {
       Member.findOne({id: req.query.q.trim()}, function(err, member) {
         if (member)
-          result.unshift({type: "Attendance", id: member.id, meetingsAttendedCount: member.meetingsAttended.length, href: "/members/attendance?id=" + member.id});
+          result.unshift({type: "Attendance", id: member.id, attendanceCount: member.attendance.length, href: "/members/attendance?id=" + member.id});
         res.json(result);
       });
     } else if (req.user.accessLevel >= 1) {

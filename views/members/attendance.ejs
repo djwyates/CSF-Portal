@@ -7,16 +7,16 @@
     <button class="form__button form__button--tall" type="submit">Check</button>
   </div>
 </form>
-<% if (member || currentUser && currentUser.meetingsAttended) { %>
+<% if (member || currentUser && currentUser.attendance) { %>
   <div class="form">
     <div class="form__item">
       <label class="form__label" for="id">Student ID</label>
       <input class="form__input" value="<% if (member) { %><%- member.id %><% } else { %><%- currentUser.id %><% } %>" readonly/>
     </div>
     <div class="form__item">
-      <label class="form__label" for="meetingsAttended">Attendance</label>
+      <label class="form__label" for="attendance">Attendance</label>
       <% meetings.forEach(function(meeting) {
-        if (member ? member.meetingsAttended.includes(meeting.date) : currentUser.meetingsAttended.includes(meeting.date)) { %>
+        if (member ? member.attendance.find(r => r.meetingDate == meeting.date) : currentUser.attendance.find(r => r.meetingDate == meeting.date)) { %>
           <input class="form__input green" value="<%- ejs.reformatDate(meeting.date) + " - Attended" %>" readonly/>
         <% } else if (new Date(meeting.date + ", 12:00:00 AM") > new Date(new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}))) { %>
           <input class="form__input blue" value="<%- ejs.reformatDate(meeting.date) + " - Upcoming" %>" readonly/>

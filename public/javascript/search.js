@@ -24,7 +24,7 @@ const instantSearchUsers = new InstantSearch(searchEverything, {
       case "Tutee":
         return "<div class='search__title'>" + result.name + "<span class='search__type'>Tutee</span></div><p class='search__p'>" + result.id + "</p>";
       case "Attendance":
-        return "<div class='search__title'>" + result.id + "<span class='search__type'>Attendance</span></div><p class='search__p'>" + result.meetingsAttendedCount + " meetings attended (click for details)</p>";
+        return "<div class='search__title'>" + result.id + "<span class='search__type'>Attendance</span></div><p class='search__p'>" + result.attendanceCount + " meetings attended (click for details)</p>";
       default:
         return "";
     }

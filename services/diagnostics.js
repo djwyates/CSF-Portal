@@ -5,8 +5,8 @@ const utils = require("./utils"),
       Tutee = require("../models/tutee");
 
 module.exports = new Promise(function(resolve, reject) {
-  Meeting.find({}, function(err, meetings) {
-    Member.find({}, function(err, members) {
+  Meeting.find({}).populate("attendance").exec(function(err, meetings) {
+    Member.find({}).populate("attendance").exec(function(err, members) {
       Tutor.find({}, function(err, tutors) {
         Tutee.find({}, function(err, tutees) {
           result = testMeetings(meetings, members);
@@ -29,18 +29,18 @@ function testMeetings(meetings, members) {
   }
   meetings.forEach(function(meeting) {
     /* checks for duplicate attendance records */
-    dupeRecords = utils.findDuplicatesInArray(meeting.membersAttended);
+    dupeRecords = utils.findDuplicatesInArray(meeting.attendance.map(r => r = r.meetingDate + r.memberID));
     if (dupeRecords.length > 0) {
       result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
       + "</a> has duplicate attendance records of members " + utils.arrayToSentence(dupeRecords) + ".<br>";
     }
     /* checks meetings' and members' attendance records to detect discrepancies */
-    meeting.membersAttended.forEach(function(memberID) {
-      member = members.find(member => member.id == memberID);
+    meeting.attendance.forEach(function(meetingRecord) {
+      member = members.find(member => member.id == meetingRecord.memberID);
       if (!member) {
         result += "One member who attended the <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
         + "</a> with ID " + memberID + " does not exist.<br>";
-      } else if (!member.meetingsAttended.includes(meeting.date))
+      } else if (!member.attendance.find(r => r.meetingDate == meeting.date))
         result += "The <a class='link--white' href='/meetings/" + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date)
         + "</a> shows that <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + memberID + "</a> attended while the member\'s attendance records do not show this.<br>";
     });
@@ -57,18 +57,18 @@ function testMembers(meetings, members, tutors, tutees) {
   }
   members.forEach(function(member) {
     /* checks for duplicate attendance records */
-    dupeRecords = utils.findDuplicatesInArray(member.meetingsAttended);
+    dupeRecords = utils.findDuplicatesInArray(member.attendance.map(r => r = r.meetingDate + r.memberID));
     if (dupeRecords.length > 0) {
       result += "The <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>member " + member.id + "</a> has duplicate attendance records of meetings on "
       + utils.arrayToSentence(dupeRecords.map(record => utils.reformatDate(record))) + ".<br>";
     }
     /* checks members' and meetings' attendance records to detect discrepancies */
-    member.meetingsAttended.forEach(function(meetingDate) {
-      meeting = meetings.find(meeting => meeting.date == meetingDate);
+    member.attendance.forEach(function(memberRecord) {
+      meeting = meetings.find(meeting => meeting.date == memberRecord.meetingDate);
       if (!meeting) {
         result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id
         + "</a> indicate them attending a meeting on date " + utils.reformatDate(meetingDate) + " that does not exist.<br>";
-      } else if (!meeting.membersAttended.includes(member.id))
+      } else if (!meeting.attendance.find(r => r.memberID == member.id))
         result += "Attendance records of <a class='link--white' href='/members/" + member._id + "?from=%2Fsettings%2Fdiagnostics'>Member " + member.id + "</a> show that they attended the <a class='link--white' href='/meetings/"
         + meeting._id + "?from=%2Fsettings%2Fdiagnostics'>meeting on " + utils.reformatDate(meeting.date) + "</a> while the meeting\'s do not show this.<br>";
     });
