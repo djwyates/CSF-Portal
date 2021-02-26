@@ -11,7 +11,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   var isAdmin = false;
-  Member.findById(id, function(err, member) {
+  Member.findById(id).populate("attendance").exec(function(err, member) {
     Tutee.findById(id, function(err, tutee) {
       if (keys.accounts.admins.includes(id)) isAdmin = true;
       if (member) return done(null, {_id: id, email: member.id + keys.accounts.domain, accessLevel: isAdmin ? 3 : member.accessLevel, id: member.id, attendance: member.attendance, tutorID: member.tutorID, tuteeID: member.tuteeID});
@@ -39,7 +39,7 @@ passport.use(new GoogleStrategy({
   },
   function(req, accessToken, refreshToken, profile, done) {
     var email = profile.emails[0].value, isAdmin = false;
-    Member.findOne({id: email.substring(0, 9)}, function(err, member) {
+    Member.findOne({id: email.substring(0, 9)}).populate("attendance").exec(function(err, member) {
       Tutee.findOne({id: email.substring(0, 9)}, function(err, tutee) {
         if (keys.accounts.admins.includes(email)) isAdmin = true;
         if (member && isAdmin && member.accessLevel < 3) Member.findByIdAndUpdate(member._id, {accessLevel: 3}).exec();

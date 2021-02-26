@@ -38,9 +38,7 @@ router.put("/permissions", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.get("/term-migration", auth.hasAccessLevel(3), function(req, res) {
-  Meeting.countDocuments({}, function(err, numMeetings) {
-    res.render("settings/index", {settingsLocation: "term-migration", numMeetings: numMeetings});
-  });
+  res.render("settings/index", {settingsLocation: "term-migration"});
 });
 
 router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
@@ -57,7 +55,7 @@ router.put("/term-migration", auth.hasAccessLevel(3), function(req, res) {
 
 router.get("/download-database", auth.hasAccessLevel(3), function(req, res) {
   var zipName = "csf_portal_" + utils.getCurrentDate("mm-dd-yyyy") + ".zip";
-  backup.createZipOfDatabase(zipName, req.body.ext, req.body.minMeetings).then(function(result) {
+  backup.createZipOfDatabase(zipName, req.body.ext).then(function(result) {
     res.download(zipName, function(err) {
       fs.unlink(zipName, function(err){});
     });

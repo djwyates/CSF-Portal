@@ -12,7 +12,7 @@ const fs = require("fs"),
 module.exports = function(reqBody, newMembers, currentUserIfMember, zipName) {
   return new Promise(function(resolve, reject) {
     backupDatabase().then(function() {
-      backup.createZipOfDatabase(zipName, reqBody.ext, reqBody.minMeetings).then(function() {
+      backup.createZipOfDatabase(zipName, reqBody.ext).then(function() {
         deleteDatabase(reqBody.preserveOfficers, reqBody.preserveMeetings, newMembers ? true : false, reqBody.preserveTutors, reqBody.preserveTutees);
         if (!newMembers) return resolve("Successfully backed up and deleted the database. No new members were uploaded.");
         Member.find({accessLevel: {$gte: 1}}, function(err, previousOfficers) {
@@ -21,7 +21,7 @@ module.exports = function(reqBody, newMembers, currentUserIfMember, zipName) {
             Member.deleteMany({id: {$ne: currentUserIfMember ? currentUserIfMember.id : ""}}, function(err, deleteResult) {
               if (currentUserIfMember) updateCurrentUser(currentUserIfMember, parseResult.members);
               Member.create(parseResult.members, function(err, createdMembers) {
-                if (reqBody.preserveTutors || reqBody.preserveTutees) updateTutorAndTuteeIDs(newMembers);
+                if (reqBody.preserveTutors || reqBody.preserveTutees) updateTutorAndTuteeIDs(parseResult.members);
                 resolve("Backed up and deleted the database.<br>" + ((createdMembers ? createdMembers.length : 0) + (currentUserIfMember ? 1 : 0))
                 + " new members have been loaded into the database."
                 + findPreservedOfficers(previousOfficers, parseResult.members, currentUserIfMember, reqBody.preserveOfficers) + parseResult.flashMsg);
@@ -87,7 +87,7 @@ function findPreservedOfficers(previousOfficers, newMembers, currentUserIfMember
   previousOfficers.forEach(function(previousOfficer) {
     var matchingNewMember = newMembers.find(newMember => newMember.id == previousOfficer.id);
     if (matchingNewMember) {
-      Member.findByIdAndUpdate(matchingNewMember._id, {accessLevel: previousOfficer.accessLevel}).exec();
+      Member.findOneAndUpdate({id: matchingNewMember.id}, {accessLevel: previousOfficer.accessLevel}).exec();
       console.info(matchingNewMember.name + "\'s (" + matchingNewMember.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
     } else if (currentUserIfMember && currentUserIfMember.id == previousOfficer.id) {
       console.info(previousOfficer.name + "\'s (" + previousOfficer.id + ") access level of " + previousOfficer.accessLevel + " has been conserved.");
@@ -104,16 +104,16 @@ function findPreservedOfficers(previousOfficers, newMembers, currentUserIfMember
   else return "<br>All previous officers\' permissions were conserved.";
 }
 
-function updateTutorAndTuteeIDs() {
+function updateTutorAndTuteeIDs(newMembers) {
   Tutor.find({}, function(err, tutors) {
     Tutee.find({}, function(err, tutees) {
       tutors.forEach(function(tutor) {
         var matchingNewMember = newMembers.find(newMember => tutor.id == newMember.id);
-        if (matchingNewMember) Member.findByIdAndUpdate(matchingNewMember._id, {tutorID: tutor._id}).exec();
+        if (matchingNewMember) Member.findOneAndUpdate({id: matchingNewMember.id}, {tutorID: tutor._id}).exec();
       });
       tutees.forEach(function(tutee) {
         var matchingNewMember = newMembers.find(newMember => tutee.id == newMember.id);
-        if (matchingNewMember) Member.findByIdAndUpdate(matchingNewMember._id, {tuteeID: tutee._id}).exec();
+        if (matchingNewMember) Member.findOneAndUpdate({id: matchingNewMember.id}, {tuteeID: tutee._id}).exec();
       });
     });
   });

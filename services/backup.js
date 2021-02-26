@@ -29,18 +29,16 @@ createBackup = function(name, type, category, data) {
 
 backup.create = createBackup;
 
-backup.createZipOfDatabase = function(zipName, format, minMeetings) {
+backup.createZipOfDatabase = function(zipName, format) {
   return new Promise(function(resolve, reject) {
     format = format == "pdf" ? "pdf" : "xlsx";
-    writeDatabaseFilesToZip(format, minMeetings).then(function() {
+    writeDatabaseFilesToZip(format).then(function() {
       if (fs.existsSync(zipName)) fs.unlinkSync(zipName);
       var output = fs.createWriteStream(zipName);
       var archive = archiver("zip", {zlib: {level: 9}});
       output.on("finish", function() {
         fs.unlink("meetings." + format, function(err){});
         fs.unlink("members." + format, function(err){});
-        if (minMeetings) fs.unlink("membersQualifying." + format, function(err){});
-        if (minMeetings) fs.unlink("membersNotQualifying." + format, function(err){});
         fs.unlink("tutors." + format, function(err){});
         fs.unlink("tutees." + format, function(err){});
         fs.unlink("attendance." + format, function(err){});
@@ -49,8 +47,6 @@ backup.createZipOfDatabase = function(zipName, format, minMeetings) {
       archive.pipe(output);
       archive.append(fs.createReadStream("meetings." + format), {name: "meetings." + format});
       archive.append(fs.createReadStream("members." + format), {name: "members." + format});
-      if (minMeetings) archive.append(fs.createReadStream("membersQualifying." + format), {name: "membersQualifying." + format});
-      if (minMeetings) archive.append(fs.createReadStream("membersNotQualifying." + format), {name: "membersNotQualifying." + format});
       archive.append(fs.createReadStream("tutors." + format), {name: "tutors." + format});
       archive.append(fs.createReadStream("tutees." + format), {name: "tutees." + format});
       archive.append(fs.createReadStream("attendance." + format), {name: "attendance." + format});
@@ -59,65 +55,68 @@ backup.createZipOfDatabase = function(zipName, format, minMeetings) {
   });
 }
 
-function writeDatabaseFilesToZip(format, minMeetings) {
+function writeDatabaseFilesToZip(format) {
   return new Promise(function(resolve, reject) {
-    var formatServices = format == "pdf" ? pdf : xlsx;
-    var meetingsLimit = function(meetings) {
-      return meetings.map(function(meeting) {
-        if (format == "pdf") return Object.assign(meeting, {membersAttended: meeting.attendance.length});
-        Object.assign(meeting, {numMembersAttended: meeting.attendance.length});
-        return Object.assign(meeting, {membersAttended: meeting.attendance.length > 0 ? meeting.attendance.map(r => r = r.memberID).join(", ") : "none"});
-      });
-    };
-    var membersLimit = function(members) {
-      return members.map(function(member) {
-        if (format == "pdf") return Object.assign(member, {meetingsAttended: member.attendance.length});
-        Object.assign(member, {numMeetingsAttended: member.attendance.length});
-        return Object.assign(member, {meetingsAttended: member.attendance.length > 0 ? member.attendance.map(r => r = r.meetingDate).join(", ") : "none"});
-      });
-    };
-    var tutorsLimit = function(tutors) {
-      return tutors.map(function(tutor) {
-        Object.assign(tutor, {tuteeSessions: JSON.stringify(tutor.tuteeSessions)});
-        return Object.assign(tutor, {courses: tutor.courses.length > 0 ? tutor.courses.join(", ") : "none"});
-      });
-    };
-    var tuteesLimit = function(tutees) {
-      return tutees.map(function(tutee) {
-        Object.assign(tutee, {tutorSessions: JSON.stringify(tutee.tutorSessions)});
-        return Object.assign(tutee, {courses: tutee.courses.length > 0 ? tutee.courses.join(", ") : "none"});
-      });
-    };
-    if (fs.existsSync("meetings." + format)) fs.unlinkSync("meetings." + format);
-    formatServices.writeMongooseModel(Meeting, "meetings." + format, meetingsLimit).then(function() {
-      if (fs.existsSync("members." + format)) fs.unlinkSync("members." + format);
-      formatServices.writeMongooseModel(Member, "members." + format, membersLimit).then(function() {
-        if (fs.existsSync("tutors." + format)) fs.unlinkSync("tutors." + format);
-        formatServices.writeMongooseModel(Tutor, "tutors." + format, tutorsLimit).then(function() {
-          if (fs.existsSync("tutees." + format)) fs.unlinkSync("tutees." + format);
-          formatServices.writeMongooseModel(Tutee, "tutees." + format, tuteesLimit).then(function() {
-            if (fs.existsSync("attendance." + format)) fs.unlinkSync("tutees." + format);
-            formatServices.writeMongooseModel(AttendanceRecord, "attendance." + format).then(function() {
-              if (!minMeetings) return resolve();
-              var membersQualifyingLimit = function(members) {
-                return members.filter(member => member.attendance.length >= minMeetings).map(function(member) {
-                  if (format == "pdf") return Object.assign(member, {meetingsAttended: member.attendance.length});
-                  Object.assign(member, {numMeetingsAttended: member.attendance.length});
-                  return Object.assign(member, {meetingsAttended: member.attendance.length > 0 ? member.attendance.map(r => r = r.meetingDate).join(", ") : "none"});
+    Meeting.find({}).populate("attendance").lean().exec(function(err, meetings) {
+      Member.find({}).populate("attendance").lean().exec(function(err, members) {
+        Tutor.find({}).lean().exec(function(err, tutors) {
+          Tutee.find({}).lean().exec(function(err, tutees) {
+            AttendanceRecord.find({}).lean().exec(function(err, records) {
+              meetings = meetings.map(function(meeting) {
+                if (format == "pdf") return Object.assign(meeting, {membersAttended: meeting.attendance.length});
+                Object.assign(meeting, {numMembersAttended: meeting.attendance.length});
+                return Object.assign(meeting, {membersAttended: meeting.attendance.length > 0 ? meeting.attendance.map(r => r = r.memberID).join(", ") : "none"});
+              });
+              members = members.map(function(member) {
+                if (format == "pdf") return Object.assign(member, {meetingsAttended: member.attendance.length});
+                Object.assign(member, {numMeetingsAttended: member.attendance.length});
+                return Object.assign(member, {meetingsAttended: member.attendance.length > 0 ? member.attendance.map(r => r = r.meetingDate).join(", ") : "none"});
+              });
+              tutors = tutors.map(function(tutor) {
+                Object.assign(tutor, {tuteeSessions: JSON.stringify(tutor.tuteeSessions)});
+                return Object.assign(tutor, {courses: tutor.courses.length > 0 ? tutor.courses.map(c => utils.reformatCourse(c)).join(", ") : "none"});
+              });
+              tutees = tutees.map(function(tutee) {
+                Object.assign(tutee, {tutorSessions: JSON.stringify(tutee.tutorSessions)});
+                return Object.assign(tutee, {courses: tutee.courses.length > 0 ? tutee.courses.map(c => utils.reformatCourse(c)).join(", ") : "none"});
+              });
+              meetings.forEach(function(m) {
+                delete m.attendance;
+              });
+              members.forEach(function(m) {
+                delete m.attendance; delete m.tutorID;
+                delete m.tuteeID; delete m.verification;
+              });
+              if (format == "pdf") {
+                tutors.forEach(function(t) {
+                  delete doc.tuteeSessions; delete doc.grade;
+                  delete doc.gender; delete doc.paymentForm;
+                  delete doc.courses; delete doc.active;
+                  delete doc.warnings; delete doc.maxTutees;
+                  delete doc.verifiedPhone;
                 });
-              };
-              var membersNotQualifyingLimit = function(members) {
-                return members.filter(member => member.attendance.length < minMeetings).map(function(member) {
-                  if (format == "pdf") return Object.assign(member, {meetingsAttended: member.attendance.length});
-                  Object.assign(member, {numMeetingsAttended: member.attendance.length});
-                  return Object.assign(member, {meetingsAttended: member.attendance.length > 0 ? member.attendance.map(r => r = r.meetingDate).join(", ") : "none"});
+                tutees.forEach(function(t) {
+                  delete doc.tutorSessions; delete doc.grade;
+                  delete doc.gender; delete doc.parentName;
+                  delete doc.parentEmail; delete doc.parentPhoneNum;
+                  delete doc.paymentForm; delete doc.courses;
                 });
-              };
-              if (fs.existsSync("membersQualifying." + format)) fs.unlinkSync("membersQualifying." + format);
-              formatServices.writeMongooseModel(Member, "membersQualifying." + format, membersQualifyingLimit).then(function() {
-                if (fs.existsSync("membersNotQualifying." + format)) fs.unlinkSync("membersNotQualifying." + format);
-                formatServices.writeMongooseModel(Member, "membersNotQualifying." + format, membersNotQualifyingLimit).then(function() {
-                  resolve();
+              }
+              if (fs.existsSync("meetings." + format)) fs.unlinkSync("meetings." + format);
+              if (fs.existsSync("members." + format)) fs.unlinkSync("members." + format);
+              if (fs.existsSync("tutors." + format)) fs.unlinkSync("tutors." + format);
+              if (fs.existsSync("tutees." + format)) fs.unlinkSync("tutees." + format);
+              if (fs.existsSync("attendance." + format)) fs.unlinkSync("attendance." + format);
+              var formatServices = format == "pdf" ? pdf : xlsx;
+              formatServices.createFromJSON(meetings, "meetings." + format).then(function() {
+                formatServices.createFromJSON(members, "members." + format).then(function() {
+                  formatServices.createFromJSON(tutors, "tutors." + format).then(function() {
+                    formatServices.createFromJSON(tutees, "tutees." + format).then(function() {
+                      formatServices.createFromJSON(records, "attendance." + format).then(function() {
+                        resolve();
+                      });
+                    });
+                  });
                 });
               });
             });

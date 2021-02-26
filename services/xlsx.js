@@ -2,6 +2,16 @@ const xlsxJS = require("xlsx");
 
 var xlsx = {};
 
+xlsx.createFromJSON = function(data, path) {
+  return new Promise(function(resolve, reject) {
+    data.forEach(obj => { delete obj.__v; delete obj._id; });
+    var workbook = xlsxJS.utils.book_new();
+    xlsxJS.utils.book_append_sheet(workbook, xlsxJS.utils.json_to_sheet(data));
+    xlsxJS.writeFile(workbook, path);
+    resolve();
+  });
+}
+
 xlsx.parseMembers = function(file) {
   var workbook = xlsxJS.readFile(file);
   var fileData = xlsxJS.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]), members = [], warnings = [];
@@ -64,20 +74,6 @@ xlsx.parseIDs = function(file) {
     }
   }
   return {ids: ids, warnings: warnings};
-}
-
-xlsx.writeMongooseModel = function(model, path, limit) {
-  return new Promise(function(resolve, reject) {
-    var workbook = xlsxJS.utils.book_new();
-    model.find({}).lean().exec(function(err, documents) {
-      if (err || !documents) console.error(err ? err : "ERROR: The model you tried to back up does not exist.");
-      else {
-        documents.forEach(doc => { delete doc.__v; delete doc._id; delete doc.tutorID; delete doc.tuteeID; delete doc.verification; });
-        xlsxJS.utils.book_append_sheet(workbook, xlsxJS.utils.json_to_sheet(limit ? limit(documents) : documents));
-        xlsxJS.writeFile(workbook, path);
-      } resolve();
-    });
-  });
 }
 
 module.exports = xlsx;
