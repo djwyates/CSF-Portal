@@ -11,6 +11,7 @@ const express = require("express"),
       AttendanceRecord = require("../models/attendance-record");
 
 router.get("/attendance", function(req, res) {
+  if (req.query.id && typeof req.query.id != "string") return res.redirect("/members/attendance");
   Meeting.find({}, function(err, meetings) {
     if (err) {
       console.error(err);

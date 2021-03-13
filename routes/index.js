@@ -25,14 +25,17 @@ router.get("/logout", function(req, res) {
 });
 
 router.get("/search", function(req, res) {
-  var queryRegExp = new RegExp(req.query.q.trim(), "i"), result = [];
+  if (!req.query.q) return res.render("404");
+  req.query.q = req.sanitize(req.query.q.trim());
+  if (!req.query.q) return res.json([]);
+  var queryRegExp = new RegExp(req.query.q, "i"), result = [];
   Meeting.find({}, function(err, meetings) {
     meetings.forEach(function(meeting) {
       if (queryRegExp.test("meetings") || queryRegExp.test(meeting.date) || queryRegExp.test(utils.reformatDate(meeting.date)) || queryRegExp.test(meeting.description))
         result.push({type: "Meeting", date: meeting.date, description: meeting.description ? meeting.description : "No meeting description", href: "/meetings/" + meeting._id});
     });
     if (!req.user || req.user.accessLevel <= 0) {
-      Member.findOne({id: req.query.q.trim()}, function(err, member) {
+      Member.findOne({id: req.query.q}, function(err, member) {
         if (member)
           result.unshift({type: "Attendance", id: member.id, attendanceCount: member.attendance.length, href: "/members/attendance?id=" + member.id});
         res.json(result);
