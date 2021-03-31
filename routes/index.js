@@ -28,7 +28,9 @@ router.get("/search", function(req, res) {
   if (!req.query.q) return res.render("404");
   req.query.q = req.sanitize(req.query.q.trim());
   if (!req.query.q) return res.json([]);
-  var queryRegExp = new RegExp(req.query.q, "i"), result = [];
+  try { var queryRegExp = new RegExp(req.query.q, "i"); }
+  catch { return res.json([]); }
+  var result = [];
   Meeting.find({}, function(err, meetings) {
     meetings.forEach(function(meeting) {
       if (queryRegExp.test("meetings") || queryRegExp.test(meeting.date) || queryRegExp.test(utils.reformatDate(meeting.date)) || queryRegExp.test(meeting.description))
