@@ -13,7 +13,7 @@ router.get("/", function(req, res) {
 
 router.get("/login/google", passport.authenticate("google", {scope: ["email"]}));
 
-router.get("/login/google/callback", passport.authenticate("google"), function(req, res) {
+router.get("/login/google/callback", passport.authenticate("google", {failureRedirect: "/login/google"}), function(req, res) {
   req.flash("success", "You have successfully logged in as " + req.user.email + ".");
   res.redirect("/members/attendance");
 });

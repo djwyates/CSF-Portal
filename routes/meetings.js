@@ -93,7 +93,7 @@ router.put("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req,
             if (!members.find(m => m.id == id)) {
               cantAttend.push(id);
             } else if (!records.find(r => r.meetingDate == meeting.date && r.memberID == id)) {
-              attendance.add(meeting.date, id);
+              attendance.add(meeting.date, id, req.user.id || req.user.email);
               attended.push(id);
             } else {
               alreadyAttended.push(id);
@@ -125,7 +125,7 @@ router.put("/:id/checkin", auth.hasAccessLevel(1), search.meeting, function(req,
       } else {
         AttendanceRecord.exists({meetingDate: meeting.date, memberID: member.id}, function(err, recordExists) {
           if (!recordExists) {
-            attendance.add(meeting.date, member.id);
+            attendance.add(meeting.date, member.id, req.user.id || req.user.email);
             req.flash("success", member.id + " attended the meeting.");
           } else
             req.flash("info", member.id + " already attended the meeting.");

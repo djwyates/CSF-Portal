@@ -269,7 +269,7 @@ function restoreAttendance(records) {
             + record.memberID + " that does not exist.";
             warningMsg += "<br>" + _warningMsg;
             console.warn(_warningMsg);
-          } else attendance.add(record.meetingDate, record.memberID, record.timestamp);
+          } else attendance.add(record.meetingDate, record.memberID, record.recordedBy, record.timestamp);
           if (records.indexOf(record) == records.length-1) resolve(warningMsg);
         });
       });

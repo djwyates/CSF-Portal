@@ -118,7 +118,7 @@ router.put("/:id", auth.hasAccessLevel(1), search.member, function(req, res) {
     });
     attended.forEach(function(meetingDate) {
       AttendanceRecord.exists({meetingDate: meetingDate, memberID: memberID}, function(err, recordExists) {
-        if (!recordExists) attendance.add(meetingDate, memberID);
+        if (!recordExists) attendance.add(meetingDate, memberID, req.user.id || req.user.email);
         else if (memberID != oldMemberID) AttendanceRecord.findByIdAndUpdate(record._id, {memberID: memberID}).exec();
       });
     });

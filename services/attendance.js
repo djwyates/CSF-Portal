@@ -5,14 +5,15 @@ const utils = require("./utils"),
 
 var attendance = {};
 
-attendance.add = function(meetingDate, memberID, timestamp) {
+attendance.add = function(meetingDate, memberID, recordedBy, timestamp) {
   timestamp = timestamp || utils.getCurrentDate("mm-dd-yyyy, 00:00:00");
   AttendanceRecord.exists({meetingDate: meetingDate, memberID: memberID}, function(err, recordExists) {
     if (!recordExists) {
       Member.exists({id: memberID}, function(err, memberExists) {
         Meeting.exists({date: meetingDate}, function(err, meetingExists) {
           if (memberExists && meetingExists) {
-            AttendanceRecord.create({meetingDate: meetingDate, memberID: memberID, timestamp: timestamp}, function(err, record) {
+            AttendanceRecord.create({meetingDate: meetingDate, memberID: memberID, recordedBy: recordedBy, timestamp: timestamp},
+              function(err, record) {
               Meeting.updateOne({date: meetingDate}, {$push: {attendance: record._id}}).exec();
               Member.updateOne({id: memberID}, {$push: {attendance: record._id}}).exec();
             });

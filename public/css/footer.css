@@ -1,5 +1,6 @@
 .footer {
 	display: flex;
+	padding: 15px 0;
 	position: relative;
 	background: rgb(247,247,247);
 }
