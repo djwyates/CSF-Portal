@@ -89,19 +89,20 @@ function writeDatabaseFilesToZip(format) {
               });
               if (format == "pdf") {
                 tutors.forEach(function(t) {
-                  delete doc.tuteeSessions; delete doc.grade;
-                  delete doc.gender; delete doc.paymentForm;
-                  delete doc.courses; delete doc.active;
-                  delete doc.warnings; delete doc.maxTutees;
-                  delete doc.verifiedPhone;
+                  delete t.tuteeSessions; delete t.grade;
+                  delete t.gender; delete t.paymentForm;
+                  delete t.courses; delete t.active;
+                  delete t.warnings; delete t.maxTutees;
+                  delete t.verifiedPhone;
                 });
                 tutees.forEach(function(t) {
-                  delete doc.tutorSessions; delete doc.grade;
-                  delete doc.gender; delete doc.parentName;
-                  delete doc.parentEmail; delete doc.parentPhoneNum;
-                  delete doc.paymentForm; delete doc.courses;
+                  delete t.tutorSessions; delete t.grade;
+                  delete t.gender; delete t.parentName;
+                  delete t.parentEmail; delete t.parentPhoneNum;
+                  delete t.paymentForm; delete t.courses;
                 });
               }
+              format = format == "pdf" ? "pdf" : "xlsx";
               if (fs.existsSync("meetings." + format)) fs.unlinkSync("meetings." + format);
               if (fs.existsSync("members." + format)) fs.unlinkSync("members." + format);
               if (fs.existsSync("tutors." + format)) fs.unlinkSync("tutors." + format);

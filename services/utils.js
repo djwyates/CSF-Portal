@@ -51,7 +51,7 @@ utils.reformatVar = function(variable) {
   for (var i = 0; i < variable.length-1; i++) {
     if (i != 0)
       result += variable[i];
-    if (variable[i+1] === variable[i+1].toUpperCase())
+    if (variable[i+1] === variable[i+1].toUpperCase() && variable[i] + variable[i+1] !== "ID")
       result += " ";
   }
   result += variable[variable.length-1];

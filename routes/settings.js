@@ -76,16 +76,27 @@ router.put("/backups", auth.hasAccessLevel(3), function(req, res) {
 });
 
 router.delete("/backups", auth.hasAccessLevel(3), function(req, res) {
-  Backup.findByIdAndDelete(req.body.backupID, function(err, deletedBackup) {
-    if (err) {
-      console.error(err);
-      req.flash("error", "An unexpected error occurred.");
-    } else if (!deletedBackup) {
-      req.flash("error", "No backup found.");
-    } else
-      req.flash("success", "The selected backup was successfully deleted.");
-    res.redirect("/settings/backups");
-  });
+  if (req.body.backupID === "*") {
+    Backup.deleteMany({}, function(err, deletedBackups) {
+      if (err) {
+        console.error(err);
+        req.flash("error", "An unexpected error occurred.");
+      } else
+        req.flash("success", "All backups were deleted.");
+      res.redirect("/settings/backups");
+    });
+  } else {
+    Backup.findByIdAndDelete(req.body.backupID, function(err, deletedBackup) {
+      if (err) {
+        console.error(err);
+        req.flash("error", "An unexpected error occurred.");
+      } else if (!deletedBackup) {
+        req.flash("error", "No backup found.");
+      } else
+        req.flash("success", "The selected backup was successfully deleted.");
+      res.redirect("/settings/backups");
+    });
+  }
 });
 
 router.get("/diagnostics", auth.hasAccessLevel(3), function(req, res) {

@@ -1,4 +1,9 @@
 <ul class="directory">
+  <form class="form" action="/settings/backups?_method=delete" method="post" style="margin-top:-10px"
+    onsubmit="return confirm('Are you sure you want to permanently delete all backups?')">
+    <input type="hidden" name="backupID" value="*"/>
+    <button class="form__button form__button--red form__button--small" type="submit">Delete All Backups</button>
+  </form>
   <%- getDirHTML(backups) %>
 </ul>
 
@@ -55,8 +60,6 @@ function getObjectPopupHTML(file) {
     var label = ejs.reformatVar(key);
     if (key == "id") label = "Student ID";
     else if (key == "termCount") label = "Terms";
-    else if (key == "tutorID") label = "Tutor ID";
-    else if (key == "tuteeID") label = "Tutee ID";
     else if (key == "phoneNum") label = "Phone";
     else if (key == "parentPhoneNum") label = "Parent Phone";
     var dataToDisplay = file.data[key];
