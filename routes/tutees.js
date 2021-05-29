@@ -1,6 +1,6 @@
 const express = require("express"),
       router = express.Router(),
-      shortid = require("shortid"),
+      nanoid = require("nanoid"),
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
       backup = require("../services/backup"),

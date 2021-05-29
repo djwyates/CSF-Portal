@@ -1,6 +1,6 @@
 const express = require("express"),
       router = express.Router(),
-      shortid = require("shortid"),
+      nanoid = require("nanoid"),
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
       backup = require("../services/backup"),
@@ -57,7 +57,7 @@ router.post("/", function(req, res) {
         paymentForm: req.body.tutor.paymentForm,
         courses: !req.body.courses ? [] : Array.isArray(req.body.courses) ? req.body.courses : [req.body.courses],
         verification: {
-          code: shortid.generate(),
+          code: nanoid(),
           lastSent: new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"}).replace(/\//g, "-")
         }
       };
@@ -112,7 +112,7 @@ router.put("/:id", auth.hasTutorAccess, function(req, res) {
       res.redirect("/tutors");
     } else {
       if (editedTutor.phoneNum && editedTutor.phoneNum != tutor.phoneNum) {
-        var verificationCode = shortid.generate();
+        var verificationCode = nanoid();
         Tutor.findByIdAndUpdate(req.params.id, {verifiedPhone: false, "verification.code": verificationCode, "verification.lastSent": utils.getCurrentDate("mm-dd-yyyy, 00:00:00")}).exec();
         sns.sendSMS("To verify your phone number, go to " + keys.siteData.url + "/tutors/verify-phone/" + verificationCode, editedTutor.phoneNum);
       } if (editedTutor.maxTutees != tutor.maxTutees && editedTutor.maxTutees < tutor.tuteeSessions.filter(tuteeSession => tuteeSession.status != "Inactive").length) {

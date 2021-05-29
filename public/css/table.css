@@ -38,6 +38,7 @@
 }
 
 .table__body-row {
+	position: relative;
 	border-bottom: 1px solid rgb(221,221,221);
 	transition: 0.2s;
 }
@@ -50,12 +51,29 @@
 	cursor: pointer;
 }
 
-.table__body-row:hover {
+.table__body-row[data-href]:hover {
 	background-color: rgb(243,243,243);
 }
 
 .table__cell {
 	padding: 12px 15px;
+}
+
+.table__delete-form {
+	float: right;
+	margin-top: 5px;
+	margin-bottom: -5px;
+}
+
+.table__delete-form > button {
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+.table__delete-form > button > .material-icons {
+	font-size: 22px;
+	line-height: 0;
 }
 
 .table__footnote {

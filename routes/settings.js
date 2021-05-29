@@ -2,9 +2,11 @@ const express = require("express"),
       router = express.Router(),
       fs = require("fs"),
       auth = require("../middleware/auth"),
+      search = require("../middleware/search"),
       backup = require("../services/backup"),
       Member = require("../models/member"),
-      Backup = require("../models/backup");
+      Backup = require("../models/backup"),
+      ApiKey = require("../models/api-key");
 
 router.get("/", auth.hasAccessLevel(3), function(req, res) {
   res.redirect("/settings/permissions");
@@ -97,6 +99,30 @@ router.delete("/backups", auth.hasAccessLevel(3), function(req, res) {
       res.redirect("/settings/backups");
     });
   }
+});
+
+router.get("/api-keys", auth.hasAccessLevel(3), function(req, res) {
+  ApiKey.find({}, function(err, apiKeys) {
+    if (err) console.error(err);
+    else res.render("settings/index", {settingsLocation: "api-keys", apiKeys: apiKeys});
+  });
+});
+
+router.post("/api-keys", auth.hasAccessLevel(3), function(req, res) {
+  ApiKey.create({scope: req.body.scope}, function(err, newApiKey) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+    }
+    res.redirect("/settings/api-keys");
+  });
+});
+
+router.delete("/api-keys/:id", auth.hasAccessLevel(3), search.apiKey, function(req, res) {
+  ApiKey.findByIdAndDelete(req.params.id, function(err, deletedApiKey) {
+    if (err) console.error(err);
+    res.redirect("/settings/api-keys");
+  });
 });
 
 router.get("/diagnostics", auth.hasAccessLevel(3), function(req, res) {

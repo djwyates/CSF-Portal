@@ -1,8 +1,8 @@
 const mongoose = require("mongoose"),
-      shortid = require("shortid");
+      nanoid = require("nanoid");
 
 var backupSchema = new mongoose.Schema({
-  _id: {type: String, default: shortid.generate},
+  _id: {type: String, default: function() { return nanoid(10); }},
   name: {type: String, required: true, default: "backup"},
   type: {type: String, enum: ["Meeting", "Meetings", "Member", "Members", "Tutors", "Tutee", "Tutees"], required: true},
   category: {type: String, enum: ["deleted", "replaced", "term-migration"], required: true},

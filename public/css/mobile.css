@@ -10,7 +10,7 @@
 	}
 
 	/* tables */
-	.table__cell--email, .table__cell--max-tutees {
+	.table__cell--email, .table__cell--max-tutees, .table__cell--created-on {
 		display: none;
 	}
 }
@@ -91,7 +91,8 @@
 	}
 
 	/* tables */
-	.table__cell--grade, .table__cell--term-count, .table__cell--phone-num, .table__cell--payment-form {
+	.table__cell--grade, .table__cell--term-count, .table__cell--phone-num,
+	.table__cell--payment-form, .table__cell--last-used {
 		display: none;
 	}
 }

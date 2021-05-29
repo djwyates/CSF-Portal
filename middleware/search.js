@@ -1,7 +1,8 @@
 const Meeting = require("../models/meeting"),
       Member = require("../models/member"),
       Tutor = require("../models/tutor"),
-      Tutee = require("../models/tutee");
+      Tutee = require("../models/tutee"),
+      ApiKey = require("../models/api-key");
 
 var search = {};
 
@@ -76,6 +77,22 @@ search.tutee = function(req, res, next) {
       res.redirect("back");
     } else {
       res.locals.tutee = tutee;
+      next();
+    }
+  });
+}
+
+search.apiKey = function(req, res, next) {
+  if (!req.params.id) return next();
+  ApiKey.findById(req.params.id, function(err, apiKey) {
+    if (err) {
+      console.error(err);
+      req.flash("error", "An unexpected error occurred.");
+      res.redirect("back");
+    } else if (!apiKey) {
+      res.redirect("back");
+    } else {
+      res.locals.apiKey = apiKey;
       next();
     }
   });

@@ -32,7 +32,7 @@ router.post("/", auth.hasAccessLevel(1), function(req, res) {
       console.error(err);
       if (err.code == 11000) req.flash("error", "More than one meeting cannot have the same date.");
       else req.flash("error", "An unexpected error occurred.");
-      res.redirect("meetings/new");
+      res.redirect("/meetings/new");
     } else
       res.redirect("/meetings");
   });

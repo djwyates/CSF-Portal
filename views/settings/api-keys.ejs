@@ -1,0 +1,54 @@
+<div class="above-table">
+  <div class="table__filter search search__input-container">
+    <input class="search__input" type="text" spellcheck="false" placeholder="Filter keys"/>
+    <span class="material-icons search__icon">search</span>
+  </div>
+  <div class="above-table__section">
+    <a class="above-table__button popup__button-activate no-drag" href="#">
+      <span class="material-icons above-table__icon">add</span>Generate Key
+    </a>
+    <div class="popup popup--2">
+      <form class="popup__form" action="/settings/api-keys" method="post">
+        <label class="form__label form__label--small" for="scope">Scope</label>
+        <select class="form__input--select form__input--select-small" name="scope" required>
+          <option value="record-attendance">Record Attendance</option>
+        </select>
+        <button class="form__button form__button--small popup__position-1" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="table__wrapper">
+  <table class="table">
+    <thead>
+      <tr class="table__head-row">
+        <th class="table__cell">Key</th>
+        <th class="table__cell">Scope</th>
+        <th class="table__cell table__cell--created-on">Created On</th>
+        <th class="table__cell table__cell--last-used">Last Used</th>
+        <th class="table__cell">Total Uses</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% apiKeys.forEach(function(apiKey) { %>
+        <tr class="table__body-row">
+          <td class="table__cell">
+            <a class="link--black" href="#" onclick="navigator.clipboard.writeText('<%= apiKey.key %>')">
+              <%- apiKey.key.substring(0, 4) %>*********
+            </a>
+          </td>
+          <td class="table__cell"><%- apiKey.scope %></td>
+          <td class="table__cell table__cell--created-on"><%- apiKey.createdOn %></td>
+          <td class="table__cell table__cell--last-used"><%- apiKey.lastUsed %></td>
+          <td class="table__cell">
+            <%- apiKey.totalUses %>
+            <form class="table__delete-form" action="/settings/api-keys/<%= apiKey._id %>?_method=delete" method="post"
+              onsubmit="return confirm('Are you sure you want to permanently delete this API key?')">
+              <button type="submit"><span class="material-icons">delete</span></button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

@@ -68,6 +68,10 @@
   padding: 10px 0;
 }
 
+.form__label--small {
+  font-size: 14px;
+}
+
 .form__label--radio, .form__label--checkbox {
   display: inline-flex;
   align-items: center;

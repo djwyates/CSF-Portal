@@ -1,8 +1,8 @@
 const mongoose = require("mongoose"),
-      shortid = require("shortid");
+      nanoid = require("nanoid");
 
 var tuteeSchema = new mongoose.Schema({
-  _id: {type: String, default: shortid.generate},
+  _id: {type: String, default: function() { return nanoid(10); }},
   id: {type: String, minlength: 9, maxlength: 9, trim: true, unique: true, required: true, validate: {validator: function(v) {return /^\d{9}$/.test(v);}}},
   name: {type: String, trim: true, required: true},
   gender: {type: String, enum: ["Male", "Female"], required: true},
