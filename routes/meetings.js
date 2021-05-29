@@ -1,6 +1,6 @@
 const express = require("express"),
       router = express.Router(),
-      fs = require("fs");
+      fs = require("fs"),
       auth = require("../middleware/auth"),
       search = require("../middleware/search"),
       attendance = require("../services/attendance"),

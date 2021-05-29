@@ -14,6 +14,7 @@ const express = require("express"),
 
 // requiring routes
 const indexRoutes = require("./routes/index"),
+      apiRoutes = require("./routes/api"),
       settingsRoutes = require("./routes/settings"),
       meetingRoutes = require("./routes/meetings"),
       memberRoutes = require("./routes/members"),
@@ -55,6 +56,7 @@ app.use("/tutors", tutorRoutes);
 app.use("/members", memberRoutes);
 app.use("/meetings", meetingRoutes);
 app.use("/settings", settingsRoutes);
+app.use("/api", apiRoutes);
 app.use("/", indexRoutes);
 
 app.listen(process.env.PORT || 3000, process.env.IP, function() {
