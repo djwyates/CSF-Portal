@@ -1,6 +1,6 @@
 const mongoose = require("mongoose"),
       nanoid = require("nanoid");
-console.log(nanoid());
+
 var meetingSchema = new mongoose.Schema({
   _id: {type: String, default: function() { return nanoid(10); }},
   date: {

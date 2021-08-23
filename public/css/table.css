@@ -72,6 +72,7 @@
 }
 
 .table__delete-form > button > .material-icons {
+	color: rgb(180,180,180);
 	font-size: 22px;
 	line-height: 0;
 }

@@ -35,6 +35,6 @@
     "pdfmake": "^0.1.69",
     "roboto-font": "^0.1.0",
     "serve-favicon": "^2.5.0",
-    "xlsx": "^0.16.9"
+    "xlsx": "^0.17.1"
   }
 }
